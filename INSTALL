@@ -1,0 +1,26 @@
+
+Installing libpjfry version 1.0.0
+
+On Unix/Linux and similar systems, you can simply type
+
+./configure [--prefix=/path] [--with-mcc-path=/path/mcc]
+make
+make install
+
+Use 'make check' to compile a simple example of library use in FORTRAN
+(also see note for g77 users)
+
+
+Configure script will try to find Mathematica installation and mcc tool.
+You can turn it off by setting --with-mcc-path=no
+or give full path to apropriate mcc tool --with-mcc-path=/path/mcc
+
+
+REMARK for g77 users:
+Current FORTRAN interface follows GNU calling conventions for COMPLEX type.
+
+To work with g77 this library needs to be compiled with FFLAGS='-fno-f2c'
+(also library for scalar integrals)
+
+Alternatively you can replace FORTRAN wrapper functions in pjfry.h and pjfry.cpp with subroutines.
+e.g. "pj_complex pa0_(double *m1, int *ep)" -> "void pa0_(pj_complex *rslt, double *m1, int *ep)"

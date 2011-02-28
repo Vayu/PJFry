@@ -1,0 +1,55 @@
+# Git exclusions file
+#
+# editor backup files
+*~
+*.tmp
+
+# object files
+*.o
+*.lo
+*.a
+*.la
+*.so
+*.so.?
+.libs/
+.deps/
+
+# distribution archives
+/*.tar.gz
+/*.tar.bz2
+
+# autoconf generated files
+/m4
+/auxfiles
+/aclocal.m4
+/autom4te.cache
+/configure
+/Makefile.in
+/config.h.in
+/examples/Makefile.in
+/mlink/Makefile.in
+/src/Makefile.in
+
+# automake generated files
+/libtool
+/Makefile
+/config.h
+/config.log
+/config.status
+/examples/Makefile
+/mlink/Makefile
+/src/Makefile
+/stamp-h1
+
+# compiled binaries
+/examples/demo
+/mlink/PJFry
+
+# generated files
+/mlink/PJFry.cpp
+/mlink/PJFry_auto.cpp
+
+# valgrind output
+callgrind.out*
+cachegrind.out*
+
