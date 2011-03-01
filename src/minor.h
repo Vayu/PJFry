@@ -27,16 +27,16 @@ class MinorBase : public SRefCnt
     // Symmetric index - generic
     inline static int is(int i, int j) CONST
     {
-      return ( i<=j ? i+(j*(j+1))/2 : j+(i*(i+1))/2 );
+      return ( i<=j ? i+j*(j+1)/2 : j+i*(i+1)/2 );
     };
 
     inline static int is(int i, int j, int k) CONST
     {
       if (i <= j) {
-        return (j <= k ? i+(j*(j+1))/2+(k*(k+1)*(k+2))/6 : is(i,k)+(j*(j+1)*(j+2))/6);
+        return (j <= k ? i+ti2[j]+ti3[k] : is(i,k)+ti3[j]);
       }
       else {
-        return (i >  k ? is(j,k)+(i*(i+1)*(i+2))/6 : j+(i*(i+1))/2+(k*(k+1)*(k+2))/6);
+        return (i >  k ? is(j,k)+ti3[i] : j+ti2[i]+ti3[k]);
       }
     };
 
@@ -44,22 +44,22 @@ class MinorBase : public SRefCnt
     {
       if (i <= j) {
         if (j <= k) {
-          return (k <= l ? i+(j*(j+1))/2+(k*(k+1)*(k+2))/6+(l*(l+1)*(l+2)*(l+3))/24
-                         : is(i,j,l)+(k*(k+1)*(k+2)*(k+3))/24  );
+          return (k <= l ? i+ti2[j]+ti3[k]+ti4[l]
+                         : is(i,j,l)+ti4[k]  );
         }
         else {
-          return (j >  l ? is(i,k,l)+(j*(j+1)*(j+2)*(j+3))/24
-                         : is(i,k)+(j*(j+1)*(j+2))/6+(l*(l+1)*(l+2)*(l+3))/24  );
+          return (j >  l ? is(i,k,l)+ti4[j]
+                         : is(i,k)+ti3[j]+ti4[l]  );
         }
       }
       else {
         if (i > k) {
-          return (i >  l ? is(j,k,l)+(i*(i+1)*(i+2)*(i+3))/24
-                         : is(j,k)+(i*(i+1)*(i+2))/6+(l*(l+1)*(l+2)*(l+3))/24  );
+          return (i >  l ? is(j,k,l)+ti4[i]
+                         : is(j,k)+ti3[i]+ti4[l]  );
         }
         else {
-          return (k <= l ? j+(i*(i+1))/2+(k*(k+1)*(k+2))/6+(l*(l+1)*(l+2)*(l+3))/24
-                         : is(i,j,l)+(k*(k+1)*(k+2)*(k+3))/24  );
+          return (k <= l ? j+ti2[i]+ti3[k]+ti4[l]
+                         : is(i,j,l)+ti4[k]  );
         }
       }
     };
@@ -67,25 +67,25 @@ class MinorBase : public SRefCnt
     inline static int iss(int i, int j) CONST // ordered
     {
       assert(i<=j);
-      return i+(j*(j+1))/2;
+      return i+j*(j+1)/2;
     }
 
     inline static int iss(int i, int j, int k) CONST // ordered
     {
       assert(i <= j && j <= k);
-      return i+(j*(j+1))/2+(k*(k+1)*(k+2))/6;
+      return i+ti2[j]+ti3[k];
     }
 
     inline static int iss(int i, int j, int k, int l) CONST // ordered
     {
       assert(i <= j && j <= k && k <= l);
-      return i+(j*(j+1))/2+(k*(k+1)*(k+2))/6+(l*(l+1)*(l+2)*(l+3))/24;
+      return i+ti2[j]+ti3[k]+ti4[l];
     }
 
     inline static int iss(int i, int j, int k, int l, int m) CONST // ordered
     {
       assert(i <= j && j <= k && k <= l && l <= m);
-      return i+(j*(j+1))/2+(k*(k+1)*(k+2))/6+(l*(l+1)*(l+2)*(l+3))/24+(m*(m+1)*(m+2)*(m+3)*(m+4))/120;
+      return i+ti2[j]+ti3[k]+ti4[l]+ti5[m];
     }
 
     inline static double getmeps()
@@ -101,6 +101,11 @@ class MinorBase : public SRefCnt
 
     // fill 'free' array with indices which are not occupied by 'set' array
     static void freeidxM3(int set[], int free[]);
+  private:
+    static const unsigned char ti2[8];
+    static const unsigned char ti3[8];
+    static const unsigned char ti4[8];
+    static const unsigned char ti5[8];
 
   protected:
     static const unsigned char idxtbl[64];
