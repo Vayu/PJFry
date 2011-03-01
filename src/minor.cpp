@@ -7,6 +7,18 @@
 #include "minor.h"
 #include "cache.h"
 
+
+const double MinorBase::teps=1e-12;
+
+const double MinorBase::ceps=5e-2;
+
+const double MinorBase::deps1=5e-2;
+const double MinorBase::deps2=5e-2;
+const double MinorBase::deps3=5e-2;
+
+const double MinorBase::deps=1e-14;
+const double MinorBase::meps=1e-10;
+
 /* ------------------------------------------------------------
 * ------------------------------------------------------------
 *                       Minor2 section
@@ -66,8 +78,7 @@ Minor4::Minor4(const Kinem4 &k, Minor5::Ptr mptr5, int s)
  */
 
 // Find first three indices which are not occupied by set[] and put them in free[]
-template <int N>
-void Minor<N>::freeidxM3(int set[], int free[])
+void MinorBase::freeidxM3(int set[], int free[])
 {
   free[0]=0;
   free[1]=1;

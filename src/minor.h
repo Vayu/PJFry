@@ -19,11 +19,10 @@
     x=t; \
     }
 
-template <int N>
-class Minor : public SRefCnt
+class MinorBase : public SRefCnt
 {
   public:
-    Minor() {};
+    MinorBase() {};
 
     // Symmetric index - generic
     inline static int is(int i, int j) CONST
@@ -97,10 +96,6 @@ class Minor : public SRefCnt
     static void freeidxM3(int set[], int free[]);
 
   protected:
-    // Cayley matrix (symmetric)
-    static const int DCay=N+1;
-    double Cay[DCay*(DCay+1)/2];
-
     static const double teps; // expansion target accuracy
 
     static const double ceps;
@@ -114,22 +109,16 @@ class Minor : public SRefCnt
 };
 
 template <int N>
-const double Minor<N>::teps=1e-12;
+class Minor : public MinorBase
+{
+  public:
+    Minor() {};
 
-template <int N>
-const double Minor<N>::ceps=5e-2;
-
-template <int N>
-const double Minor<N>::deps1=5e-2;
-template <int N>
-const double Minor<N>::deps2=5e-2;
-template <int N>
-const double Minor<N>::deps3=5e-2;
-
-template <int N>
-const double Minor<N>::deps=1e-14;
-template <int N>
-const double Minor<N>::meps=1e-10;
+  protected:
+    // Cayley matrix (symmetric)
+    static const int DCay=N+1;
+    double Cay[DCay*(DCay+1)/2];
+};
 
 class Minor5 : public Minor<5>
 {
