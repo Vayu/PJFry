@@ -19,6 +19,74 @@ const double MinorBase::deps3=5e-2;
 const double MinorBase::deps=1e-14;
 const double MinorBase::meps=1e-10;
 
+
+const unsigned char MinorBase::idxtbl[64]={
+  100,   //     0    0b0
+  101,   //0    1    0b1
+  101,   //1    2    0b10
+  0,     //01   3    0b11
+  101,   //2    4    0b100
+  1,     //02   5    0b101
+  5,     //12   6    0b110
+  0,     //012  7    0b111
+  101,   //     8    0b1000
+  2,     //03   9    0b1001
+  6,     //13   10   0b1010
+  1,     //013  11   0b1011
+  9,     //23   12   0b1100
+  4,     //023  13   0b1101
+  10,    //123  14   0b1110
+  104,   //     15   0b1111
+  101,   //     16   0b10000
+  3,     //04   17   0b10001
+  7,     //14   18   0b10010
+  2,     //014  19   0b10011
+  10,    //24   20   0b10100
+  5,     //024  21   0b10101
+  11,    //124  22   0b10110
+  104,   //     23   0b10111
+  12,    //34   24   0b11000
+  7,     //034  25   0b11001
+  13,    //134  26   0b11010
+  104,   //     27   0b11011
+  16,    //234  28   0b11100
+  104,   //     29   0b11101
+  104,   //     30   0b11110
+  105,   //     31   0b11111
+  101,   //     32   0b100000
+  4,     //05   33   0b100001
+  8,     //15   34   0b100010
+  3,     //015  35   0b100011
+  11,    //25   36   0b100100
+  6,     //025  37   0b100101
+  12,    //125  38   0b100110
+  104,   //     39   0b100111
+  13,    //35   40   0b101000
+  8,     //035  41   0b101001
+  14,    //135  42   0b101010
+  104,   //     43   0b101011
+  17,    //235  44   0b101100
+  104,   //     45   0b101101
+  104,   //     46   0b101110
+  105,   //     47   0b101111
+  14,    //45   48   0b110000
+  9,     //045  49   0b110001
+  15,    //145  50   0b110010
+  104,   //     51   0b110011
+  18,    //245  52   0b110100
+  104,   //     53   0b110101
+  104,   //     54   0b110110
+  105,   //     55   0b110111
+  19,    //345  56   0b111000
+  104,   //     57   0b111001
+  104,   //     58   0b111010
+  105,   //     59   0b111011
+  104,   //     60   0b111100
+  105,   //     61   0b111101
+  105,   //     62   0b111110
+  255,   //     63   0b111111
+};
+
 /* ------------------------------------------------------------
 * ------------------------------------------------------------
 *                       Minor2 section
@@ -280,7 +348,7 @@ double Minor5::maxS4(int s)
 
 double Minor5::maxS3(int s, int t)
 {
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pmaxS3[idx];
 }
 
@@ -328,16 +396,13 @@ double Minor5::M1(int i, int l)
  */
 double Minor5::M2(int i, int j, int l, int m)
 {
-int sign=signM2ud(i,j,l,m);
-if (sign==0) return 0;
+  int sign=signM2ud(i,j,l,m);
+  if (sign==0) return 0;
 
-int tmp;
-tswap(i,j,tmp);
-int uidx=im2(i,j);
-tswap(l,m,tmp);
-int lidx=im2(l,m);
+  int uidx=im2(i,j);
+  int lidx=im2(l,m);
 
-return pM2[is(uidx,lidx)]*sign;
+  return pM2[is(uidx,lidx)]*sign;
 }
 
 /* --------------------------------------------------------
@@ -346,20 +411,13 @@ return pM2[is(uidx,lidx)]*sign;
 */
 double Minor5::M3(int i, int j, int k, int l, int m, int n)
 {
-int sign=signM3ud(i,j,k,l,m,n);
-if (sign==0) return 0;
+  int sign=signM3ud(i,j,k,l,m,n);
+  if (sign==0) return 0;
 
-int tmp;
-tswap(i,k,tmp);
-tswap(j,k,tmp);
-tswap(i,j,tmp);
-int uidx=im3(i,j,k);
-tswap(l,n,tmp);
-tswap(m,n,tmp);
-tswap(l,m,tmp);
-int lidx=im3(l,m,n);
+  int uidx=im3(i,j,k);
+  int lidx=im3(l,m,n);
 
-return pM3[is(uidx,lidx)]*sign;
+  return pM3[is(uidx,lidx)]*sign;
 }
 
 /* --------------------------------------------------------
@@ -591,7 +649,7 @@ ncomplex Minor5::I3st(int ep, int s, int t) // IR-div
   if (not fEval[E_I3st+ep]) {
     I3stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3st[ep][idx];
 }
 
@@ -642,10 +700,6 @@ ncomplex Minor5::I2stu(int ep, int s, int t, int u)
   if (not fEval[E_I2stu+ep]) {
     I2stuEval(ep);
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2stu[ep][idx];
 }
@@ -853,7 +907,7 @@ ncomplex Minor5::I3Dst(int ep, int s, int t)
   if (not fEval[E_I3Dst+ep]) {
     I3DstEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3Dst[ep][idx];
 }
 
@@ -862,7 +916,7 @@ void Minor5::I3DstEval(int ep)
   assert(ep==0);
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     const double dstst=M2(s,t,s,t);
     const double d0st0st=M3(0,s,t,0,s,t);
     ncomplex ivalue=0;
@@ -1112,7 +1166,7 @@ ncomplex Minor5::I3Dsti(int ep, int s, int t, int i) // IR-div
   if (not fEval[E_I3Dsti+ep]) {
     I3DstiEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3Dsti[ep][i-1][idx];
 }
 
@@ -1121,7 +1175,7 @@ void Minor5::I3DstiEval(int ep)
   for (int i=1; i<=4; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix
@@ -1261,10 +1315,6 @@ ncomplex Minor5::I2Dstu(int ep, int s, int t, int u)
 
     fEval[E_I2Dstu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2Dstu[ep][idx];
 }
@@ -1324,7 +1374,7 @@ ncomplex Minor5::I3D2st(int ep, int s, int t)
   if (not fEval[E_I3D2st+ep]) {
     I3D2stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D2st[ep][idx];
 }
 
@@ -1332,7 +1382,7 @@ void Minor5::I3D2stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -1543,7 +1593,7 @@ ncomplex Minor5::I3D2sti(int ep, int s, int t, int i)
   if (not fEval[E_I3D2sti+ep]) {
     I3D2stiEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D2sti[ep][i-1][idx];
 }
 
@@ -1552,7 +1602,7 @@ void Minor5::I3D2stiEval(int ep)
   for (int i=1; i<=4; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     const double dstst=M2(s,t,s,t);
     ncomplex ivalue=0;
 
@@ -1819,7 +1869,7 @@ ncomplex Minor5::I3D2stij(int ep, int s, int t, int i, int j) // IR-div
   if (not fEval[E_I3D2stij+ep]) {
     I3D2stijEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D2stij[ep][is(i-1,j-1)][idx];
 }
 
@@ -1827,7 +1877,7 @@ void Minor5::I3D2stijEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix
@@ -1996,10 +2046,6 @@ ncomplex Minor5::I2D2stu(int ep, int s, int t, int u)
 
     fEval[E_I2D2stu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2D2stu[ep][idx];
 }
@@ -2061,7 +2107,7 @@ ncomplex Minor5::I3D3st(int ep, int s, int t)
   if (not fEval[E_I3D3st+ep]) {
     I3D3stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D3st[ep][idx];
 }
 
@@ -2069,7 +2115,7 @@ void Minor5::I3D3stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -2340,7 +2386,7 @@ ncomplex Minor5::I3D3sti(int ep, int s, int t, int i)
   if (not fEval[E_I3D3sti+ep]) {
     I3D3stiEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D3sti[ep][i-1][idx];
 }
 
@@ -2349,7 +2395,7 @@ void Minor5::I3D3stiEval(int ep)
   for (int i=1; i<=4; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -2583,7 +2629,7 @@ ncomplex Minor5::I3D3stij(int ep, int s, int t, int i, int j)
   if (not fEval[E_I3D3stij+ep]) {
     I3D3stijEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D3stij[ep][is(i-1,j-1)][idx];
 }
 
@@ -2591,7 +2637,7 @@ void Minor5::I3D3stijEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
     const double dstst=M2(s,t,s,t);
     // symmetric in 'i,j'
     for (int i=1; i<=4; i++) { if (i==s || i==t) continue;
@@ -2893,7 +2939,7 @@ ncomplex Minor5::I3D3stijk(int ep, int s, int t, int i, int j, int k) // IR-div
   if (not fEval[E_I3D3stijk+ep]) {
     I3D3stijkEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D3stijk[ep][is(i-1,j-1,k-1)][idx];
 }
 
@@ -2901,7 +2947,7 @@ void Minor5::I3D3stijkEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
-    int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+    int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix

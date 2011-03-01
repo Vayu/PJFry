@@ -93,9 +93,18 @@ class MinorBase : public SRefCnt
       return meps;
     }
 
+    // Utility functions
+    static int im3(int i, int j, int k) CONST; // Antisymmetric index for "3 out of 6" minors
+    static int im2(int i, int j) CONST;        // Antisymmetric index for "2 out of 6" minors
+    static int signM3ud(int i, int j, int k, int l, int m, int n) CONST; // Signature[{i,j,k}]*Signature[{l,m,n}]
+    static int signM2ud(int i, int j, int l, int m) CONST;               // Signature[{i,j}]*Signature[{l,m}]
+
+    // fill 'free' array with indices which are not occupied by 'set' array
     static void freeidxM3(int set[], int free[]);
 
   protected:
+    static const unsigned char idxtbl[64];
+
     static const double teps; // expansion target accuracy
 
     static const double ceps;
@@ -369,15 +378,6 @@ class Minor5 : public Minor<5>
     void I3D6stEval(int ep);
     void I2D6stuEval(int idx, int ep, int s, int t, int u, int m, int n, double qsq);
     void I3D7stEval(int ep);
-
-    // Aux
-
-    // Utility functions
-    int im3(int i, int j, int k) CONST; // Antisymmetric index for "3 out of 6" minors
-    int im2(int i, int j) CONST;        // Antisymmetric index for "2 out of 6" minors
-    int signM3ud(int i, int j, int k, int l, int m, int n) CONST; // Signature[{i,j,k}]*Signature[{l,m,n}]
-    int signM2ud(int i, int j, int l, int m) CONST;               // Signature[{i,j}]*Signature[{l,m}]
-    // fill 'free' array with indices which are not occupied by 'set' array
 };
 
 class Minor4 : public Minor<4>
@@ -464,21 +464,21 @@ class Minor2 : public Minor<2>
 
 // Completely antysymmetric i,j,k size 6 matrix index
 inline
-int Minor5::im3(int i, int j, int k)
+int MinorBase::im3(int i, int j, int k)
 {
-  return ( -6 + (i*(47+(-12+i)*i))/6 - ((-9+j)*j)/2 + k );
+  return idxtbl[(1<<i)|(1<<j)|(1<<k)];
 }
 
 // Completely antysymmetric i,j size 6 matrix index
 inline
-int Minor5::im2(int i, int j)
+int MinorBase::im2(int i, int j)
 {
-  return ( (11-i)*i/2+(j-1-i) );
+  return idxtbl[(1<<i)|(1<<j)];
 }
 
 // Signature[{i,j,k}]*Signature[{l,m,n}]
 inline
-int Minor5::signM3ud(int i, int j, int k, int l, int m, int n)
+int MinorBase::signM3ud(int i, int j, int k, int l, int m, int n)
 {
   int t=(j-i)*(k-j)*(k-i)*(m-l)*(n-m)*(n-l);
   return t==0 ? 0 : 2*(t>>(sizeof(int)*8-1))+1;
@@ -486,7 +486,7 @@ int Minor5::signM3ud(int i, int j, int k, int l, int m, int n)
 
 // Signature[{i,j}]*Signature[{l,m}]
 inline
-int Minor5::signM2ud(int i, int j, int l, int m)
+int MinorBase::signM2ud(int i, int j, int l, int m)
 {
   int t=(j-i)*(m-l);
   return t==0 ? 0 : 2*(t>>(sizeof(int)*8-1))+1;

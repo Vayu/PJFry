@@ -42,10 +42,6 @@ ncomplex Minor5::I2D3stu(int ep, int s, int t, int u)
 
     fEval[E_I2D3stu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2D3stu[ep][idx];
 }
@@ -111,7 +107,7 @@ ncomplex Minor5::I3D4st(int ep, int s, int t)
   if (not fEval[E_I3D4st+ep]) {
     I3D4stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D4st[ep][idx];
 }
 
@@ -119,7 +115,7 @@ void Minor5::I3D4stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
     for (int t=s+1; t<=5; t++) {
-      int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+      int idx = im2(s,t)-5;
 
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
@@ -178,10 +174,6 @@ ncomplex Minor5::I2D4stu(int ep, int s, int t, int u)
 
     fEval[E_I2D4stu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2D4stu[ep][idx];
 }
@@ -252,7 +244,7 @@ ncomplex Minor5::I3D5st(int ep, int s, int t)
   if (not fEval[E_I3D5st+ep]) {
     I3D5stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D5st[ep][idx];
 }
 
@@ -260,7 +252,7 @@ void Minor5::I3D5stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
     for (int t=s+1; t<=5; t++) {
-      int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+      int idx = im2(s,t)-5;
 
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
@@ -318,10 +310,6 @@ ncomplex Minor5::I2D5stu(int ep, int s, int t, int u)
 
     fEval[E_I2D5stu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2D5stu[ep][idx];
 }
@@ -390,7 +378,7 @@ ncomplex Minor5::I3D6st(int ep, int s, int t)
   if (not fEval[E_I3D6st+ep]) {
     I3D6stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D6st[ep][idx];
 }
 
@@ -398,7 +386,7 @@ void Minor5::I3D6stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
     for (int t=s+1; t<=5; t++) {
-      int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+      int idx = im2(s,t)-5;
 
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
@@ -456,10 +444,6 @@ ncomplex Minor5::I2D6stu(int ep, int s, int t, int u)
 
     fEval[E_I2D6stu+ep]=true;
   }
-  int tmp;
-  tswap(s,u,tmp);
-  tswap(t,u,tmp);
-  tswap(s,t,tmp);
   int idx=im3(s,t,u)-10;
   return pI2D6stu[ep][idx];
 }
@@ -529,7 +513,7 @@ ncomplex Minor5::I3D7st(int ep, int s, int t)
   if (not fEval[E_I3D7st+ep]) {
     I3D7stEval(ep);
   }
-  int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+  int idx = im2(s,t)-5;
   return pI3D7st[ep][idx];
 }
 
@@ -537,7 +521,7 @@ void Minor5::I3D7stEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
     for (int t=s+1; t<=5; t++) {
-      int idx = s<t ? im2(s,t)-5 : im2(t,s)-5;
+      int idx = im2(s,t)-5;
 
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
