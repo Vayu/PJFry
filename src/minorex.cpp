@@ -71,22 +71,22 @@ void Minor5::I2D3stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
       ncomplex sumY=(42.*ICache::getI1(ep, Kinem1(msq2))+47*msq2)*msq2*msq2/36.;
       ncomplex sumZ=(42.*ICache::getI1(ep, Kinem1(msq1))+47*msq1)*msq1*msq1/36.;
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=49*dstustu;
     }
   }
   else { assert(ep==1);
-    const double y11=Cay[iss(m,m)];
-    const double y12=Cay[iss(m,n)];
-    const double y22=Cay[iss(n,n)];
+    const double y11=Cay[nss(m,m)];
+    const double y12=Cay[nss(m,n)];
+    const double y22=Cay[nss(n,n)];
     sum1=-(+ y11*y11*(y22 + 5*(y11 + y12))
             + y22*y22*(y11 + 5*(y22 + y12))
             + 2*y12*y12*(y12 + 2*(y11 + y22))
@@ -205,13 +205,13 @@ void Minor5::I2D4stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
       ncomplex sumY=-(36.*ICache::getI1(ep, Kinem1(msq2))+47*msq2)*msq2*msq2*msq2/96.;
       ncomplex sumZ=-(36.*ICache::getI1(ep, Kinem1(msq1))+47*msq1)*msq1*msq1*msq1/96.;
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=81*dstustu;
@@ -220,9 +220,9 @@ void Minor5::I2D4stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     */
   }
   else { assert(ep==1);
-    const double y11=Cay[iss(m,m)];
-    const double y12=Cay[iss(m,n)];
-    const double y22=Cay[iss(n,n)];
+    const double y11=Cay[nss(m,m)];
+    const double y12=Cay[nss(m,n)];
+    const double y22=Cay[nss(n,n)];
     sum1=(
           +y11*y11*(y11*(35*(y11+y12)+5*y22)+15*y12*(2*y12+y22))
           +y22*y22*(y22*(35*(y22+y12)+5*y11)+15*y12*(2*y12+y11))
@@ -341,22 +341,22 @@ void Minor5::I2D5stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
       ncomplex sumY=(660.*ICache::getI1(ep, Kinem1(msq2))+967*msq2)*(msq2*msq2)*(msq2*msq2)/7200.;
       ncomplex sumZ=(660.*ICache::getI1(ep, Kinem1(msq1))+967*msq1)*(msq1*msq1)*(msq1*msq1)/7200.;
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=121*dstustu;
     }
   }
   else { assert(ep==1);
-    const double y11=Cay[iss(m,m)];
-    const double y12=Cay[iss(m,n)];
-    const double y22=Cay[iss(n,n)];
+    const double y11=Cay[nss(m,m)];
+    const double y12=Cay[nss(m,n)];
+    const double y22=Cay[nss(n,n)];
     sum1=-(
             y11*y11*y11*(y11*(63*(y11+y12)+7*y22)+7*y12*(8*y12+3*y22)+3*y22*y22)
           + y22*y22*y22*(y22*(63*(y22+y12)+7*y11)+7*y12*(8*y12+3*y11)+3*y11*y11)
@@ -475,22 +475,22 @@ void Minor5::I2D6stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
       ncomplex sumY=-(260.*ICache::getI1(ep, Kinem1(msq2))+417*msq2)*(msq2*msq2)*(msq2*msq2)*msq2/14400.;
       ncomplex sumZ=-(260.*ICache::getI1(ep, Kinem1(msq1))+417*msq1)*(msq1*msq1)*(msq1*msq1)*msq1/14400.;
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=169*dstustu;
     }
   }
   else { assert(ep==1);
-    const double y11=Cay[iss(m,m)];
-    const double y12=Cay[iss(m,n)];
-    const double y22=Cay[iss(n,n)];
+    const double y11=Cay[nss(m,m)];
+    const double y12=Cay[nss(m,n)];
+    const double y22=Cay[nss(n,n)];
     sum1=(
       y11*y11*y11*(y11*(21*y11*(11*(y11+y12)+y22)+210*y12*y12+7*y22*y22+63*y22*y12)
       +y12*y12*(168*y12+112*y22))+y22*y22*y22*(y22*(21*y22*(11*(y22

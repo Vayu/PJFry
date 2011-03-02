@@ -245,12 +245,11 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
   const double m4=kinem.m4();
   const double m5=kinem.m5();
 
-  Cay[ 0]=0;
-  Cay[ 1]=1; Cay[ 2]=2*m1;
-  Cay[ 3]=1; Cay[ 4]=m1+m2-p2;  Cay[ 5]=2*m2;
-  Cay[ 6]=1; Cay[ 7]=m1+m3-s23; Cay[ 8]=m2+m3-p3;  Cay[ 9]=2*m3;
-  Cay[10]=1; Cay[11]=m1+m4-s15; Cay[12]=m2+m4-s34; Cay[13]=m3+m4-p4;  Cay[14]=2*m4;
-  Cay[15]=1; Cay[16]=m1+m5-p1;  Cay[17]=m2+m5-s12; Cay[18]=m3+m5-s45; Cay[19]=m4+m5-p5; Cay[20]=2*m5;
+  Cay[ 0]=2*m1;
+  Cay[ 1]=m1+m2-p2;  Cay[ 2]=2*m2;
+  Cay[ 3]=m1+m3-s23; Cay[ 4]=m2+m3-p3;  Cay[ 5]=2*m3;
+  Cay[ 6]=m1+m4-s15; Cay[ 7]=m2+m4-s34; Cay[ 8]=m3+m4-p4;  Cay[ 9]=2*m4;
+  Cay[10]=m1+m5-p1;  Cay[11]=m2+m5-s12; Cay[12]=m3+m5-s45; Cay[13]=m4+m5-p5; Cay[14]=2*m5;
 
   maxCay();
 
@@ -308,11 +307,10 @@ Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3()
   kinem=Kinem5(0.,0.,p3,p4,p5,s12,0.,s34,s45,0.,0.,m2,m3,m4,m5);
 
   Cay[ 0]=0;
-  Cay[ 1]=1; Cay[ 2]=0;
-  Cay[ 3]=1; Cay[ 4]=m2; Cay[ 5]=2*m2;
-  Cay[ 6]=1; Cay[ 7]=m3; Cay[ 8]=m2+m3-p3;  Cay[ 9]=2*m3;
-  Cay[10]=1; Cay[11]=m4; Cay[12]=m2+m4-s34; Cay[13]=m3+m4-p4;  Cay[14]=2*m4;
-  Cay[15]=1; Cay[16]=m5; Cay[17]=m2+m5-s12; Cay[18]=m3+m5-s45; Cay[19]=m4+m5-p5; Cay[20]=2*m5;
+  Cay[ 1]=m2;  Cay[ 2]=2*m2;
+  Cay[ 3]=m3;  Cay[ 4]=m2+m3-p3;  Cay[ 5]=2*m3;
+  Cay[ 6]=m4;  Cay[ 7]=m2+m4-s34; Cay[ 8]=m3+m4-p4;  Cay[ 9]=2*m4;
+  Cay[10]=m5;  Cay[11]=m2+m5-s12; Cay[12]=m3+m5-s45; Cay[13]=m4+m5-p5; Cay[14]=2*m5;
 
   // create subkinematics minors
   Ptr self=Ptr(this);
@@ -360,7 +358,7 @@ void Minor5::maxCay()
 {
   for (int i=1; i<=DCay-1; i++) {
     for (int j=i; j<=DCay-1; j++) {
-      const double cay=fabs(Cay[iss(i,j)]);
+      const double cay=fabs(Cay[nss(i,j)]);
       for (int s=1; s<=smax; s++) {
         if (s==i || s==j) continue;
         if (pmaxS4[s-1] < cay) pmaxS4[s-1]=cay;
@@ -436,19 +434,34 @@ void Minor5::evalM1()
 #ifndef NDEBUG
   for (int i=0; i<=DCay-1; i++) {
     for (int l=0; l<=i; l++) {
-      pM1[is(i,l)]=std::numeric_limits<double>::quiet_NaN();
+      pM1[iss(l,i)]=std::numeric_limits<double>::quiet_NaN();
     }
   }
 #endif
-  for (int i=0; i<=smax; i++) {
-    for (int l=0; l<=i; l++) {
-      int j = i==0 ? 1 : 0;
+//   for (int i=0; i<=0; i++)
+  {
+    const int i=0;
+//     for (int l=0; l<=i; l++) {
+    {
+      const int l=0;
+//       int j = i==0 ? 1 : 0;
+      const int j=1;
 
       double m1ele=0;
-      for (int m=0; m<=DCay-1; m++) {
-        m1ele+=M2(i,j,l,m)*Cay[is(j,m)];
+      for (int m=1; m<=DCay-1; m++) {
+        m1ele+=M2(i,j,l,m)*Cay[nss(j,m)];
       }
       pM1[is(i,l)]=m1ele;
+    }
+  }
+  const int j=0;
+  for (int i=1; i<=smax; i++) {
+    for (int l=0; l<=i; l++) {
+      double m1ele=0;
+      for (int m=1; m<=DCay-1; m++) {
+        m1ele+=M2(i,j,l,m);
+      }
+      pM1[iss(l,i)]=m1ele;
     }
   }
   fEval[E_M1]=true;
@@ -500,9 +513,9 @@ void Minor5::evalM2()
 #ifndef NDEBUG
   for (int i=0; i<=DCay-1; i++) {
   for (int j=i+1; j<=DCay-1; j++) {
+    const int uidx=im2(i,j);
     for (int l=0; l<=DCay-1; l++) {
     for (int m=l+1; m<=DCay-1; m++) {
-      int uidx=im2(i,j);
       int lidx=im2(l,m);
       if (lidx > uidx) continue;
       pM2[is(uidx,lidx)]=std::numeric_limits<double>::quiet_NaN();
@@ -511,20 +524,38 @@ void Minor5::evalM2()
   }
   }
 #endif
-  for (int i=0; i<=smax; i++) {
+//   for (int i=0; i<=0; i++)
+  {
+  const int i=0;
   for (int j=i+1; j<=DCay-1; j++) {
+    const int uidx=im2(i,j);
+    const int k = (j==1 ? 2 : 1);
     for (int l=0; l<=smax; l++) {
     for (int m=l+1; m<=DCay-1; m++) {
-      int uidx=im2(i,j);
       int lidx=im2(l,m);
-
       if (lidx > uidx) continue;
 
-      int k = i==0 ? (j==1 ? 2 : 1) : 0;
+      double m2ele=M3(i,j,k,l,m,0);
+      for (int n=1; n<DCay; n++) {
+        m2ele+=M3(i,j,k,l,m,n)*Cay[ns(k,n)];
+      }
+      pM2[is(uidx,lidx)]=m2ele;
+    }
+    }
+  }
+  }
+  const int k=0;
+  for (int i=1; i<=smax; i++) {
+  for (int j=i+1; j<=DCay-1; j++) {
+    const int uidx=im2(i,j);
+    for (int l=0; l<=smax; l++) {
+    for (int m=l+1; m<=DCay-1; m++) {
+      int lidx=im2(l,m);
+      if (lidx > uidx) continue;
 
       double m2ele=0;
-      for (int n=0; n<DCay; n++) {
-        m2ele+=M3(i,j,k,l,m,n)*Cay[is(k,n)];
+      for (int n=1; n<DCay; n++) {
+        m2ele+=M3(i,j,k,l,m,n);
       }
       pM2[is(uidx,lidx)]=m2ele;
     }
@@ -544,10 +575,10 @@ void Minor5::evalM3()
   for (int i=0; i<=DCay-1; i++) {
   for (int j=i+1; j<=DCay-1; j++) {
   for (int k=j+1; k<=DCay-1; k++) {
+    const int uidx=im3(i,j,k);
     for (int l=0; l<=DCay-1; l++) {
     for (int m=l+1; m<=DCay-1; m++) {
     for (int n=m+1; n<=DCay-1; n++) {
-      int uidx=im3(i,j,k);
       int lidx=im3(l,m,n);
       if (lidx > uidx) continue;
       pM3[is(uidx,lidx)]=std::numeric_limits<double>::quiet_NaN();
@@ -558,15 +589,18 @@ void Minor5::evalM3()
   }
   }
 #endif
-  for (int i=0; i<=smax; i++) {
+//   for (int i=0; i<=0; i++) {
+  {
+  const int i=0;
   for (int j=i+1; j<=DCay-2; j++) {
   for (int k=j+1; k<=DCay-1; k++) {
-    for (int l=0; l<=smax; l++) {
+    const int uidx=im3(i,j,k);
+//     for (int l=0; l<=0; l++) {
+    {
+    const int l=0;
     for (int m=l+1; m<=DCay-2; m++) {
     for (int n=m+1; n<=DCay-1; n++) {
-      int uidx=im3(i,j,k);
       int lidx=im3(l,m,n);
-
       if (lidx > uidx) continue;
 
       int iu[3]={i,j,k};
@@ -579,13 +613,106 @@ void Minor5::evalM3()
 
       int powsign=-2*((i+j+k+l+m+n)&0x1)+1;
 
+      // nu[0]!=0 and nd[0]!=0
       pM3[is(uidx,lidx)]=powsign*(
-        + (+Cay[is(nu[0],nd[1])]*Cay[is(nu[1],nd[2])]
-           -Cay[is(nu[0],nd[2])]*Cay[is(nu[1],nd[1])])*Cay[is(nu[2],nd[0])]
-        + (+Cay[is(nu[0],nd[2])]*Cay[is(nu[1],nd[0])]
-           -Cay[is(nu[0],nd[0])]*Cay[is(nu[1],nd[2])])*Cay[is(nu[2],nd[1])]
-        + (+Cay[is(nu[0],nd[0])]*Cay[is(nu[1],nd[1])]
-           -Cay[is(nu[0],nd[1])]*Cay[is(nu[1],nd[0])])*Cay[is(nu[2],nd[2])]
+        + (+Kay(nu[0],nd[1])*Kay(nu[1],nd[2])
+           -Kay(nu[0],nd[2])*Kay(nu[1],nd[1]))*Kay(nu[2],nd[0])
+        + (+Kay(nu[0],nd[2])*Kay(nu[1],nd[0])
+           -Kay(nu[0],nd[0])*Kay(nu[1],nd[2]))*Kay(nu[2],nd[1])
+        + (+Kay(nu[0],nd[0])*Kay(nu[1],nd[1])
+           -Kay(nu[0],nd[1])*Kay(nu[1],nd[0]))*Kay(nu[2],nd[2])
+        );
+    }
+    }
+    }
+    for (int l=1; l<=smax; l++) {
+    for (int m=l+1; m<=DCay-2; m++) {
+    for (int n=m+1; n<=DCay-1; n++) {
+      int lidx=im3(l,m,n);
+      if (lidx > uidx) continue;
+
+      int iu[3]={i,j,k};
+      int nu[3];
+      freeidxM3(iu, nu);
+
+      int id[3]={l,m,n};
+      int nd[3];
+      freeidxM3(id, nd);
+
+      int powsign=-2*((i+j+k+l+m+n)&0x1)+1;
+
+      // nu[0]!=0 and nd[0]==0
+      pM3[is(uidx,lidx)]=powsign*(
+        + (+Kay(nu[0],nd[1])*Kay(nu[1],nd[2])
+           -Kay(nu[0],nd[2])*Kay(nu[1],nd[1]))
+        + (+Kay(nu[0],nd[2])
+           -Kay(nu[1],nd[2]))*Kay(nu[2],nd[1])
+        + (+Kay(nu[1],nd[1])
+           -Kay(nu[0],nd[1]))*Kay(nu[2],nd[2])
+        );
+    }
+    }
+    }
+  }
+  }
+  }
+
+  for (int i=1; i<=smax; i++) {
+  for (int j=i+1; j<=DCay-2; j++) {
+  for (int k=j+1; k<=DCay-1; k++) {
+    const int uidx=im3(i,j,k);
+//     for (int l=0; l<=0; l++) {
+    {
+    const int l=0;
+    for (int m=l+1; m<=DCay-2; m++) {
+    for (int n=m+1; n<=DCay-1; n++) {
+      int lidx=im3(l,m,n);
+      if (lidx > uidx) continue;
+
+      int iu[3]={i,j,k};
+      int nu[3];
+      freeidxM3(iu, nu);
+
+      int id[3]={l,m,n};
+      int nd[3];
+      freeidxM3(id, nd);
+
+      int powsign=-2*((i+j+k+l+m+n)&0x1)+1;
+
+      // nu[0]==0 and nd[0]!=0
+      pM3[is(uidx,lidx)]=powsign*(
+        + (+Kay(nu[1],nd[2])
+           -Kay(nu[1],nd[1]))*Kay(nu[2],nd[0])
+        + (+Kay(nu[1],nd[0])
+           -Kay(nu[1],nd[2]))*Kay(nu[2],nd[1])
+        + (+Kay(nu[1],nd[1])
+           -Kay(nu[1],nd[0]))*Kay(nu[2],nd[2])
+        );
+    }
+    }
+    }
+    for (int l=1; l<=smax; l++) {
+    for (int m=l+1; m<=DCay-2; m++) {
+    for (int n=m+1; n<=DCay-1; n++) {
+      int lidx=im3(l,m,n);
+      if (lidx > uidx) continue;
+
+      int iu[3]={i,j,k};
+      int nu[3];
+      freeidxM3(iu, nu);
+
+      int id[3]={l,m,n};
+      int nd[3];
+      freeidxM3(id, nd);
+
+      int powsign=-2*((i+j+k+l+m+n)&0x1)+1;
+
+      // nu[0]==0 and nd[0]==0
+      pM3[is(uidx,lidx)]=powsign*(
+        + Kay(nu[1],nd[2])
+        - Kay(nu[1],nd[1])
+        + Kay(nu[2],nd[1])
+        - Kay(nu[2],nd[2])
         );
     }
     }
@@ -1211,9 +1338,9 @@ void Minor5::I3DstiEval(int ep)
       freeidxM3(iu, nu);
       int u=nu[0]+1;
       int v=nu[1]+1;
-      const double Dii=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-      const double Dui=(Cay[iss(u,v)]*Cay[is (i,v)]-Cay[is (i,u)]*Cay[iss(v,v)]);
-      const double Dvi=(Cay[iss(u,v)]*Cay[is (i,u)]-Cay[is (i,v)]*Cay[iss(u,u)]);
+      const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+      const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
+      const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
       if ( fabs(ds0ts0t) > 0. ) {
         sum1+=Dii*I2stu(ep, s, t, i)  // (i, i)
@@ -1349,20 +1476,20 @@ void Minor5::I2DstuEval(int idx, int ep, int s, int t, int u, int m, int n, doub
       ncomplex sumY=3.*ICache::getI1(ep, Kinem1(msq2))+2*msq2;
       ncomplex sumZ=3.*ICache::getI1(ep, Kinem1(msq1))+2*msq1;
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=9*dstustu;
     }
   }
   else { assert(ep==1);
-    sum1=-(Cay[iss(m,m)]+Cay[iss(m,n)]+Cay[iss(n,n)])/6.;
+    sum1=-(Cay[nss(m,m)]+Cay[nss(m,n)]+Cay[nss(n,n)])/6.;
   }
   pI2Dstu[ep][idx]=sum1;
 }
@@ -1469,8 +1596,8 @@ void Minor5::I3D2stEval(int ep)
       int iu[3]={0,s,t};
       int nu[3];
       freeidxM3(iu, nu);
-      ivalue=(Cay[iss(nu[0],nu[0])]+Cay[iss(nu[1],nu[1])]+Cay[iss(nu[2],nu[2])]
-             +Cay[iss(nu[0],nu[1])]+Cay[iss(nu[0],nu[2])]+Cay[iss(nu[1],nu[2])])/24.;
+      ivalue=(Cay[nss(nu[0],nu[0])]+Cay[nss(nu[1],nu[1])]+Cay[nss(nu[2],nu[2])]
+             +Cay[nss(nu[0],nu[1])]+Cay[nss(nu[0],nu[2])]+Cay[nss(nu[1],nu[2])])/24.;
     }
     pI3D2st[ep][idx]=ivalue;
   }
@@ -1575,7 +1702,7 @@ void Minor5::I4D3sEval(int ep)
       double sum1=0;
       for (int i=1; i<=5; i++) { if (i==s) continue;
       for (int j=i; j<=5; j++) { if (j==s) continue;
-        sum1+=Cay[iss(i,j)];
+        sum1+=Cay[nss(i,j)];
       }
       }
       ivalue=-sum1/120.;
@@ -1632,9 +1759,9 @@ void Minor5::I3D2stiEval(int ep)
       freeidxM3(iu, nu);
       int u=nu[0]+1;
       int v=nu[1]+1;
-      const double Dii=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-      const double Dui=(Cay[iss(u,v)]*Cay[is (i,v)]-Cay[is (i,u)]*Cay[iss(v,v)]);
-      const double Dvi=(Cay[iss(u,v)]*Cay[is (i,u)]-Cay[is (i,v)]*Cay[iss(u,u)]);
+      const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+      const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
+      const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
       const double ds0ts0t=M3(s,0,t,s,0,t);
       if ( fabs(ds0ts0t) > 0. ) {
@@ -1656,15 +1783,15 @@ void Minor5::I3D2stiEval(int ep)
                 +Dvi*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, i)
         }
         else if (j==u) { // j->u
-          const double Duu=(Cay[iss(i,i)]*Cay[iss(v,v)]-Cay[is(i,v)]*Cay[is(i,v)]);
-          const double Dvu=(Cay[is(i,v)]*Cay[is (i,u)]-Cay[is (u,v)]*Cay[iss(i,i)]);
+          const double Duu=(Cay[nss(i,i)]*Cay[nss(v,v)]-Cay[ns(i,v)]*Cay[ns(i,v)]);
+          const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
           sum1+=+Dui*(I3Dst(ep,s,t)-1./3.) //+2./3.*I3Dst(ep+1,s,t))            // (u, i)
                 +Duu*(I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i))  // (u, u)
                 +Dvu*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, u)
         }
         else { assert(j==v); // j->v
-          const double Dvv=(Cay[iss(i,i)]*Cay[iss(u,u)]-Cay[is(i,u)]*Cay[is(i,u)]);
-          const double Dvu=(Cay[is(i,v)]*Cay[is (i,u)]-Cay[is (u,v)]*Cay[iss(i,i)]);
+          const double Dvv=(Cay[nss(i,i)]*Cay[nss(u,u)]-Cay[ns(i,u)]*Cay[ns(i,u)]);
+          const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
           sum1+=+Dvi*(I3Dst(ep,s,t)-1./3.) //+2./3.*I3Dst(ep+1,s,t))            // (v, i)
                 +Dvu*(I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i))  // (v, u)
                 +Dvv*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, v)
@@ -1844,7 +1971,7 @@ void Minor5::I2DstuiEval(int ep, int s, int t, int u, int i, int ip, double qsq)
       }
     }
     else {
-      sum1+=+(Cay[iss(ip,ip)]-Cay[is(i,ip)])*I2stu(ep,s,t,u);
+      sum1+=+(Cay[nss(ip,ip)]-Cay[ns(i,ip)])*I2stu(ep,s,t,u);
       sum1+=+ICache::getI1(ep, Kinem1(msq1));
       sum1+=-ICache::getI1(ep, Kinem1(msq2));
       sum1/=dstustu;
@@ -1918,9 +2045,9 @@ void Minor5::I3D2stijEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Djj=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-        const double Duj=(Cay[iss(u,v)]*Cay[is (j,v)]-Cay[is (j,u)]*Cay[iss(v,v)]);
-        const double Dvj=(Cay[iss(u,v)]*Cay[is (j,u)]-Cay[is (j,v)]*Cay[iss(u,u)]);
+        const double Djj=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+        const double Duj=(Cay[nss(u,v)]*Cay[ns (j,v)]-Cay[ns (j,u)]*Cay[nss(v,v)]);
+        const double Dvj=(Cay[nss(u,v)]*Cay[ns (j,u)]-Cay[ns (j,v)]*Cay[nss(u,u)]);
         if ( fabs(ds0ts0t) > 0. ) {
           if (j==i) {
             sum1+=+Djj*I3Dst(ep,s,t)
@@ -2079,22 +2206,22 @@ void Minor5::I2D2stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
       ncomplex sumY=-0.25*msq2*(10.*ICache::getI1(ep, Kinem1(msq2))+9*msq2);
       ncomplex sumZ=-0.25*msq1*(10.*ICache::getI1(ep, Kinem1(msq1))+9*msq1);
 
-      const double ds0tu=(Cay[iss(m,m)]*Cay[iss(n,n)]-Cay[iss(m,n)]*Cay[iss(m,n)]);
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[nss(m,n)]*Cay[nss(m,n)]);
       sum1+=sumX*ds0tu;
 
-      const double dsvtuY=-(Cay[iss(n,n)]-Cay[iss(m,n)]); /* minus sign of minor v=m */
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[nss(m,n)]); /* minus sign of minor v=m */
       sum1-=sumY*dsvtuY;
 
-      const double dsvtuZ=+(Cay[iss(m,n)]-Cay[iss(m,m)]); /* plus sign of minor v=n */
+      const double dsvtuZ=+(Cay[nss(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
       sum1-=sumZ*dsvtuZ;
 
       sum1/=25*dstustu;
     }
   }
   else { assert(ep==1);
-    const double y11=Cay[iss(m,m)];
-    const double y12=Cay[iss(m,n)];
-    const double y22=Cay[iss(n,n)];
+    const double y11=Cay[nss(m,m)];
+    const double y12=Cay[nss(m,n)];
+    const double y22=Cay[nss(n,n)];
     sum1= ( 3*( y11*(y11+y12)+(y12+y22)*y22)+2*y12*y12+y11*y22 )/120;
   }
   pI2D2stu[ep][idx]=sum1;
@@ -2202,12 +2329,12 @@ void Minor5::I3D3stEval(int ep)
       int iu[3]={0,s,t};
       int nu[3];
       freeidxM3(iu, nu);
-      const double y11=Cay[iss(nu[0],nu[0])];
-      const double y12=Cay[iss(nu[0],nu[1])];
-      const double y13=Cay[iss(nu[0],nu[2])];
-      const double y22=Cay[iss(nu[1],nu[1])];
-      const double y23=Cay[iss(nu[1],nu[2])];
-      const double y33=Cay[iss(nu[2],nu[2])];
+      const double y11=Cay[nss(nu[0],nu[0])];
+      const double y12=Cay[nss(nu[0],nu[1])];
+      const double y13=Cay[nss(nu[0],nu[2])];
+      const double y22=Cay[nss(nu[1],nu[1])];
+      const double y23=Cay[nss(nu[1],nu[2])];
+      const double y33=Cay[nss(nu[2],nu[2])];
       ivalue=-(+3*(y11*(y11+y12+y13)+y22*(y12+y22+y23)+y33*(y13+y23+y33))
                +2*(y12*(y12+y23)+y13*(y12+y13)+y23*(y13+y23))
                +  (y11*(y22+y23)+y22*(y13+y33)+y33*(y11+y12))
@@ -2320,9 +2447,9 @@ void Minor5::I4D4sEval(int ep)
       for (int j=i; j<=5; j++) { if (j==s) continue;
       for (int k=j; k<=5; k++) { if (k==s) continue;
       for (int l=k; l<=5; l++) { if (l==s) continue;
-        sum1+=+Cay[iss(i,j)]*Cay[iss(k,l)]
-              +Cay[iss(i,k)]*Cay[iss(j,l)]
-              +Cay[iss(i,l)]*Cay[iss(j,k)];
+        sum1+=+Cay[nss(i,j)]*Cay[nss(k,l)]
+              +Cay[nss(i,k)]*Cay[nss(j,l)]
+              +Cay[nss(i,l)]*Cay[nss(j,k)];
       }
       }
       }
@@ -2426,9 +2553,9 @@ void Minor5::I3D3stiEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Dii=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-        const double Dui=(Cay[iss(u,v)]*Cay[is (i,v)]-Cay[is (i,u)]*Cay[iss(v,v)]);
-        const double Dvi=(Cay[iss(u,v)]*Cay[is (i,u)]-Cay[is (i,v)]*Cay[iss(u,u)]);
+        const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+        const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
+        const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
         const double ds0ts0t=M3(s,0,t,s,0,t);
         if ( fabs(ds0ts0t) > 0. ) {
@@ -2450,15 +2577,15 @@ void Minor5::I3D3stiEval(int ep)
                   +Dvi*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, i)
           }
           else if (j==u) { // j->u
-            const double Duu=(Cay[iss(i,i)]*Cay[iss(v,v)]-Cay[is(i,v)]*Cay[is(i,v)]);
-            const double Dvu=(Cay[is(i,v)]*Cay[is (i,u)]-Cay[is (u,v)]*Cay[iss(i,i)]);
+            const double Duu=(Cay[nss(i,i)]*Cay[nss(v,v)]-Cay[ns(i,v)]*Cay[ns(i,v)]);
+            const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
             sum1+=+Dui*(I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t))                      // (u, i)
                   +Duu*(I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i))  // (u, u)
                   +Dvu*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, u)
           }
           else { assert(j==v); // j->v
-            const double Dvv=(Cay[iss(i,i)]*Cay[iss(u,u)]-Cay[is(i,u)]*Cay[is(i,u)]);
-            const double Dvu=(Cay[is(i,v)]*Cay[is (i,u)]-Cay[is (u,v)]*Cay[iss(i,i)]);
+            const double Dvv=(Cay[nss(i,i)]*Cay[nss(u,u)]-Cay[ns(i,u)]*Cay[ns(i,u)]);
+            const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
             sum1+=+Dvi*(I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t))                      // (v, i)
                   +Dvu*(I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i))  // (v, u)
                   +Dvv*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, v)
@@ -2474,8 +2601,8 @@ void Minor5::I3D3stiEval(int ep)
       freeidxM3(iu, nu);
       int j= nu[1]==i ? nu[0] : nu[1];
       int k= nu[2]==i ? nu[0] : nu[2];
-      ivalue=-( 3*Cay[iss(i,i)]+2*(Cay[is(i,j)]+Cay[is(i,k)])
-                 +Cay[iss(j,j)]+Cay[is(j,k)]+Cay[iss(k,k)]
+      ivalue=-( 3*Cay[nss(i,i)]+2*(Cay[ns(i,j)]+Cay[ns(i,k)])
+                 +Cay[nss(j,j)]+Cay[ns(j,k)]+Cay[nss(k,k)]
               )/120.;
     }
 //     printf("I3D3sti(%d,%d,%d) e^%d = (%.15e,%.15e)\n",s,t,i,ep,ivalue.real(),ivalue.imag());
@@ -2601,7 +2728,7 @@ void Minor5::I2D2stuiEval(int ep, int s, int t, int u, int i, int ip, double qsq
       }
     }
     else {
-      sum1+=+(Cay[iss(ip,ip)]-Cay[is(i,ip)])*I2Dstu(ep,s,t,u);
+      sum1+=+(Cay[nss(ip,ip)]-Cay[ns(i,ip)])*I2Dstu(ep,s,t,u);
       sum1+=-0.5*msq1*(ICache::getI1(ep, Kinem1(msq1))+0.5*msq1);
       sum1+=+0.5*msq2*(ICache::getI1(ep, Kinem1(msq2))+0.5*msq2);
       sum1/=dstustu;
@@ -2614,7 +2741,7 @@ void Minor5::I2D2stuiEval(int ep, int s, int t, int u, int i, int ip, double qsq
       sum1=0;
     }
     else {
-      sum1=(3*Cay[iss(i,i)] + 2*Cay[is(i,ip)] + Cay[iss(ip,ip)])/24.;
+      sum1=(3*Cay[nss(i,i)] + 2*Cay[ns(i,ip)] + Cay[nss(ip,ip)])/24.;
     }
   }
   pI2D2stui[ep][i-1][ip-1]=sum1;
@@ -2669,9 +2796,9 @@ void Minor5::I3D3stijEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Djj=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-        const double Duj=(Cay[iss(u,v)]*Cay[is (j,v)]-Cay[is (j,u)]*Cay[iss(v,v)]);
-        const double Dvj=(Cay[iss(u,v)]*Cay[is (j,u)]-Cay[is (j,v)]*Cay[iss(u,u)]);
+        const double Djj=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+        const double Duj=(Cay[nss(u,v)]*Cay[ns (j,v)]-Cay[ns (j,u)]*Cay[nss(v,v)]);
+        const double Dvj=(Cay[nss(u,v)]*Cay[ns (j,u)]-Cay[ns (j,v)]*Cay[nss(u,u)]);
         const double ds0ts0t=M3(s,0,t,s,0,t);
         if ( fabs(ds0ts0t) > 0. ) {
           if (j==i) {
@@ -2706,15 +2833,15 @@ void Minor5::I3D3stijEval(int ep)
                      +Dvj*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
             }
             else if (k==u) {
-              const double Duu=(Cay[iss(j,j)]*Cay[iss(v,v)]-Cay[is(j,v)]*Cay[is (j,v)]);
-              const double Duv=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
+              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=2*Duj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                      +Duu*(I2D2stuij(ep,s,t,u,j,j)+0.5*I2D2stuij(ep+1,s,t,u,j,j))
                      +Duv*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
             }
             else { // k==v
-              const double Dvv=(Cay[iss(j,j)]*Cay[iss(u,u)]-Cay[is(j,u)]*Cay[is (j,u)]);
-              const double Dvu=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
+              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=2*Dvj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                      +Dvu*(I2D2stuij(ep,s,t,u,j,j)+0.5*I2D2stuij(ep+1,s,t,u,j,j))
                      +Dvv*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
@@ -2734,15 +2861,15 @@ void Minor5::I3D3stijEval(int ep)
           }
           else if (k==i) {
             if (k==u) {
-              const double Duu=(Cay[iss(j,j)]*Cay[iss(v,v)]-Cay[is(j,v)]*Cay[is (j,v)]);
-              const double Duv=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
+              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=Duj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Duu*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Duv*(I2D2stuij(ep,s,t,v,i,j)+0.5*I2D2stuij(ep+1,s,t,v,i,j));
             }
             else { // k==v
-              const double Dvv=(Cay[iss(j,j)]*Cay[iss(u,u)]-Cay[is(j,u)]*Cay[is (j,u)]);
-              const double Dvu=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
+              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=Dvj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Dvv*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Dvu*(I2D2stuij(ep,s,t,u,i,j)+0.5*I2D2stuij(ep+1,s,t,u,i,j));
@@ -2750,15 +2877,15 @@ void Minor5::I3D3stijEval(int ep)
           }
           else {
             if (k==u) { // i==v
-              const double Duu=(Cay[iss(j,j)]*Cay[iss(v,v)]-Cay[is(j,v)]*Cay[is (j,v)]);
-              const double Duv=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
+              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=Duj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Duv*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Duu*(I2D2stuij(ep,s,t,u,i,j)+0.5*I2D2stuij(ep+1,s,t,u,i,j));
             }
             else { // k==v, i==u
-              const double Dvv=(Cay[iss(j,j)]*Cay[iss(u,u)]-Cay[is(j,u)]*Cay[is (j,u)]);
-              const double Dvu=(Cay[is (j,v)]*Cay[is (j,u)]-Cay[is(u,v)]*Cay[iss(j,j)]);
+              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
+              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
               sum1+=Dvj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Dvu*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Dvv*(I2D2stuij(ep,s,t,v,i,j)+0.5*I2D2stuij(ep+1,s,t,v,i,j));
@@ -2902,15 +3029,15 @@ void Minor5::I2D2stuijEval(int ep, int s, int t, int u, int i, int ip, double qs
       }
     }
     else {
-      sum0+=+(Cay[iss(ip,ip)]-Cay[is(i,ip)])*I2Dstui(ep,s,t,u,i);
+      sum0+=+(Cay[nss(ip,ip)]-Cay[ns(i,ip)])*I2Dstui(ep,s,t,u,i);
       sum0+=-ICache::getI1(ep, Kinem1(msq1));
       sum0+=-I2Dstu(ep,s,t,u);
       sum0/=dstustu;
 
-      sum1+=(Cay[iss(i ,i )]-Cay[is(i,ip)])*I2Dstui(ep,s,t,u,i);
+      sum1+=(Cay[nss(i ,i )]-Cay[ns(i,ip)])*I2Dstui(ep,s,t,u,i);
       sum1+=ICache::getI1(ep, Kinem1(msq1));
       /* Symmetrization IS needed */
-      sum1+=(Cay[iss(ip,ip)]-Cay[is(ip,i)])*I2Dstui(ep,s,t,u,ip);
+      sum1+=(Cay[nss(ip,ip)]-Cay[ns(ip,i)])*I2Dstui(ep,s,t,u,ip);
       sum1+=ICache::getI1(ep, Kinem1(msq2));
       sum1/=2.0;
       sum1+=I2Dstu(ep,s,t,u);
@@ -2989,9 +3116,9 @@ void Minor5::I3D3stijkEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Dkk=(Cay[iss(u,u)]*Cay[iss(v,v)]-Cay[iss(u,v)]*Cay[iss(u,v)]);
-        const double Duk=(Cay[iss(u,v)]*Cay[is (k,v)]-Cay[is (k,u)]*Cay[iss(v,v)]);
-        const double Dvk=(Cay[iss(u,v)]*Cay[is (k,u)]-Cay[is (k,v)]*Cay[iss(u,u)]);
+        const double Dkk=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
+        const double Duk=(Cay[nss(u,v)]*Cay[ns (k,v)]-Cay[ns (k,u)]*Cay[nss(v,v)]);
+        const double Dvk=(Cay[nss(u,v)]*Cay[ns (k,u)]-Cay[ns (k,v)]*Cay[nss(u,u)]);
         if ( fabs(ds0ts0t) > 0. ) {
           if (j==i) {
             if (j==k) {

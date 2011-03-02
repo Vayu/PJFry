@@ -24,6 +24,17 @@ class MinorBase : public SRefCnt
   public:
     MinorBase() {};
 
+    // Symmetric index - start from 1
+    inline static int ns(int i, int j) CONST
+    {
+      return ( i<=j ? (i-1)+((j-1)*j)/2 : (j-1)+((i-1)*i)/2 );
+    };
+
+    inline static int nss(int i, int j) CONST // ordered
+    {
+      return (i-1)+((j-1)*j)/2;
+    };
+
     // Symmetric index - generic
     inline static int is(int i, int j) CONST
     {
@@ -128,10 +139,19 @@ class Minor : public MinorBase
   public:
     Minor() {};
 
+    inline double Kay(int i, int j) PURE
+    {
+      if (i==0) {
+        return j==0 ? 0 : 1;
+      } else {
+        return j==0 ? 1 : Cay[ns(i,j)];
+      }
+    };
+
   protected:
     // Cayley matrix (symmetric)
     static const int DCay=N+1;
-    double Cay[DCay*(DCay+1)/2];
+    double Cay[(DCay-1)*(DCay)/2];
 };
 
 class Minor5 : public Minor<5>
