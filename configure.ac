@@ -106,7 +106,7 @@ AC_ARG_WITH([integrals],
 @<:@oneloop@:>@ tries to use -lavh_olo.
 @<:@qcdloop@:>@ use libqcdloop.a and libff.a, CXXFLAGS and LDFLAGS need to be set manually.
 ])],
-            [],
+            [test "x$with_integrals" == "xyes" && with_integrals=auto],
             [with_integrals=auto])
 
 case $with_integrals in
@@ -159,7 +159,7 @@ esac
 AC_ARG_WITH([mcc-path],
             [AS_HELP_STRING([--with-mcc-path],
             [build Mathematica MathLink interface @<:@default=auto@:>@. Set this to full path to mcc tool])],
-            [test "x$with_mcc_path" == "x" && with_mcc_path=no],
+            [test "x$with_mcc_path" == "xyes" && with_mcc_path=auto],
             [with_mcc_path=auto])
 # ------------------------- # -------------------------
 if test "x$with_mcc_path" == "xauto" ; then
