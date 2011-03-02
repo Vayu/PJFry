@@ -19,10 +19,35 @@
     x=t; \
     }
 
+#ifndef USE_ZERO_CHORD
+/* if zero chord is not used - calculate only 4 form factors for 5-point */
+#   define CIDX (DCay-2)
+#else
+/* else calculate all (including coefficient of 0'th chord) */
+#   define CIDX (DCay-1)
+#endif
+
 class MinorBase : public SRefCnt
 {
   public:
     MinorBase() {};
+
+#ifdef USE_GOLEM_MODE
+#define EVALUNDEF return std::numeric_limits<double>::signaling_NaN();
+    virtual ncomplex A(int ep) { EVALUNDEF };
+    virtual ncomplex A(int ep, int i) { EVALUNDEF };
+    virtual ncomplex A(int ep, int i, int j) { EVALUNDEF };
+    virtual ncomplex A(int ep, int i, int j, int k) { EVALUNDEF };
+    virtual ncomplex A(int ep, int i, int j, int k, int l) { EVALUNDEF };
+    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { EVALUNDEF };
+    virtual ncomplex B(int ep) { EVALUNDEF };
+    virtual ncomplex B(int ep, int i) { EVALUNDEF; };
+    virtual ncomplex B(int ep, int i, int j) { EVALUNDEF };
+    virtual ncomplex B(int ep, int i, int j, int k) { EVALUNDEF };
+    virtual ncomplex C(int ep) { EVALUNDEF };
+    virtual ncomplex C(int ep, int i) { EVALUNDEF };
+#undef EVALUNDEF
+#endif /* USE_GOLEM_MODE */
 
     // Symmetric index - start from 1
     inline static int ns(int i, int j) CONST
@@ -105,6 +130,7 @@ class MinorBase : public SRefCnt
     }
 
     // Utility functions
+    static int imN(int s) CONST;
     static int im3(int i, int j, int k) CONST; // Antisymmetric index for "3 out of 6" minors
     static int im2(int i, int j) CONST;        // Antisymmetric index for "2 out of 6" minors
     static int signM3ud(int i, int j, int k, int l, int m, int n) CONST; // Signature[{i,j,k}]*Signature[{l,m,n}]
@@ -168,6 +194,28 @@ class Minor5 : public Minor<5>
     ncomplex evalE(int ep, int i, int j, int k);
     ncomplex evalE(int ep, int i, int j, int k, int l);
     ncomplex evalE(int ep, int i, int j, int k, int l, int m);
+
+#ifdef USE_GOLEM_MODE
+#ifdef USE_GOLEM_MODE_6
+    int psix;
+    #define ix(i) i<psix ? i : i-1
+#else
+    #define ix(i) i
+#endif
+    virtual ncomplex A(int ep) { return evalE(ep); };
+    virtual ncomplex A(int ep, int i) { return evalE(ep, ix(i)); };
+    virtual ncomplex A(int ep, int i, int j) { return evalE(ep, ix(i), ix(j)); };
+    virtual ncomplex A(int ep, int i, int j, int k) { return evalE(ep, ix(i), ix(j), ix(k)); };
+    virtual ncomplex A(int ep, int i, int j, int k, int l) { return evalE(ep, ix(i), ix(j), ix(k), ix(l)); };
+    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { return evalE(ep, ix(i), ix(j), ix(k), ix(l), ix(m)); };
+    virtual ncomplex B(int ep) { return evalE(ep, 0, 0); };
+    virtual ncomplex B(int ep, int i) { return evalE(ep, 0, 0, ix(i)); };
+    virtual ncomplex B(int ep, int i, int j) { return evalE(ep, 0, 0, ix(i), ix(j)); };
+    virtual ncomplex B(int ep, int i, int j, int k) { return evalE(ep, 0, 0, ix(i), ix(j), ix(k)); };
+    virtual ncomplex C(int ep) { return evalE(ep, 0, 0, 0, 0); };
+    virtual ncomplex C(int ep, int i) { return evalE(ep, 0, 0, 0, 0, ix(i)); };
+    #undef ix
+#endif /* USE_GOLEM_MODE */
 
     ncomplex I4s(int ep, int s);
 
@@ -300,39 +348,39 @@ class Minor5 : public Minor<5>
 
     ncomplex pI3st[3][10];              // symm 5x5 w/o diag els
     ncomplex pI4Ds[1][DCay-1];          // s{1..5}                        // finite
-    ncomplex pI4Dsi[3][DCay-2][DCay-1]; // i{1..4}, s{1..5}
+    ncomplex pI4Dsi[3][CIDX][DCay-1];   // i{1..4}, s{1..5}
 
     ncomplex pI2stu[2][10];             // symm 5x5x5 w/o diag els        // (0,1) parts only
     ncomplex pI3Dst[1][10];             // symm 5x5 w/o diag els 5*6-5=10 // finite part only
     ncomplex pI4D2s[1][DCay-1];         // s{1..5}                        // finite part only
 
-    ncomplex pI4D2si[1][DCay-2][DCay-1]; // i{1..4} s{1..5}               // finite
-    ncomplex pI3Dsti[3][DCay-2][10];     // i{1..4} + symm 5x5 w/o diag els
-    ncomplex pI4D2sij[3][(DCay-2)*(DCay-1)/2][DCay-1];  // symm 4x4, s{1..5}
+    ncomplex pI4D2si[1][CIDX][DCay-1];  // i{1..4} s{1..5}                // finite
+    ncomplex pI3Dsti[3][CIDX][10];      // i{1..4} + symm 5x5 w/o diag els
+    ncomplex pI4D2sij[3][CIDX*(CIDX+1)/2][DCay-1];  // symm 4x4, s{1..5}
 
     ncomplex pI2Dstu[2][10];              // symm 5x5x5 w/o diag els      // (0,1) parts only
     ncomplex pI3D2st[2][10];              // symm 5x5 w/o diag els        // (0,1) parts only
     ncomplex pI4D3s[2][DCay-1];           // s{1..5}                      // (0,1) parts only
-    ncomplex pI3D2sti[2][DCay-2][10];     // i{1..4} + symm 5x5 w/o diag els // (0,1) parts only
-    ncomplex pI4D3si[2][DCay-2][DCay-1];  // i{1..4} s{1..5}              // (0,1) parts only
-    ncomplex pI4D3sij[1][(DCay-2)*(DCay-1)/2][DCay-1];  // symm 4x4, s{1..5} // finite
+    ncomplex pI3D2sti[2][CIDX][10];       // i{1..4} + symm 5x5 w/o diag els // (0,1) parts only
+    ncomplex pI4D3si[2][CIDX][DCay-1];    // i{1..4} s{1..5}              // (0,1) parts only
+    ncomplex pI4D3sij[1][CIDX*(CIDX+1)/2][DCay-1];  // symm 4x4, s{1..5}  // finite
 
-    ncomplex pI2Dstui[2][DCay-2][DCay-1];     // ~~ 16 elements           // finite part only
-    ncomplex pI3D2stij[3][(DCay-2)*(DCay-1)/2][10];  // 'symm 4x4' x 'symm 5x5 w/o diag els'
-    ncomplex pI4D3sijk[3][20][DCay-1];     // 4x4x4 symm(20 els), s{1..5}
+    ncomplex pI2Dstui[2][CIDX][DCay-1];                      // ~~ 16 elements  // finite part only
+    ncomplex pI3D2stij[3][CIDX*(CIDX+1)/2][10];              // 'symm 4x4' x 'symm 5x5 w/o diag els'
+    ncomplex pI4D3sijk[3][CIDX*(CIDX+1)*(CIDX+2)/6][DCay-1]; // 4x4x4 symm(20 els), s{1..5}
 
     ncomplex pI2D2stu[2][10];             // symm 5x5x5 w/o diag els      // (0,1) parts only
     ncomplex pI3D3st[2][10];              // symm 5x5 w/o diag els        // (0,1) parts only
     ncomplex pI4D4s[2][DCay-1];           // s{1..5}                      // (0,1) parts only
-    ncomplex pI4D4si[2][DCay-2][DCay-1];  // i{1..4} s{1..5}              // (0,1) parts only
-    ncomplex pI3D3sti[2][DCay-2][10];     // i{1..4} + symm 5x5 w/o diag els // (0,1) parts only
-    ncomplex pI4D4sij[2][(DCay-2)*(DCay-1)/2][DCay-1];  // symm 4x4, s{1..5} // (0,1) parts only
-    ncomplex pI2D2stui[2][DCay-2][DCay-1];     // ~~ 16 elements           // (0,1) parts only
-    ncomplex pI3D3stij[2][(DCay-2)*(DCay-1)/2][10];  // 'symm 4x4' x 'symm 5x5 w/o diag els' // (0,1) parts only
-    ncomplex pI4D4sijk[2][20][DCay-1];     // 4x4x4 symm(20 els), s{1..5} // finite
-    ncomplex pI2D2stuij[2][DCay-2][DCay-1][2]; // as stui but with 0:i==j and 1:i!=j
-    ncomplex pI3D3stijk[3][20][10];            // 4x4x4 symm(20 els), x 'symm 5x5 w/o diag els'
-    ncomplex pI4D4sijkl[3][35][DCay-1];    // 4x4x4x4 symm(35 els), s{1..5} // ????
+    ncomplex pI4D4si[2][CIDX][DCay-1];    // i{1..4} s{1..5}              // (0,1) parts only
+    ncomplex pI3D3sti[2][CIDX][10];       // i{1..4} + symm 5x5 w/o diag els // (0,1) parts only
+    ncomplex pI4D4sij[2][CIDX*(CIDX+1)/2][DCay-1];  // symm 4x4, s{1..5}     // (0,1) parts only
+    ncomplex pI2D2stui[2][CIDX][DCay-1];            // ~~ 16 elements        // (0,1) parts only
+    ncomplex pI3D3stij[2][CIDX*(CIDX+1)/2][10];     // 'symm 4x4' x 'symm 5x5 w/o diag els' // (0,1) parts only
+    ncomplex pI4D4sijk[2][CIDX*(CIDX+1)*(CIDX+2)/6][DCay-1]; // 4x4x4 symm(20 els), s{1..5} // finite
+    ncomplex pI2D2stuij[2][CIDX][DCay-1][2];                 // as stui but with 0:i==j and 1:i!=j
+    ncomplex pI3D3stijk[3][CIDX*(CIDX+1)*(CIDX+2)/6][10];    // 4x4x4 symm(20 els), x 'symm 5x5 w/o diag els'
+    ncomplex pI4D4sijkl[3][CIDX*(CIDX+1)*(CIDX+2)*(CIDX+3)/24][DCay-1];  // 4x4x4x4 symm(35 els), s{1..5} // ????
 
     // Gram4
     // TODO cleanup these funcs
@@ -410,9 +458,9 @@ class Minor4 : public Minor<4>
   public:
     friend class SPtr<Minor4>;
     typedef SPtr<Minor4> Ptr;
-    static Ptr create(const Kinem4 &k, Minor5::Ptr mptr5, int s)
+    static Ptr create(const Kinem4 &k, Minor5::Ptr mptr5, int s, int is)
     {
-      return Ptr(new Minor4(k, mptr5, s));
+      return Ptr(new Minor4(k, mptr5, s, is));
     };
 
     ncomplex evalD(int ep);
@@ -421,13 +469,25 @@ class Minor4 : public Minor<4>
     ncomplex evalD(int ep, int i, int j, int k);
     ncomplex evalD(int ep, int i, int j, int k, int l);
 
+#ifdef USE_GOLEM_MODE
+    virtual ncomplex A(int ep);
+    virtual ncomplex A(int ep, int i);
+    virtual ncomplex A(int ep, int i, int j);
+    virtual ncomplex A(int ep, int i, int j, int k);
+    virtual ncomplex A(int ep, int i, int j, int k, int l);
+    virtual ncomplex B(int ep);
+    virtual ncomplex B(int ep, int i);
+    virtual ncomplex B(int ep, int i, int j);
+    virtual ncomplex C(int ep);
+#endif /* USE_GOLEM_MODE */
+
   private:
-    Minor4(const Kinem4 &k, Minor5::Ptr mptr, int s);
+    Minor4(const Kinem4 &k, Minor5::Ptr mptr, int s, int is);
 
     Kinem4 kinem;
 
     Minor5::Ptr pm5;
-    int ps;
+    int ps, offs;
 };
 
 class Minor3 : public Minor<3>
@@ -435,9 +495,9 @@ class Minor3 : public Minor<3>
   public:
     friend class SPtr<Minor3>;
     typedef SPtr<Minor3> Ptr;
-    static Ptr create(const Kinem3 &k, Minor5::Ptr mptr5, int s, int t)
+    static Ptr create(const Kinem3 &k, Minor5::Ptr mptr5, int s, int t, int is)
     {
-      return Ptr(new Minor3(k, mptr5, s, t));
+      return Ptr(new Minor3(k, mptr5, s, t, is));
     };
 
     ncomplex evalC(int ep);
@@ -445,14 +505,23 @@ class Minor3 : public Minor<3>
     ncomplex evalC(int ep, int i, int j);
     ncomplex evalC(int ep, int i, int j, int k);
 
+#ifdef USE_GOLEM_MODE
+    virtual ncomplex A(int ep);
+    virtual ncomplex A(int ep, int i);
+    virtual ncomplex A(int ep, int i, int j);
+    virtual ncomplex A(int ep, int i, int j, int k);
+    virtual ncomplex B(int ep);
+    virtual ncomplex B(int ep, int i);
+#endif /* USE_GOLEM_MODE */
+
   private:
     Minor3(const Kinem3 &k);
-    Minor3(const Kinem3 &k, Minor5::Ptr mptr5, int s, int t);
+    Minor3(const Kinem3 &k, Minor5::Ptr mptr5, int s, int t, int is);
 
     Kinem3 kinem;
 
     Minor5::Ptr pm5;
-    int ps, pt;
+    int ps, pt, offs;
 };
 
 class Minor2 : public Minor<2>
@@ -460,23 +529,30 @@ class Minor2 : public Minor<2>
   public:
     friend class SPtr<Minor2>;
     typedef SPtr<Minor2> Ptr;
-    static Ptr create(const Kinem2 &k, Minor5::Ptr mptr5, int s, int t, int u)
+    static Ptr create(const Kinem2 &k, Minor5::Ptr mptr5, int s, int t, int u, int is)
     {
-      return Ptr(new Minor2(k, mptr5, s, t, u));
+      return Ptr(new Minor2(k, mptr5, s, t, u, is));
     };
 
     ncomplex evalB(int ep);
     ncomplex evalB(int ep, int i);
     ncomplex evalB(int ep, int i, int j);
 
+#ifdef USE_GOLEM_MODE
+    virtual ncomplex A(int ep);
+    virtual ncomplex A(int ep, int i);
+    virtual ncomplex A(int ep, int i, int j);
+    virtual ncomplex B(int ep);
+#endif /* USE_GOLEM_MODE */
+
   private:
     Minor2(const Kinem2 &k);
-    Minor2(const Kinem2 &k, Minor5::Ptr mptr5, int s, int t, int u);
+    Minor2(const Kinem2 &k, Minor5::Ptr mptr5, int s, int t, int u, int is);
 
     Kinem2 kinem;
 
     Minor5::Ptr pm5;
-    int ps, pt, pu;
+    int ps, pt, pu, offs;
 };
 
 

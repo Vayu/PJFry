@@ -10,6 +10,9 @@
 #include "common.h"
 #include "kinem.h"
 #include "minor.h"
+#ifdef USE_GOLEM_MODE
+  #include "golem.h"
+#endif
 
 template <typename TK, typename TV>
 class MEntry
@@ -46,6 +49,9 @@ class Cache
 
 class ICache : public Cache
 {
+#ifdef USE_GOLEM_MODE
+  friend class Golem;
+#endif
   public:
     enum Ecoefs {ee0=1,ee1,ee2,ee3,ee4,
       ee00,ee11,ee12,ee13,ee14,ee22,ee23,ee24,ee33,ee34,ee44,
@@ -195,6 +201,9 @@ bool operator==(const double &x, const ICache::ID64 &y)
 
 class MCache : public Cache
 {
+#ifdef USE_GOLEM_MODE
+  friend class Golem;
+#endif
   public:
     // TODO: may be return by reference here?
     static Minor5::Ptr getMinor5(const Kinem5 &k);

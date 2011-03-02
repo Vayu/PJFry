@@ -226,6 +226,12 @@ AM_CONDITIONAL(HAVE_MPREP, test "x$with_mcc_path" != "xno" && test "x$ac_cv_path
 AM_CONDITIONAL(HAVE_FLIBS, test "x$use_qcdloop" == "xyes" || test "x$use_oneloop" == "xyes")
 
 
+AC_ARG_ENABLE(golem-mode,[AS_HELP_STRING([--enable-golem-mode],
+            [build golem95-like interface @<:@default=no@:>@])],
+            [test "x$enable_golem_mode" == "xyes" && AC_DEFINE(USE_GOLEM_MODE,"1","build golem95-like interface")],
+            [enable_golem_mode=no])
+AM_CONDITIONAL(EMU_GOLEM, test "x$enable_golem_mode" == "xyes")
+
 
 AC_ARG_ENABLE(cache-high,[AS_HELP_STRING([--enable-cache-high],
             [enable caching of 5- and 6-point coefficients @<:@default=yes@:>@])],
@@ -239,6 +245,7 @@ AC_ARG_ENABLE(cache-low,[AS_HELP_STRING([--enable-cache-low],
             [enable caching of 2-,3-,4-point coefficients @<:@default=no@:>@])],
             [test "x$enable_cache_low" == "xyes" && AC_DEFINE(USE_CACHE_LOW,"1","enable cache for 2-,3-,4-point coefficients")],
             [enable_cache_low=no])
+
 
 # Substitutions for .in files
 AC_SUBST(PJFRY_MAJOR)

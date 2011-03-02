@@ -172,7 +172,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 double pgetmusq_();
-double psetmusq_(double *mu2);
+void psetmusq_(double *mu2);
 
 pj_complex pa0_(double *m1, int *ep);
 
@@ -211,6 +211,53 @@ pj_complex pe0ijkl_(int *i, int *j, int *k, int *l,
                 double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
 pj_complex pe0ijklm_(int *i, int *j, int *k, int *l, int *m,
                 double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+
+#ifdef USE_GOLEM_MODE
+  double pggetmusq_();
+  void pgsetmusq_(double *mu2);
+
+  void pginitgolem95_(int *n);
+  double pggetmat_(int *i, int *j);
+  void pgpreparesmatrix_();
+  void pgsetmat_(int *i, int *j, double *val);
+
+//  5 point base
+  pj_complex pga50_(int *s, int *ep);
+  pj_complex pga51_(int *i, int *s, int *ep);
+  pj_complex pga52_(int *i, int *j, int *s, int *ep);
+  pj_complex pgb52_(int *s, int *ep);
+  pj_complex pga53_(int *i, int *j, int *k, int *s, int *ep);
+  pj_complex pgb53_(int *i, int *s, int *ep);
+  pj_complex pga54_(int *i, int *j, int *k, int *l, int *s, int *ep);
+  pj_complex pgb54_(int *i, int *j, int *s, int *ep);
+  pj_complex pgc54_(int *s, int *ep);
+  pj_complex pga55_(int *i, int *j, int *k, int *l, int *m, int *s, int *ep);
+  pj_complex pgb55_(int *i, int *j, int *k, int *s, int *ep);
+  pj_complex pgc55_(int *i, int *s, int *ep);
+
+  pj_complex pga40_(int *s, int *ep);
+  pj_complex pga41_(int *i, int *s, int *ep);
+  pj_complex pga42_(int *i, int *j, int *s, int *ep);
+  pj_complex pgb42_(int *s, int *ep);
+  pj_complex pga43_(int *i, int *j, int *k, int *s, int *ep);
+  pj_complex pgb43_(int *i, int *s, int *ep);
+  pj_complex pga44_(int *i, int *j, int *k, int *l, int *s, int *ep);
+  pj_complex pgb44_(int *i, int *j, int *s, int *ep);
+  pj_complex pgc44_(int *s, int *ep);
+
+  pj_complex pga30_(int *s, int *ep);
+  pj_complex pga31_(int *i, int *s, int *ep);
+  pj_complex pga32_(int *i, int *j, int *s, int *ep);
+  pj_complex pgb32_(int *s, int *ep);
+  pj_complex pga33_(int *i, int *j, int *k, int *s, int *ep);
+  pj_complex pgb33_(int *i, int *s, int *ep);
+
+  pj_complex pga20_(int *s, int *ep);
+  pj_complex pga21_(int *i, int *s, int *ep);
+  pj_complex pga22_(int *i, int *j, int *s, int *ep);
+  pj_complex pgb22_(int *s, int *ep);
+
+#endif /* USE_GOLEM_MODE */
 
 #ifdef __cplusplus
 }

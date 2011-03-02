@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS = -I m4
 lib_LTLIBRARIES = libpjfry.la
 
 libpjfry_la_SOURCES = minor.cpp minorex.cpp minoreval.cpp cache.cpp integral.cpp pjfry.cpp
-EXTRA_libpjfry_la_SOURCES = common.h minor.h cache.h integral.h pjfry.h kinem.h pointer.h
+EXTRA_libpjfry_la_SOURCES = common.h minor.h cache.h integral.h pjfry.h kinem.h pointer.h golem.h
 
 nodist_EXTRA_libpjfry_la_SOURCES = remove.cpp
 
@@ -13,6 +13,10 @@ libpjfry_la_LDFLAGS = -no-undefined -export-dynamic \
 
 if HAVE_FLIBS
   libpjfry_la_LIBADD = $(FLIBS)
+endif
+
+if EMU_GOLEM
+  libpjfry_la_SOURCES += golem.cpp
 endif
 
 EXTRA_DIST=libpjfry.vers

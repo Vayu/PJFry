@@ -23,8 +23,11 @@ class SPtr
 {
   public:
     T* operator-> () const { return pObj; };
-    bool operator== (T* pobj) const { return pobj==pObj; };
-    bool operator!= (T* pobj) const { return pobj!=pObj; };
+    bool operator== (const T* pobj) const { return pobj==pObj; };
+    bool operator!= (const T* pobj) const { return pobj!=pObj; };
+
+    bool operator== (const SPtr<T> &spobj) const { return spobj.pObj==pObj; };
+    bool operator!= (const SPtr<T> &spobj) const { return spobj.pObj!=pObj; };
 
     SPtr(T* pobj=0) : pObj(pobj) {
       if (pObj) { pObj->count++; }
@@ -56,6 +59,7 @@ class NIter
     inline T& operator* () { return ptr[idx%N]; }
     inline T* operator-> () { return &ptr[idx%N]; }
     inline NIter& operator++ () { idx++; return *this;}
+    inline NIter& operator+= (int n) { idx+=n; return *this;}
 
     inline bool operator== (const NIter& iter) { return idx==iter.idx && ptr==iter.ptr; }
     inline bool operator!= (const NIter& iter) { return idx!=iter.idx || ptr!=iter.ptr; }

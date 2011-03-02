@@ -170,7 +170,13 @@ ncomplex Minor5::evalE(int ep, int i, int j, int k, int l)
     if (k==0 && l==0) {
       ncomplex sum1=0;
       for (int s=1; s<=5; s++) {
+#ifndef USE_GOLEM_MODE
+// Cancel pole and finite part with E00ij - LoopTools-like convention
         sum1+=M1(s, 0)*(I4D2s(ep, s)+(ep==0 ? (-1./6.+1./4.) : (ep==1? -1./6.: 0.)));
+#else
+// Golem95 convention
+        sum1+=M1(s, 0)*(I4D2s(ep, s)+(ep==0 ? -1./9. : 0.));
+#endif
       }
       ivalue=0.25*sum1/d00;
     }
@@ -179,7 +185,13 @@ ncomplex Minor5::evalE(int ep, int i, int j, int k, int l)
       ncomplex sum1=0;
 
       for (int s=1; s<=5; s++) {
+#ifndef USE_GOLEM_MODE
+// Cancel pole and finite part with E0000 - LoopTools-like convention
         sum1+=0.5*(M2(0, k, s, l)+M2(0, l, s, k))*(I4D2s(ep, s)+(ep==0 ? (-1./6.+1./4.) : (ep==1? -1./6.: 0.)));
+#else
+// Golem95 convention
+        sum1+=0.5*(M2(0, k, s, l)+M2(0, l, s, k))*(I4D2s(ep, s)+(ep==0 ? -1./9. : 0.));
+#endif
         sum1+=0.5*(M2(0, s, 0, l)*I4D2si(ep, s, k)+M2(0, s, 0, k)*I4D2si(ep, s, l));
         sum1+=0.5*M1(s, 0)*(I4D3sij(ep, s, k, l)+I4D3sij(ep, s, l, k));
       }
@@ -367,19 +379,43 @@ ncomplex Minor5::evalE(int ep, int i, int j, int k, int l, int m)
  * ========================================================
  * ========================================================
  */
+#ifdef USE_GOLEM_MODE_6
+    int psix;
+    #define ix(i) i<pm5->psix ? i : i-1
+#else
+    #define ix(i) i
+#endif
+/* --------------------------------------------------------
+    4-point scalar for GolemMode
+ * --------------------------------------------------------
+ */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor4::A(int ep)
+{
+  ncomplex ivalue=pm5->I4s(ep, ps);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
 /* --------------------------------------------------------
     4-point coefficients rank-1
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor4::A(int ep, int i)
+{
+  ncomplex ivalue=-pm5->I4Dsi(ep, ps, ix(i+offs));
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor4::evalD(int ep, int i)
 {
   ncomplex ivalue=0;
-//   if (pm5 != 0) {
-    if (i>=ps || ps==5) i=i+1;
-    ivalue=-pm5->I4Dsi(ep, ps, i);
-//   } else {
-//     printf("Di - Unimplemented yet\n");
-//   }
+  if (i>=ps || ps==5) i=i+1;
+  ivalue=-pm5->I4Dsi(ep, ps, i);
   return ivalue;
 }
 
@@ -387,24 +423,36 @@ ncomplex Minor4::evalD(int ep, int i)
     4-point coefficients rank-2
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor4::A(int ep, int i, int j)
+{
+  ncomplex ivalue=pm5->I4D2sij(ep, ps, ix(i+offs), ix(j+offs));
+  return ivalue;
+}
+
+ncomplex Minor4::B(int ep)
+{
+  ncomplex ivalue=-0.5*pm5->I4Ds(ep, ps);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor4::evalD(int ep, int i, int j)
 {
   ncomplex ivalue=0;
 
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      ivalue=-0.5*pm5->I4Ds(ep, ps);
-    }
-    else {
-      assert(i!=0 && j!=0); // D01, D02, etc do not exist
-      if (i>=ps || ps==5) i=i+1;
-      if (j>=ps || ps==5) j=j+1;
+  if (i==0 && j==0) {
+    ivalue=-0.5*pm5->I4Ds(ep, ps);
+  }
+  else {
+    assert(i!=0 && j!=0); // D01, D02, etc do not exist
+    if (i>=ps || ps==5) i=i+1;
+    if (j>=ps || ps==5) j=j+1;
 
-      ivalue=pm5->I4D2sij(ep, ps, i, j);
-    }
-//   } else {
-//     printf("Dij - Unimplemented yet\n");
-//   }
+    ivalue=pm5->I4D2sij(ep, ps, i, j);
+  }
   return ivalue;
 }
 
@@ -412,27 +460,39 @@ ncomplex Minor4::evalD(int ep, int i, int j)
     4-point coefficients rank-3
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor4::A(int ep, int i, int j, int k)
+{
+  ncomplex ivalue=-pm5->I4D3sijk(ep, ps, ix(i+offs), ix(j+offs), ix(k+offs));
+  return ivalue;
+}
+
+ncomplex Minor4::B(int ep, int k)
+{
+  ncomplex ivalue=0.5*pm5->I4D2si(ep, ps, ix(k+offs));
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor4::evalD(int ep, int i, int j, int k)
 {
   ncomplex ivalue=0;
 
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      assert(i==0 && j==0 && k!=0); // D000 does not exist, D100 is a wrong syntax
-      if (k>=ps || ps==5) k=k+1;
+  if (i==0 && j==0) {
+    assert(k!=0);                 // D000 does not exist, D100 is a wrong syntax
+    if (k>=ps || ps==5) k=k+1;
 
-      ivalue=0.5*pm5->I4D2si(ep, ps, k);
-    }
-    else {
-      assert(i!=0 && j!=0 && k!=0); // D110, D012, etc do not exist
-      if (i>=ps || ps==5) i=i+1;
-      if (j>=ps || ps==5) j=j+1;
-      if (k>=ps || ps==5) k=k+1;
-      ivalue=-pm5->I4D3sijk(ep,ps,i,j,k);
-    }
-//   } else {
-//     printf("Dijk - Unimplemented yet\n");
-//   }
+    ivalue=0.5*pm5->I4D2si(ep, ps, k);
+  }
+  else {
+    assert(i!=0 && j!=0 && k!=0); // D110, D012, etc do not exist
+    if (i>=ps || ps==5) i=i+1;
+    if (j>=ps || ps==5) j=j+1;
+    if (k>=ps || ps==5) k=k+1;
+    ivalue=-pm5->I4D3sijk(ep, ps, i, j, k);
+  }
   return ivalue;
 }
 
@@ -440,33 +500,51 @@ ncomplex Minor4::evalD(int ep, int i, int j, int k)
     4-point coefficients rank-4
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor4::A(int ep, int i, int j, int k, int l)
+{
+  ncomplex ivalue=pm5->I4D4sijkl(ep, ps, ix(i+offs), ix(j+offs), ix(k+offs), ix(l+offs));
+  return ivalue;
+}
+
+ncomplex Minor4::B(int ep, int k, int l)
+{
+  ncomplex ivalue=-0.5*pm5->I4D3sij(ep, ps, ix(k+offs), ix(l+offs));
+  return ivalue;
+}
+
+ncomplex Minor4::C(int ep)
+{
+  ncomplex ivalue=0.25*pm5->I4D2s(ep, ps);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor4::evalD(int ep, int i, int j, int k, int l)
 {
   ncomplex ivalue=0;
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      if (k==0 && l==0) {
-        ivalue=0.25*pm5->I4D2s(ep, ps);
-      }
-      else {
-        assert(i==0 && j==0 && k!=0 && l!=0); // D0001 does not exist, D1200 is a wrong syntax
-        if (k>=ps || ps==5) k=k+1;
-        if (l>=ps || ps==5) l=l+1;
-
-        ivalue=-0.5*pm5->I4D3sij(ep, ps, k, l);
-      }
+  if (i==0 && j==0) {
+    if (k==0 && l==0) {
+      ivalue=0.25*pm5->I4D2s(ep, ps);
     }
     else {
-      assert(i!=0 && j!=0 && k!=0 && l!=0); // D110, D012, etc do not exist
-      if (i>=ps || ps==5) i=i+1;
-      if (j>=ps || ps==5) j=j+1;
+      assert(i==0 && j==0 && k!=0 && l!=0); // D0001 does not exist, D1200 is a wrong syntax
       if (k>=ps || ps==5) k=k+1;
       if (l>=ps || ps==5) l=l+1;
-      ivalue=pm5->I4D4sijkl(ep,ps,i,j,k,l);
+
+      ivalue=-0.5*pm5->I4D3sij(ep, ps, k, l);
     }
-//   } else {
-//     printf("Dijkl - Unimplemented yet\n");
-//   }
+  }
+  else {
+    assert(i!=0 && j!=0 && k!=0 && l!=0); // D110, D012, etc do not exist
+    if (i>=ps || ps==5) i=i+1;
+    if (j>=ps || ps==5) j=j+1;
+    if (k>=ps || ps==5) k=k+1;
+    if (l>=ps || ps==5) l=l+1;
+    ivalue=pm5->I4D4sijkl(ep, ps, i, j, k, l);
+  }
   return ivalue;
 }
 
@@ -479,23 +557,40 @@ ncomplex Minor4::evalD(int ep, int i, int j, int k, int l)
  * ========================================================
  */
 /* --------------------------------------------------------
+    3-point scalar for GolemMode
+ * --------------------------------------------------------
+ */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor3::A(int ep)
+{
+  ncomplex ivalue=pm5->I3st(ep, ps, pt);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+/* --------------------------------------------------------
     3-point coefficients rank-1
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor3::A(int ep, int i)
+{
+  ncomplex ivalue=-pm5->I3Dsti(ep, ps, pt, ix(i+offs));
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor3::evalC(int ep, int i)
 {
   ncomplex ivalue=0;
-//   if (pm5 != 0) {
-    if (i>=ps) i=i+1;
-    if (i>=pt || pt==5) {
-      i=i+1;
-      if (i==ps) i=i+1;
-    }
-    ivalue=-pm5->I3Dsti(ep, ps, pt, i);
-//   } else {
-//     printf("Ci - Unimplemented\n");
-//     ivalue=std::numeric_limits<double>::quiet_NaN();
-//   }
+  if (i>=ps) i=i+1;
+  if (i>=pt || pt==5) {
+    i=i+1;
+    if (i==ps) i=i+1;
+  }
+  ivalue=-pm5->I3Dsti(ep, ps, pt, i);
   return ivalue;
 }
 
@@ -503,36 +598,47 @@ ncomplex Minor3::evalC(int ep, int i)
     3-point coefficients rank-2
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor3::A(int ep, int i, int j)
+{
+  ncomplex ivalue=pm5->I3D2stij(ep, ps, pt, ix(i+offs), ix(j+offs));
+  return ivalue;
+}
+
+ncomplex Minor3::B(int ep)
+{
+  ncomplex ivalue=-0.5*pm5->I3Dst(ep, ps, pt);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor3::evalC(int ep, int i, int j)
 {
   ncomplex ivalue=0;
 
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      ivalue=-0.5*pm5->I3Dst(ep, ps, pt);
-    }
-    else {
-      assert(i!=0 && j!=0); // C01, C02, etc do not exist
-      int tmp;
-      tswap(i,j,tmp);
+  if (i==0 && j==0) {
+    ivalue=-0.5*pm5->I3Dst(ep, ps, pt);
+  }
+  else {
+    assert(i!=0 && j!=0); // C01, C02, etc do not exist
+    int tmp;
+    tswap(i,j,tmp);
 
-      if (i>=ps) i=i+1;
-      if (i>=pt || pt==5) {
-        i=i+1;
-        if (i==ps) i=i+1;
-      }
-      if (j>=ps) j=j+1;
-      if (j>=pt || pt==5) {
-        j=j+1;
-        if (j==ps) j=j+1;
-      }
-
-      ivalue=pm5->I3D2stij(ep, ps, pt, i, j);
+    if (i>=ps) i=i+1;
+    if (i>=pt || pt==5) {
+      i=i+1;
+      if (i==ps) i=i+1;
     }
-//   } else {
-//     printf("Cij - Unimplemented\n");
-//     ivalue=std::numeric_limits<double>::quiet_NaN();
-//   }
+    if (j>=ps) j=j+1;
+    if (j>=pt || pt==5) {
+      j=j+1;
+      if (j==ps) j=j+1;
+    }
+
+    ivalue=pm5->I3D2stij(ep, ps, pt, i, j);
+  }
   return ivalue;
 }
 
@@ -540,44 +646,55 @@ ncomplex Minor3::evalC(int ep, int i, int j)
     3-point coefficients rank-3
  * --------------------------------------------------------
  */
+// Global chord indexing, golem-like
+#ifdef USE_GOLEM_MODE
+ncomplex Minor3::A(int ep, int i, int j, int k)
+{
+  ncomplex ivalue=-pm5->I3D3stijk(ep, ps, pt, ix(i+offs), ix(j+offs), ix(k+offs));
+  return ivalue;
+}
+
+ncomplex Minor3::B(int ep, int k)
+{
+  ncomplex ivalue=0.5*pm5->I3D2sti(ep, ps, pt, ix(k+offs));
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor3::evalC(int ep, int i, int j, int k)
 {
   ncomplex ivalue=0;
 
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      assert(i==0 && j==0 && k!=0); // C000 does not exist, C100 is a wrong syntax
-      if (k>=ps) k=k+1;
-      if (k>=pt || pt==5) {
+  if (i==0 && j==0) {
+    assert(i==0 && j==0 && k!=0); // C000 does not exist, C100 is a wrong syntax
+    if (k>=ps) k=k+1;
+    if (k>=pt || pt==5) {
+      k=k+1;
+      if (k==ps) k=k+1;
+    }
+
+    ivalue=0.5*pm5->I3D2sti(ep, ps, pt, k);
+  }
+  else {
+    assert(i!=0 && j!=0 && k!=0); // D110, D012, etc do not exist
+    if (i>=ps) i=i+1;
+    if (i>=pt || pt==5) {
+        i=i+1;
+        if (i==ps) i=i+1;
+    }
+    if (j>=ps) j=j+1;
+    if (j>=pt || pt==5) {
+        j=j+1;
+        if (j==ps) j=j+1;
+    }
+    if (k>=ps) k=k+1;
+    if (k>=pt || pt==5) {
         k=k+1;
         if (k==ps) k=k+1;
-      }
-
-      ivalue=0.5*pm5->I3D2sti(ep, ps, pt, k);
     }
-    else {
-      assert(i!=0 && j!=0 && k!=0); // D110, D012, etc do not exist
-      if (i>=ps) i=i+1;
-      if (i>=pt || pt==5) {
-          i=i+1;
-          if (i==ps) i=i+1;
-      }
-      if (j>=ps) j=j+1;
-      if (j>=pt || pt==5) {
-          j=j+1;
-          if (j==ps) j=j+1;
-      }
-      if (k>=ps) k=k+1;
-      if (k>=pt || pt==5) {
-          k=k+1;
-          if (k==ps) k=k+1;
-      }
-      ivalue=-pm5->I3D3stijk(ep,ps,pt,i,j,k);
-    }
-//   } else {
-//     printf("Cijk - Unimplemented\n");
-//     ivalue=std::numeric_limits<double>::quiet_NaN();
-//   }
+    ivalue=-pm5->I3D3stijk(ep, ps, pt, i, j, k);
+  }
   return ivalue;
 }
 
@@ -590,13 +707,76 @@ ncomplex Minor3::evalC(int ep, int i, int j, int k)
  * ========================================================
  */
 /* --------------------------------------------------------
+    2-point scalar for GolemMode
+ * --------------------------------------------------------
+ */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor2::A(int ep)
+{
+  ncomplex ivalue=pm5->I2stu(ep, ps, pt, pu);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+/* --------------------------------------------------------
     2-point coefficients rank-1
  * --------------------------------------------------------
  */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor2::A(int ep, int i)
+{
+  ncomplex ivalue=-pm5->I2Dstui(ep, ps, pt, pu, ix(i+offs));
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
 ncomplex Minor2::evalB(int ep, int i)
 {
   ncomplex ivalue=0;
-//   if (pm5 != 0) {
+
+  if (i>=ps) i=i+1;
+  if (i>=pt) {
+    i=i+1;
+    if (i==ps) i=i+1;
+  }
+  if (i>=pu || pu==5) {
+    i=i+1;
+    if (i==ps) i=i+1;
+    if (i==pt) i=i+1;
+  }
+  ivalue=-pm5->I2Dstui(ep, ps, pt, pu, i);
+  return ivalue;
+}
+
+/* --------------------------------------------------------
+    2-point coefficients rank-2
+ * --------------------------------------------------------
+ */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor2::A(int ep, int i, int j)
+{
+  ncomplex ivalue=pm5->I2D2stuij(ep, ps, pt, pu, ix(i+offs), ix(j+offs));
+  return ivalue;
+}
+
+ncomplex Minor2::B(int ep)
+{
+  ncomplex ivalue=-0.5*pm5->I2Dstu(ep, ps, pt, pu);
+  return ivalue;
+}
+#endif /* USE_GOLEM_MODE */
+
+// Local chord indexing
+ncomplex Minor2::evalB(int ep, int i, int j)
+{
+  ncomplex ivalue=0;
+
+  if (i==0 && j==0) {
+    ivalue=-0.5*pm5->I2Dstu(ep, ps, pt, pu);
+  }
+  else {
+    assert(i!=0 && j!=0); // B01, B02, etc do not exist
     if (i>=ps) i=i+1;
     if (i>=pt) {
       i=i+1;
@@ -607,44 +787,8 @@ ncomplex Minor2::evalB(int ep, int i)
       if (i==ps) i=i+1;
       if (i==pt) i=i+1;
     }
-    ivalue=-pm5->I2Dstui(ep, ps, pt, pu, i);
-//   } else {
-//     printf("Bi - Unimplemented\n");
-//     ivalue=std::numeric_limits<double>::quiet_NaN();
-//   }
-  return ivalue;
-}
-
-/* --------------------------------------------------------
-    2-point coefficients rank-2
- * --------------------------------------------------------
- */
-ncomplex Minor2::evalB(int ep, int i, int j)
-{
-  ncomplex ivalue=0;
-
-//   if (pm5 != 0) {
-    if (i==0 && j==0) {
-      ivalue=-0.5*pm5->I2Dstu(ep, ps, pt, pu);
-    }
-    else {
-      assert(i!=0 && j!=0); // B01, B02, etc do not exist
-      if (i>=ps) i=i+1;
-      if (i>=pt) {
-        i=i+1;
-        if (i==ps) i=i+1;
-      }
-      if (i>=pu || pu==5) {
-        i=i+1;
-        if (i==ps) i=i+1;
-        if (i==pt) i=i+1;
-      }
-      ivalue=pm5->I2D2stuij(ep, ps, pt, pu, i, i);
-    }
-//   } else {
-//     printf("Bij - Unimplemented\n");
-//     ivalue=std::numeric_limits<double>::quiet_NaN();
-//   }
+    ivalue=pm5->I2D2stuij(ep, ps, pt, pu, i, i);
+  }
   return ivalue;
 }
 

@@ -25,15 +25,15 @@ const double MinorBase::meps=1e-10;
 
 
 const unsigned char MinorBase::idxtbl[64]={
-  100,   //     0    0b0
-  101,   //0    1    0b1
-  101,   //1    2    0b10
+  0,     //     0    0b0
+  0,     //0    1    0b1
+  1,     //1    2    0b10
   0,     //01   3    0b11
-  101,   //2    4    0b100
+  2,     //2    4    0b100
   1,     //02   5    0b101
   5,     //12   6    0b110
   0,     //012  7    0b111
-  101,   //     8    0b1000
+  3,     //3    8    0b1000
   2,     //03   9    0b1001
   6,     //13   10   0b1010
   1,     //013  11   0b1011
@@ -41,7 +41,7 @@ const unsigned char MinorBase::idxtbl[64]={
   4,     //023  13   0b1101
   10,    //123  14   0b1110
   104,   //     15   0b1111
-  101,   //     16   0b10000
+  4,     //4    16   0b10000
   3,     //04   17   0b10001
   7,     //14   18   0b10010
   2,     //014  19   0b10011
@@ -57,7 +57,7 @@ const unsigned char MinorBase::idxtbl[64]={
   104,   //     29   0b11101
   104,   //     30   0b11110
   105,   //     31   0b11111
-  101,   //     32   0b100000
+  5,     //5    32   0b100000
   4,     //05   33   0b100001
   8,     //15   34   0b100010
   3,     //015  35   0b100011
@@ -99,8 +99,8 @@ const unsigned char MinorBase::idxtbl[64]={
 */
 
 // Constructor from higher rank minor
-Minor2::Minor2(const Kinem2& k, Minor5::Ptr mptr5, int s, int t, int u)
-              : kinem(k), pm5(mptr5), ps(s), pt(t), pu(u)
+Minor2::Minor2(const Kinem2& k, Minor5::Ptr mptr5, int s, int t, int u, int is)
+              : kinem(k), pm5(mptr5), ps(s), pt(t), pu(u), offs(is)
 {
 //   printf("Minor2 from Minor5\n");
 }
@@ -115,8 +115,8 @@ Minor2::Minor2(const Kinem2& k, Minor5::Ptr mptr5, int s, int t, int u)
  */
 
 // Constructor from higher rank minor
-Minor3::Minor3(const Kinem3& k, Minor5::Ptr mptr5, int s, int t)
-              : kinem(k), pm5(mptr5), ps(s), pt(t)
+Minor3::Minor3(const Kinem3& k, Minor5::Ptr mptr5, int s, int t, int is)
+              : kinem(k), pm5(mptr5), ps(s), pt(t), offs(is)
 {
 //   printf("Minor3 from Minor5\n");
 }
@@ -134,8 +134,8 @@ Minor3::Minor3(const Kinem3& k, Minor5::Ptr mptr5, int s, int t)
 // see MCache::getMinor4 in cache.cpp
 
 // Constructor from higher rank minor
-Minor4::Minor4(const Kinem4 &k, Minor5::Ptr mptr5, int s)
-              : kinem(k), pm5(mptr5), ps(s)
+Minor4::Minor4(const Kinem4 &k, Minor5::Ptr mptr5, int s, int is)
+              : kinem(k), pm5(mptr5), ps(s), offs(is)
 {
 //   printf("Minor4 from Minor5\n");
 }
@@ -205,21 +205,21 @@ void MinorBase::freeidxM3(int set[], int free[])
 #define m5create4(s) \
 { \
   Kinem4 k4=Kinem4(k5s##s); \
-  Minor4::Ptr minor=Minor4::create(k4,self,s); \
+  Minor4::Ptr minor=Minor4::create(k4,self,s, offs); \
   MCache::insertMinor4(k4,minor); \
 }
 
 #define m5create3(s,t) \
 { \
   Kinem3 k3=Kinem3(k5st##s##t); \
-  Minor3::Ptr minor=Minor3::create(k3,self,s,t); \
+  Minor3::Ptr minor=Minor3::create(k3,self,s,t, offs); \
   MCache::insertMinor3(k3,minor); \
 }
 
 #define m5create2(s,t,u) \
 { \
   Kinem2 k2=Kinem2(k5stu##s##t##u); \
-  Minor2::Ptr minor=Minor2::create(k2,self,s,t,u); \
+  Minor2::Ptr minor=Minor2::create(k2,self,s,t,u, offs); \
   MCache::insertMinor2(k2,minor); \
 }
 
@@ -229,6 +229,9 @@ void MinorBase::freeidxM3(int set[], int free[])
  */
 Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
 {
+#ifdef USE_GOLEM_MODE_6
+  psix=6;
+#endif
   const double p1=kinem.p1();
   const double p2=kinem.p2();
   const double p3=kinem.p3();
@@ -255,6 +258,7 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
 
   // create subkinematics minors
   Ptr self=Ptr(this);
+  const int offs=0;
 
   m5create4(1);
   m5create4(2);
@@ -293,6 +297,9 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
  */
 Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3()
 {
+#ifdef USE_GOLEM_MODE_6
+  psix=6;
+#endif
 //  12 pinched dummy 5-point kinematics
   const double p3=k.p2();
   const double p4=k.p3();
@@ -314,6 +321,7 @@ Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3()
 
   // create subkinematics minors
   Ptr self=Ptr(this);
+  const int offs=1;
 
   m5create4(1);
 
@@ -992,7 +1000,7 @@ ncomplex Minor5::I4Dsi(int ep, int s, int i) // IR-div
 void Minor5::I4DsiEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
     if (s==i) continue;
     ncomplex ivalue=0;
 
@@ -1249,7 +1257,7 @@ ncomplex Minor5::I4D2si(int ep, int s, int i)
 void Minor5::I4D2siEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
     if (s==i) continue;
     ncomplex ivalue=0;
 
@@ -1303,7 +1311,7 @@ ncomplex Minor5::I3Dsti(int ep, int s, int t, int i) // IR-div
 
 void Minor5::I3DstiEval(int ep)
 {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
@@ -1379,8 +1387,8 @@ void Minor5::I4D2sijEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j'
-  for (int i=1; i<=4; i++) { if (s==i) continue;
-  for (int j=i; j<=4; j++) { if (s==j) continue;
+  for (int i=1; i<=CIDX; i++) { if (s==i) continue;
+  for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps2) {
@@ -1730,7 +1738,7 @@ ncomplex Minor5::I3D2sti(int ep, int s, int t, int i)
 
 void Minor5::I3D2stiEval(int ep)
 {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
@@ -1825,7 +1833,7 @@ ncomplex Minor5::I4D3si(int ep, int s, int i)
 void Minor5::I4D3siEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
     if (s==i) continue;
     ncomplex ivalue=0;
 
@@ -1870,8 +1878,8 @@ void Minor5::I4D3sijEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j'
-  for (int i=1; i<=4; i++) { if (s==i) continue;
-  for (int j=i; j<=4; j++) { if (s==j) continue;
+  for (int i=1; i<=CIDX; i++) { if (s==i) continue;
+  for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {
@@ -1911,33 +1919,32 @@ ncomplex Minor5::I2Dstui(int ep, int s, int t, int u, int i)
 //   if (ep==1) return -0.5; // not quite true
   if (ep==2) return 0;
   if (not fEval[E_I2Dstui+ep]) {
-    I2DstuiEval(ep,1,2,3,4,5,kinem.p5());
-    I2DstuiEval(ep,1,2,3,5,4,kinem.p5());
-    I2DstuiEval(ep,1,2,4,3,5,kinem.s45());
-    I2DstuiEval(ep,1,2,4,5,3,kinem.s45());
-    I2DstuiEval(ep,1,2,5,3,4,kinem.p4());
-    I2DstuiEval(ep,1,2,5,4,3,kinem.p4());
-
-    I2DstuiEval(ep,1,3,4,2,5,kinem.s12());
-    I2DstuiEval(ep,1,3,4,5,2,kinem.s12());
-    I2DstuiEval(ep,1,3,5,2,4,kinem.s34());
-    I2DstuiEval(ep,1,3,5,4,2,kinem.s34());
-
     I2DstuiEval(ep,1,4,5,2,3,kinem.p3());
+    I2DstuiEval(ep,1,3,5,2,4,kinem.s34());
+    I2DstuiEval(ep,1,3,4,2,5,kinem.s12());
     I2DstuiEval(ep,1,4,5,3,2,kinem.p3());
+    I2DstuiEval(ep,1,2,5,3,4,kinem.p4());
+    I2DstuiEval(ep,1,2,4,3,5,kinem.s45());
+    I2DstuiEval(ep,1,3,5,4,2,kinem.s34());
+    I2DstuiEval(ep,1,2,5,4,3,kinem.p4());
+    I2DstuiEval(ep,1,2,3,4,5,kinem.p5());
+#ifdef USE_ZERO_CHORD
+    I2DstuiEval(ep,1,3,4,5,2,kinem.s12());
+    I2DstuiEval(ep,1,2,4,5,3,kinem.s45());
+    I2DstuiEval(ep,1,2,3,5,4,kinem.p5());
+#endif
 
     if (smax==5) {
-      I2DstuiEval(ep,2,3,4,1,5,kinem.p1());
-      I2DstuiEval(ep,2,3,4,5,1,kinem.p1());
-      I2DstuiEval(ep,2,3,5,1,4,kinem.s15());
-      I2DstuiEval(ep,2,3,5,4,1,kinem.s15());
-
-      I2DstuiEval(ep,2,4,5,1,3,kinem.s23());
-      I2DstuiEval(ep,2,4,5,3,1,kinem.s23());
-
-
       I2DstuiEval(ep,3,4,5,1,2,kinem.p2());
+      I2DstuiEval(ep,2,4,5,1,3,kinem.s23());
+      I2DstuiEval(ep,2,3,5,1,4,kinem.s15());
+      I2DstuiEval(ep,2,3,4,1,5,kinem.p1());
       I2DstuiEval(ep,3,4,5,2,1,kinem.p2());
+      I2DstuiEval(ep,2,4,5,3,1,kinem.s23());
+      I2DstuiEval(ep,2,3,5,4,1,kinem.s15());
+#ifdef USE_ZERO_CHORD
+      I2DstuiEval(ep,2,3,4,5,1,kinem.p1());
+#endif
     }
 
     fEval[E_I2Dstui+ep]=true;
@@ -2020,8 +2027,8 @@ void Minor5::I3D2stijEval(int ep)
 
     const double dstst=M2(s,t,s,t);
     // symmetric in 'i,j'
-    for (int i=1; i<=4; i++) { if (i==s || i==t) continue;
-    for (int j=i; j<=4; j++) { if (j==s || j==t) continue;
+    for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
+    for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
       ncomplex ivalue=0;
 
       if (maxS3(s,t) > ceps) {
@@ -2102,9 +2109,9 @@ void Minor5::I4D3sijkEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j,k'
-  for (int i=1; i<=4; i++) { if (i==s) continue;
-  for (int j=i; j<=4; j++) { if (j==s) continue;
-  for (int k=j; k<=4; k++) { if (k==s) continue;
+  for (int i=1; i<=CIDX; i++) { if (i==s) continue;
+  for (int j=i; j<=CIDX; j++) { if (j==s) continue;
+  for (int k=j; k<=CIDX; k++) { if (k==s) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {
@@ -2479,7 +2486,7 @@ ncomplex Minor5::I4D4si(int ep, int s, int i)
 void Minor5::I4D4siEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
-  for (int i=1; i<=4; i++) { if (s==i) continue;
+  for (int i=1; i<=CIDX; i++) { if (s==i) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {
@@ -2523,7 +2530,7 @@ ncomplex Minor5::I3D3sti(int ep, int s, int t, int i)
 
 void Minor5::I3D3stiEval(int ep)
 {
-  for (int i=1; i<=4; i++) {
+  for (int i=1; i<=CIDX; i++) {
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
@@ -2632,8 +2639,8 @@ void Minor5::I4D4sijEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j'
-  for (int i=1; i<=4; i++) { if (s==i) continue;
-  for (int j=i; j<=4; j++) { if (s==j) continue;
+  for (int i=1; i<=CIDX; i++) { if (s==i) continue;
+  for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {
@@ -2672,33 +2679,32 @@ ncomplex Minor5::I2D2stui(int ep, int s, int t, int u, int i)
   assert(s!=t && t!=u && u!=s && s!=i && t!=i && u!=i);
   if (ep==2) return 0;
   if (not fEval[E_I2D2stui+ep]) {
-    I2D2stuiEval(ep,1,2,3,4,5,kinem.p5());
-    I2D2stuiEval(ep,1,2,3,5,4,kinem.p5());
-    I2D2stuiEval(ep,1,2,4,3,5,kinem.s45());
-    I2D2stuiEval(ep,1,2,4,5,3,kinem.s45());
-    I2D2stuiEval(ep,1,2,5,3,4,kinem.p4());
-    I2D2stuiEval(ep,1,2,5,4,3,kinem.p4());
-
-    I2D2stuiEval(ep,1,3,4,2,5,kinem.s12());
-    I2D2stuiEval(ep,1,3,4,5,2,kinem.s12());
-    I2D2stuiEval(ep,1,3,5,2,4,kinem.s34());
-    I2D2stuiEval(ep,1,3,5,4,2,kinem.s34());
-
     I2D2stuiEval(ep,1,4,5,2,3,kinem.p3());
+    I2D2stuiEval(ep,1,3,5,2,4,kinem.s34());
+    I2D2stuiEval(ep,1,3,4,2,5,kinem.s12());
     I2D2stuiEval(ep,1,4,5,3,2,kinem.p3());
+    I2D2stuiEval(ep,1,2,5,3,4,kinem.p4());
+    I2D2stuiEval(ep,1,2,4,3,5,kinem.s45());
+    I2D2stuiEval(ep,1,3,5,4,2,kinem.s34());
+    I2D2stuiEval(ep,1,2,5,4,3,kinem.p4());
+    I2D2stuiEval(ep,1,2,3,4,5,kinem.p5());
+#ifdef USE_ZERO_CHORD
+    I2D2stuiEval(ep,1,3,4,5,2,kinem.s12());
+    I2D2stuiEval(ep,1,2,4,5,3,kinem.s45());
+    I2D2stuiEval(ep,1,2,3,5,4,kinem.p5());
+#endif
 
     if (smax==5) {
-      I2D2stuiEval(ep,2,3,4,1,5,kinem.p1());
-      I2D2stuiEval(ep,2,3,4,5,1,kinem.p1());
-      I2D2stuiEval(ep,2,3,5,1,4,kinem.s15());
-      I2D2stuiEval(ep,2,3,5,4,1,kinem.s15());
-
-      I2D2stuiEval(ep,2,4,5,1,3,kinem.s23());
-      I2D2stuiEval(ep,2,4,5,3,1,kinem.s23());
-
-
       I2D2stuiEval(ep,3,4,5,1,2,kinem.p2());
+      I2D2stuiEval(ep,2,4,5,1,3,kinem.s23());
+      I2D2stuiEval(ep,2,3,5,1,4,kinem.s15());
+      I2D2stuiEval(ep,2,3,4,1,5,kinem.p1());
       I2D2stuiEval(ep,3,4,5,2,1,kinem.p2());
+      I2D2stuiEval(ep,2,4,5,3,1,kinem.s23());
+      I2D2stuiEval(ep,2,3,5,4,1,kinem.s15());
+#ifdef USE_ZERO_CHORD
+      I2D2stuiEval(ep,2,3,4,5,1,kinem.p1());
+#endif
     }
 
     fEval[E_I2D2stui+ep]=true;
@@ -2771,8 +2777,8 @@ void Minor5::I3D3stijEval(int ep)
     int idx = im2(s,t)-5;
     const double dstst=M2(s,t,s,t);
     // symmetric in 'i,j'
-    for (int i=1; i<=4; i++) { if (i==s || i==t) continue;
-    for (int j=i; j<=4; j++) { if (j==s || j==t) continue;
+    for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
+    for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
       ncomplex ivalue=0;
 
       if (maxS3(s,t) > ceps) {
@@ -2921,9 +2927,9 @@ void Minor5::I4D4sijkEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j,k'
-  for (int i=1; i<=4; i++) { if (i==s) continue;
-  for (int j=i; j<=4; j++) { if (j==s) continue;
-  for (int k=j; k<=4; k++) { if (k==s) continue;
+  for (int i=1; i<=CIDX; i++) { if (i==s) continue;
+  for (int j=i; j<=CIDX; j++) { if (j==s) continue;
+  for (int k=j; k<=CIDX; k++) { if (k==s) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {
@@ -2977,17 +2983,22 @@ ncomplex Minor5::I2D2stuij(int ep, int s, int t, int u, int i, int j)
     I2D2stuijEval(ep,1,4,5,2,3,kinem.p3());
     I2D2stuijEval(ep,1,4,5,3,2,kinem.p3());
 
+#ifdef USE_ZERO_CHORD
+    I2D2stuijEval(ep,1,2,3,5,4,kinem.p5());
+    I2D2stuijEval(ep,1,2,4,5,3,kinem.s45());
+    I2D2stuijEval(ep,1,3,4,5,2,kinem.s12());
+#endif
     if (smax==5) {
       I2D2stuijEval(ep,2,3,4,1,5,kinem.p1());
       I2D2stuijEval(ep,2,3,5,1,4,kinem.s15());
       I2D2stuijEval(ep,2,3,5,4,1,kinem.s15());
-
       I2D2stuijEval(ep,2,4,5,1,3,kinem.s23());
       I2D2stuijEval(ep,2,4,5,3,1,kinem.s23());
-
-
       I2D2stuijEval(ep,3,4,5,1,2,kinem.p2());
       I2D2stuijEval(ep,3,4,5,2,1,kinem.p2());
+#ifdef USE_ZERO_CHORD
+      I2D2stuijEval(ep,2,3,4,5,1,kinem.p1());
+#endif
     }
 
     fEval[E_I2D2stuij+ep]=true;
@@ -3036,10 +3047,10 @@ void Minor5::I2D2stuijEval(int ep, int s, int t, int u, int i, int ip, double qs
 
       sum1+=(Cay[nss(i ,i )]-Cay[ns(i,ip)])*I2Dstui(ep,s,t,u,i);
       sum1+=ICache::getI1(ep, Kinem1(msq1));
-      /* Symmetrization IS needed */
-      sum1+=(Cay[nss(ip,ip)]-Cay[ns(ip,i)])*I2Dstui(ep,s,t,u,ip);
-      sum1+=ICache::getI1(ep, Kinem1(msq2));
-      sum1/=2.0;
+      /* Symmetrization is not needed */
+//       sum1+=(Cay[nss(ip,ip)]-Cay[ns(ip,i)])*I2Dstui(ep,s,t,u,ip);
+//       sum1+=ICache::getI1(ep, Kinem1(msq2));
+//       sum1/=2.0;
       sum1+=I2Dstu(ep,s,t,u);
       sum1/=dstustu;
     }
@@ -3089,9 +3100,9 @@ void Minor5::I3D3stijkEval(int ep)
     }
 
     const double dstst=M2(s,t,s,t);
-    for (int i=1; i<=4; i++) { if (i==s || i==t) continue;
-    for (int j=i; j<=4; j++) { if (j==s || j==t) continue;
-    for (int k=j; k<=4; k++) { if (k==s || k==t) continue;
+    for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
+    for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
+    for (int k=j; k<=CIDX; k++) { if (k==s || k==t) continue;
       ncomplex ivalue=0;
 
       if (maxS3(s,t) > ceps) {
@@ -3195,10 +3206,10 @@ void Minor5::I4D4sijklEval(int ep)
 {
   for (int s=1; s<=smax; s++) {
   // symmetric in 'i,j,k,l'
-  for (int i=1; i<=4; i++) { if (s==i) continue;
-  for (int j=i; j<=4; j++) { if (s==j) continue;
-  for (int k=j; k<=4; k++) { if (s==k) continue;
-  for (int l=k; l<=4; l++) { if (s==l) continue;
+  for (int i=1; i<=CIDX; i++) { if (s==i) continue;
+  for (int j=i; j<=CIDX; j++) { if (s==j) continue;
+  for (int k=j; k<=CIDX; k++) { if (s==k) continue;
+  for (int l=k; l<=CIDX; l++) { if (s==l) continue;
     ncomplex ivalue=0;
 
     if (maxS4(s) <= deps3) {

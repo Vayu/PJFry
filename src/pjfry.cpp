@@ -389,13 +389,7 @@ double PJFry::GetMu2()
 
 double PJFry::SetMu2(const double mu2)
 {
-  double oldmu2=GetMu2();
-  double newmu2=ICache::setMu2(mu2);
-  if (newmu2 != oldmu2) {
-    ICache::Clear();
-    MCache::Clear();
-  }
-  return newmu2;
+  return ICache::setMu2(mu2);
 }
 
 // =============================================================
@@ -407,9 +401,9 @@ double pgetmusq_()
   return ICache::getMu2();
 }
 
-double psetmusq_(double *mu2)
+void psetmusq_(double *mu2)
 {
-  return ICache::setMu2(*mu2);
+  ICache::setMu2(*mu2);
 }
 
 pj_complex pe0_( double *p1,  double *p2,  double *p3,  double *p4,  double *p5,

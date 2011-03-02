@@ -24,12 +24,14 @@ double ICache::getMu2()
 
 double ICache::setMu2(const double newmu2)
 {
-  if (newmu2 > 0) {
+  if (newmu2 > 0 && newmu2 != mu2) {
     mu2=newmu2;
 #ifdef USE_ONELOOP
     double mu=sqrt(mu2);
     F77_FUNC_(avh_olo_mu_set,AVH_OLO_MU_SET)(&mu);
 #endif
+    ICache::Clear();
+    MCache::Clear();
   }
   return mu2;
 }

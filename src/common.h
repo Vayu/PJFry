@@ -40,5 +40,11 @@ class Kinem2;
 #define CONST __attribute__ ((const))
 #define PURE __attribute__ ((pure))
 
+#ifdef USE_GOLEM_MODE
+#   define USE_ZERO_CHORD       "1" /* calculate formfactors for zero-chord */
+#   define USE_GOLEM_MODE_6     "1" /* support 6-pinched kinematics         */
+#   define USE_GOLEM_ZERO_CHECK "1" /* enable checks for i,j,k==s,t,u */
+#endif
+
 #endif /* QUL_COMMON_H */
 
