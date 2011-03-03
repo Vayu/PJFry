@@ -225,6 +225,21 @@ AM_CONDITIONAL(HAVE_MCC,   test "x$with_mcc_path" != "xno" && test "x$ac_cv_path
 AM_CONDITIONAL(HAVE_MPREP, test "x$with_mcc_path" != "xno" && test "x$ac_cv_path_MPREP" != "x")
 AM_CONDITIONAL(HAVE_FLIBS, test "x$use_qcdloop" == "xyes" || test "x$use_oneloop" == "xyes")
 
+
+
+AC_ARG_ENABLE(cache-high,[AS_HELP_STRING([--enable-cache-high],
+            [enable caching of 5- and 6-point coefficients @<:@default=yes@:>@])],
+            [],
+            [enable_cache_high=yes])
+if test "x$enable_cache_high" == "xyes" ; then
+  AC_DEFINE(USE_CACHE_HIGH,"1","enable cache for 5 and 6-point coefficients")
+fi
+
+AC_ARG_ENABLE(cache-low,[AS_HELP_STRING([--enable-cache-low],
+            [enable caching of 2-,3-,4-point coefficients @<:@default=no@:>@])],
+            [test "x$enable_cache_low" == "xyes" && AC_DEFINE(USE_CACHE_LOW,"1","enable cache for 2-,3-,4-point coefficients")],
+            [enable_cache_low=no])
+
 # Substitutions for .in files
 AC_SUBST(PJFRY_MAJOR)
 AC_SUBST(PJFRY_MINOR)

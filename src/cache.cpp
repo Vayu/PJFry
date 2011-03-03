@@ -93,6 +93,7 @@ ICache::ArrayS1 ICache::ics1[3];
  */
 ncomplex ICache::getE(int ep, int i, int j, int k, int l, int m, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   assert( (i==0 && j==0 && ( (k==0 && l==0 && m!=0) || (k!=0 && l!=0 && m!=0) ))
          || (i!=0 && j!=0 && k!=0 && l!=0 && m!=0) );
   int coefn=0;
@@ -112,6 +113,9 @@ ncomplex ICache::getE(int ep, int i, int j, int k, int l, int m, const Kinem5 &k
     ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k, l, m);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k, l, m);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -121,6 +125,7 @@ ncomplex ICache::getE(int ep, int i, int j, int k, int l, int m, const Kinem5 &k
  */
 ncomplex ICache::getE(int ep, int i, int j, int k, int l, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   assert( (i==0 && j==0 && ( (k==0 && l==0) || (k!=0 && l!=0) )) || (i!=0 && j!=0 && k!=0 && l!=0) );
   int coefn=0;
   if (i==0 && j==0) {
@@ -139,6 +144,9 @@ ncomplex ICache::getE(int ep, int i, int j, int k, int l, const Kinem5 &kin)
     ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k, l);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k, l);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -148,6 +156,7 @@ ncomplex ICache::getE(int ep, int i, int j, int k, int l, const Kinem5 &kin)
  */
 ncomplex ICache::getE(int ep, int i, int j, int k, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   assert( (i==0 && j==0 && k!=0) || (i!=0 && j!=0 && k!=0) );
   int coefn=(i==0 && j==0) ? (k-1)+ee001 : Minor5::is(i-1,j-1,k-1)+ee111;
   Save5 *s5=getS5(ep, kin, coefn);
@@ -157,6 +166,9 @@ ncomplex ICache::getE(int ep, int i, int j, int k, const Kinem5 &kin)
     ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep, i, j, k);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -166,6 +178,7 @@ ncomplex ICache::getE(int ep, int i, int j, int k, const Kinem5 &kin)
  */
 ncomplex ICache::getE(int ep, int i, int j, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   assert( (i==0 && j==0) || (i!=0 && j!=0) );
   int coefn=(i==0 && j==0) ? ee00 : Minor5::is(i-1,j-1)+ee11;
   Save5 *s5=getS5(ep, kin, coefn);
@@ -175,6 +188,9 @@ ncomplex ICache::getE(int ep, int i, int j, const Kinem5 &kin)
     ivalue=MCache::getMinor5(kin)->evalE(ep, i, j);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep, i, j);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -184,6 +200,7 @@ ncomplex ICache::getE(int ep, int i, int j, const Kinem5 &kin)
  */
 ncomplex ICache::getE(int ep, int i, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   int coefn=(i-1)+ee1;
   Save5 *s5=getS5(ep, kin, coefn);
 
@@ -192,6 +209,9 @@ ncomplex ICache::getE(int ep, int i, const Kinem5 &kin)
     ivalue=MCache::getMinor5(kin)->evalE(ep, i);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep, i);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -201,6 +221,7 @@ ncomplex ICache::getE(int ep, int i, const Kinem5 &kin)
  */
 ncomplex ICache::getE(int ep, const Kinem5 &kin)
 {
+#ifdef USE_CACHE_HIGH
   int coefn=ee0;
   Save5 *s5=getS5(ep, kin, coefn);
 
@@ -209,6 +230,9 @@ ncomplex ICache::getE(int ep, const Kinem5 &kin)
     ivalue=MCache::getMinor5(kin)->evalE(ep);
     (*s5)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor5(kin)->evalE(ep);
+#endif /* USE_CACHE_HIGH */
   return ivalue;
 }
 
@@ -225,6 +249,7 @@ ncomplex ICache::getE(int ep, const Kinem5 &kin)
  */
 ncomplex ICache::getD(int ep, int i, int j, int k, int l, const Kinem4 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0 && ( (k==0 && l==0) || (k!=0 && l!=0) )) || (i!=0 && j!=0 && k!=0 && l!=0) );
   int coefn=0;
   if (i==0 && j==0) {
@@ -243,6 +268,9 @@ ncomplex ICache::getD(int ep, int i, int j, int k, int l, const Kinem4 &kin)
     ivalue=MCache::getMinor4(kin)->evalD(ep, i, j, k, l);
     (*s4)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor4(kin)->evalD(ep, i, j, k, l);
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -252,6 +280,7 @@ ncomplex ICache::getD(int ep, int i, int j, int k, int l, const Kinem4 &kin)
  */
 ncomplex ICache::getD(int ep, int i, int j, int k, const Kinem4 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0 && k!=0) || (i!=0 && j!=0 && k!=0) );
   int coefn=(i==0 && j==0) ? (k-1)+dd001 : Minor4::is(i-1,j-1,k-1)+dd111;
   Save4 *s4=getS4(ep, kin, coefn);
@@ -261,6 +290,9 @@ ncomplex ICache::getD(int ep, int i, int j, int k, const Kinem4 &kin)
     ivalue=MCache::getMinor4(kin)->evalD(ep, i, j, k);
     (*s4)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor4(kin)->evalD(ep, i, j, k);
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -270,6 +302,7 @@ ncomplex ICache::getD(int ep, int i, int j, int k, const Kinem4 &kin)
  */
 ncomplex ICache::getD(int ep, int i, int j, const Kinem4 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0) || (i!=0 && j!=0) );
   int coefn=(i==0 && j==0) ? dd00 : Minor4::is(i-1,j-1)+dd11;
   Save4 *s4=getS4(ep, kin, coefn);
@@ -279,6 +312,9 @@ ncomplex ICache::getD(int ep, int i, int j, const Kinem4 &kin)
     ivalue=MCache::getMinor4(kin)->evalD(ep, i, j);
     (*s4)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor4(kin)->evalD(ep, i, j);
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -288,6 +324,7 @@ ncomplex ICache::getD(int ep, int i, int j, const Kinem4 &kin)
  */
 ncomplex ICache::getD(int ep, int i, const Kinem4 &kin)
 {
+#ifdef USE_CACHE_LOW
   int coefn=(i-1)+dd1;
   Save4 *s4=getS4(ep, kin, coefn);
 
@@ -296,6 +333,9 @@ ncomplex ICache::getD(int ep, int i, const Kinem4 &kin)
     ivalue=MCache::getMinor4(kin)->evalD(ep, i);
     (*s4)[coefn]=ivalue;
   }
+#else
+  ncomplex ivalue=MCache::getMinor4(kin)->evalD(ep, i);
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -313,6 +353,7 @@ ncomplex ICache::getD(int ep, int i, const Kinem4 &kin)
  */
 ncomplex ICache::getC(int ep, int i, int j, int k, const Kinem3 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0 && k!=0) || (i!=0 && j!=0 && k!=0) );
   int coefn=(i==0 && j==0) ? (k-1)+cc001 : Minor3::is(i-1,j-1,k-1)+cc111;
   Save3 *s3=getS3(ep, kin, coefn);
@@ -323,6 +364,10 @@ ncomplex ICache::getC(int ep, int i, int j, int k, const Kinem3 &kin)
     ivalue=pm3->evalC(ep, i, j, k);
     (*s3)[coefn]=ivalue;
   }
+#else
+  Minor3::Ptr pm3=MCache::getMinor3(kin);
+  ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i, j, k) : sNAN.d64 );
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -332,6 +377,7 @@ ncomplex ICache::getC(int ep, int i, int j, int k, const Kinem3 &kin)
  */
 ncomplex ICache::getC(int ep, int i, int j, const Kinem3 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0) || (i!=0 && j!=0) );
   int coefn=(i==0 && j==0) ? cc00 : Minor3::is(i-1,j-1)+cc11;
   Save3 *s3=getS3(ep, kin, coefn);
@@ -342,6 +388,10 @@ ncomplex ICache::getC(int ep, int i, int j, const Kinem3 &kin)
     ivalue=pm3->evalC(ep, i, j);
     (*s3)[coefn]=ivalue;
   }
+#else
+  Minor3::Ptr pm3=MCache::getMinor3(kin);
+  ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i, j) : sNAN.d64 );
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -351,6 +401,7 @@ ncomplex ICache::getC(int ep, int i, int j, const Kinem3 &kin)
  */
 ncomplex ICache::getC(int ep, int i, const Kinem3 &kin)
 {
+#ifdef USE_CACHE_LOW
   int coefn=(i-1)+cc1;
   Save3 *s3=getS3(ep, kin, coefn);
 
@@ -360,6 +411,10 @@ ncomplex ICache::getC(int ep, int i, const Kinem3 &kin)
     ivalue=pm3->evalC(ep, i);
     (*s3)[coefn]=ivalue;
   }
+#else
+  Minor3::Ptr pm3=MCache::getMinor3(kin);
+  ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i) : sNAN.d64 );
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -376,6 +431,7 @@ ncomplex ICache::getC(int ep, int i, const Kinem3 &kin)
  */
 ncomplex ICache::getB(int ep, int i, int j, const Kinem2 &kin)
 {
+#ifdef USE_CACHE_LOW
   assert( (i==0 && j==0) || (i!=0 && j!=0) );
   int coefn=(i==0 && j==0) ? bb00 : Minor2::is(i-1,j-1)+bb11;
   Save2 *s2=getS2(ep, kin, coefn);
@@ -386,6 +442,10 @@ ncomplex ICache::getB(int ep, int i, int j, const Kinem2 &kin)
     ivalue=pm2->evalB(ep, i, j);
     (*s2)[coefn]=ivalue;
   }
+#else
+  Minor2::Ptr pm2=MCache::getMinor2(kin);
+  ncomplex ivalue= ( pm2!=0 ? pm2->evalB(ep, i, j) : sNAN.d64 );
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
@@ -395,6 +455,7 @@ ncomplex ICache::getB(int ep, int i, int j, const Kinem2 &kin)
  */
 ncomplex ICache::getB(int ep, int i, const Kinem2 &kin)
 {
+#ifdef USE_CACHE_LOW
   int coefn=(i-1)+bb1;
   Save2 *s2=getS2(ep, kin, coefn);
 
@@ -404,6 +465,10 @@ ncomplex ICache::getB(int ep, int i, const Kinem2 &kin)
     ivalue=pm2->evalB(ep, i);
     (*s2)[coefn]=ivalue;
   }
+#else
+  Minor2::Ptr pm2=MCache::getMinor2(kin);
+  ncomplex ivalue= ( pm2!=0 ? pm2->evalB(ep, i) : sNAN.d64 );
+#endif /* USE_CACHE_LOW */
   return ivalue;
 }
 
