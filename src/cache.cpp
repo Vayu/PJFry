@@ -25,6 +25,7 @@ double ICache::getMu2()
 double ICache::setMu2(const double newmu2)
 {
   if (newmu2 > 0 && newmu2 != mu2) {
+    MinorBase::Rescale(newmu2/mu2);
     mu2=newmu2;
 #ifdef USE_ONELOOP
     double mu=sqrt(mu2);

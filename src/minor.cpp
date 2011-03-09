@@ -20,9 +20,16 @@ const double MinorBase::deps1=5e-2;
 const double MinorBase::deps2=5e-2;
 const double MinorBase::deps3=5e-2;
 
-const double MinorBase::deps=1e-14;
-const double MinorBase::meps=1e-10;
+const double MinorBase::seps1=1e-8;
+const double MinorBase::seps2=1e-5;
 
+double MinorBase::deps=1e-14;
+double MinorBase::meps=1e-10;
+
+void MinorBase::Rescale(double factor)
+{
+  meps*=factor;
+}
 
 const unsigned char MinorBase::idxtbl[64]={
   0,     //     0    0b0
@@ -227,7 +234,7 @@ void MinorBase::freeidxM3(int set[], int free[])
  *    Real 5-point kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
+Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3(), pmaxM2()
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -295,7 +302,7 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3()
  *    Dummy 5-from-4 kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3()
+Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3(), pmaxM2()
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -364,6 +371,15 @@ double Minor5::maxS3(int s, int t)
 
 void Minor5::maxCay()
 {
+  for (int i=1; i<=DCay-1; i++) {
+    for (int ip=i+1; ip<=DCay-1; ip++) {
+      const double m1=kinem.mass(i);
+      const double m2=kinem.mass(ip);
+      const double maxM = m1>m2 ? m1 : m2;
+      pmaxM2[im2(i,ip)-5] = maxM>meps ? maxM : meps; // NOTE meps depends on mu2 scale
+    }
+  }
+
   for (int i=1; i<=DCay-1; i++) {
     for (int j=i; j<=DCay-1; j++) {
       const double cay=fabs(Cay[nss(i,j)]);
@@ -1466,8 +1482,9 @@ void Minor5::I2DstuEval(int idx, int ep, int s, int t, int u, int m, int n, doub
 
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=-ICache::getI1(ep, Kinem1(msq1));
@@ -1960,8 +1977,9 @@ void Minor5::I2DstuiEval(int ep, int s, int t, int u, int i, int ip, double qsq)
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(i);
     const double msq2=kinem.mass(ip);
+    const double s_cutoff=seps1*pmaxM2[im2(i,ip)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         if (msq1 > meps) {
@@ -2195,8 +2213,9 @@ void Minor5::I2D2stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=0.25*msq1*(msq1 + 2.*ICache::getI1(ep, Kinem1(msq1)));
@@ -2720,8 +2739,9 @@ void Minor5::I2D2stuiEval(int ep, int s, int t, int u, int i, int ip, double qsq
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(i);
     const double msq2=kinem.mass(ip);
+    const double s_cutoff=seps1*pmaxM2[im2(i,ip)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=0.5*ICache::getI1(ep, Kinem1(msq1));
@@ -3015,8 +3035,9 @@ void Minor5::I2D2stuijEval(int ep, int s, int t, int u, int i, int ip, double qs
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(i);
     const double msq2=kinem.mass(ip);
+    const double s_cutoff=seps2*pmaxM2[im2(i,ip)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         if (msq1 > meps) {

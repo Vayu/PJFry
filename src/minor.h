@@ -138,6 +138,9 @@ class MinorBase : public SRefCnt
 
     // fill 'free' array with indices which are not occupied by 'set' array
     static void freeidxM3(int set[], int free[]);
+
+    static void Rescale(double factor);
+
   private:
     static const unsigned char ti2[8];
     static const unsigned char ti3[8];
@@ -155,8 +158,11 @@ class MinorBase : public SRefCnt
     static const double deps2;
     static const double deps3;
 
-    static const double deps;
-    static const double meps; // onshell cutoff
+    static const double seps1; // two-point cutoff
+    static const double seps2; // two-point cutoff
+
+    static double deps;
+    static double meps; // onshell cutoff
 };
 
 template <int N>
@@ -286,8 +292,9 @@ class Minor5 : public Minor<5>
     int smax;
 
     // Maximal elements of sub-Cayley's
-    double pmaxS4[DCay-1];
-    double pmaxS3[10];     // symm 5x5 w/o diag els
+    double pmaxS4[DCay-1];           // s{1..5}
+    double pmaxS3[10];               // s,t  - symm 5x5 w/o diag els
+    double pmaxM2[10];               // i,ip - symm 5x5 w/o diag els
 
     // flags marking evuation steps
     enum EvalM {E_None=0,

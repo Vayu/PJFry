@@ -53,8 +53,9 @@ void Minor5::I2D3stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=-(5*msq1 + 6.*ICache::getI1(ep, Kinem1(msq1)))*msq1*msq1/36.;
@@ -185,8 +186,9 @@ void Minor5::I2D4stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=(13*msq1 + 12.*ICache::getI1(ep, Kinem1(msq1)))*msq1*msq1*msq1/288.;
@@ -321,8 +323,9 @@ void Minor5::I2D5stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=-(77*msq1 + 60.*ICache::getI1(ep, Kinem1(msq1)))*(msq1*msq1)*(msq1*msq1)/7200.;
@@ -455,8 +458,9 @@ void Minor5::I2D6stuEval(int idx, int ep, int s, int t, int u, int m, int n, dou
     const double dstustu=-2*qsq; /*M3(s,t,u,s,t,u);*/
     const double msq1=kinem.mass(m);
     const double msq2=kinem.mass(n);
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
 
-    if (fabs(dstustu) <= deps) {
+    if (fabs(dstustu) <= s_cutoff) {
       const double mm12=msq1-msq2;
       if (fabs(mm12) < meps) {
         sum1=(29*msq1 + 20.*ICache::getI1(ep, Kinem1(msq1)))*(msq1*msq1)*(msq1*msq1)*msq1/14400.;
