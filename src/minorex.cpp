@@ -8,6 +8,128 @@
 #include "cache.h"
 
 /* ========================================================
+ *               IR triangles
+ * ========================================================
+ */
+
+/* --------------------------------------------------------
+ *   I2mDstu bubble in D-2 dim
+ * --------------------------------------------------------
+ */
+ncomplex Minor5::I2mDstu(int ep, int s, int t, int u, int m, int n)
+{
+  ncomplex sum1=0;
+  const double dstustu=M3(s,t,u,s,t,u);
+  const double msq1=kinem.mass(m);
+  const double msq2=kinem.mass(n);
+  if (ep==0) {
+    const double s_cutoff=seps1*pmaxM2[im2(m,n)-5];
+
+    if (fabs(dstustu) <= s_cutoff) {
+      const double mm12=msq1-msq2;
+      if (fabs(mm12) < meps) {
+        if (msq1 > meps) {
+          sum1=1/msq1;
+        } else {
+          sum1=0;
+        }
+      }
+      else {
+        sum1= ( - (msq1>meps ? ICache::getI1(ep, Kinem1(msq1))/msq1 : 1.)
+                + (msq2>meps ? ICache::getI1(ep, Kinem1(msq2))/msq2 : 1.)
+              )/(mm12);
+      }
+    }
+    else {
+      ncomplex sumX=I2stu(ep,s,t,u)-2.*I2stu(ep+1,s,t,u);
+      ncomplex sumY=msq2>meps ? 1.-ICache::getI1(ep, Kinem1(msq2))/msq2 : 0;
+      ncomplex sumZ=msq1>meps ? 1.-ICache::getI1(ep, Kinem1(msq1))/msq1 : 0;
+
+      const double ds0tu=(Cay[nss(m,m)]*Cay[nss(n,n)]-Cay[ns(m,n)]*Cay[ns(m,n)]);
+      sum1+=sumX*dstustu;
+
+      const double dsvtuY=-(Cay[nss(n,n)]-Cay[ns(m,n)]); /* minus sign of minor v=m */
+      sum1+=sumY*dsvtuY;
+
+      const double dsvtuZ=+(Cay[ns(m,n)]-Cay[nss(m,m)]); /* plus sign of minor v=n */
+      sum1+=sumZ*dsvtuZ;
+
+      sum1/=ds0tu;
+    }
+  } else if (ep==1) {
+    if (fabs(msq1) < meps) {
+      if (fabs(msq2) < meps) {
+        if (fabs(dstustu) > meps) {
+          sum1=2./(-0.5*dstustu);                 // I(s,0,0)
+        } else {
+          sum1=0;                                 // I(0,0,0)
+        }
+      } else {
+        sum1=1./((-0.5*dstustu)-msq2);            // I(s,0,m2)
+      }
+    } else if (fabs(msq2) < meps) {
+        sum1=1./((-0.5*dstustu)-msq1);            // I(s,m1,0)
+    }
+  }
+  return sum1;
+}
+
+/* --------------------------------------------------------
+ *   I2stui bubble in D dim with a dot
+ * --------------------------------------------------------
+ */
+ncomplex Minor5::I2stui(int ep, int s, int t, int u, int i, int ip)
+{
+  ncomplex sum1=0;
+  const double dstustu=M3(s,t,u,s,t,u);
+  const double msq1=kinem.mass(i);
+  const double msq2=kinem.mass(ip);
+  if (ep==0) {
+    const double s_cutoff=seps1*pmaxM2[im2(i,ip)-5];
+
+    if (fabs(dstustu) <= s_cutoff) {
+      const double mm12=msq1-msq2;
+      if (fabs(mm12) < meps) {
+        if (msq1 > meps) {
+          sum1=-1/(2*msq1);
+        } else {
+          sum1=0;
+        }
+      }
+      else {
+        if (msq1 > meps) {
+          sum1=-1/(msq1 - msq2)
+                - ( + msq2*ICache::getI1(ep, Kinem1(msq1))
+                    - msq1*ICache::getI1(ep, Kinem1(msq2))
+                  )/(msq1*mm12*mm12);
+        } else {
+          sum1=ICache::getI1(ep, Kinem1(msq2))/(msq2*msq2);
+        }
+      }
+    }
+    else {
+      sum1+=+(Cay[nss(ip,ip)]-Cay[ns(i,ip)])*I2mDstu(ep,s,t,u,i,ip);
+      sum1+=msq1>meps ? 1.-ICache::getI1(ep, Kinem1(msq1))/msq1 : 0;
+      sum1-=msq2>meps ? 1.-ICache::getI1(ep, Kinem1(msq2))/msq2 : 0;
+      sum1/=dstustu;
+    }
+  } else if (ep==1) {
+    if (fabs(msq1) < meps) {
+      if (fabs(dstustu) > meps) {
+        if (fabs(msq2) < meps) {
+          sum1=-1./(-0.5*dstustu);            // I(s,0,0)
+        } else {
+          sum1=-1./((-0.5*dstustu)-msq2);     // I(s,0,m2)
+        }
+      } else {
+        sum1=1./msq2;                         // I(0,0,m2)
+      }
+    }
+  }
+  return sum1;
+}
+
+/* ========================================================
  *               SMALL Gram4 expansion
  * ========================================================
  */
@@ -121,7 +243,7 @@ void Minor5::I3D4stEval(int ep)
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) <= deps) {
+      if (pmaxS3[idx] <= deps) {
         printf("I3D4 - M2({%d,%d}) <= eps\n",s,t);
         ivalue=std::numeric_limits<double>::quiet_NaN();
       }
@@ -259,7 +381,7 @@ void Minor5::I3D5stEval(int ep)
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) <= deps) {
+      if (pmaxS3[idx] <= deps) {
         printf("I3D5 - M2({%d,%d}) <= eps\n",s,t);
         ivalue=std::numeric_limits<double>::quiet_NaN();
       }
@@ -394,7 +516,7 @@ void Minor5::I3D6stEval(int ep)
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) <= deps) {
+      if (pmaxS3[idx] <= deps) {
         printf("I3D6 - M2({%d,%d}) <= eps\n",s,t);
         ivalue=std::numeric_limits<double>::quiet_NaN();
       }
@@ -530,7 +652,7 @@ void Minor5::I3D7stEval(int ep)
       const double dstst=M2(s,t,s,t);
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) <= deps) {
+      if (pmaxS3[idx] <= deps) {
         printf("I3D7 - M2({%d,%d}) <= eps\n",s,t);
         ivalue=std::numeric_limits<double>::quiet_NaN();
       }

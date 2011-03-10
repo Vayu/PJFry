@@ -23,12 +23,17 @@ const double MinorBase::deps3=5e-2;
 const double MinorBase::seps1=1e-8;
 const double MinorBase::seps2=1e-5;
 
+const double MinorBase::epsir1=5e-6;
+const double MinorBase::epsir2=5e-6; // m.b. 5e-5 is better
+
 double MinorBase::deps=1e-14;
 double MinorBase::meps=1e-10;
+double MinorBase::m3eps=1;
 
 void MinorBase::Rescale(double factor)
 {
   meps*=factor;
+  m3eps*=factor*factor;
 }
 
 const unsigned char MinorBase::idxtbl[64]={
@@ -98,6 +103,27 @@ const unsigned char MinorBase::idxtbl[64]={
   255,   //     63   0b111111
 };
 
+// Find first three indices which are not occupied by set[] and put them in free[]
+void MinorBase::freeidxM3(int set[], int free[])
+{
+  free[0]=0;
+  free[1]=1;
+  free[2]=2;
+
+  int ic=0;
+  int nc=0;
+  while (ic < 3 && nc < 3) {
+    if (free[nc]==set[ic]) {
+      for (int cc=nc; cc<3; cc++) {
+        free[cc]++;
+      }
+      ic++;
+    } else {
+      nc++;
+    }
+  }
+}
+
 /* ------------------------------------------------------------
 * ------------------------------------------------------------
 *                       Minor2 section
@@ -156,26 +182,40 @@ Minor4::Minor4(const Kinem4 &k, Minor5::Ptr mptr5, int s, int is)
  * ========================================================
  */
 
-// Find first three indices which are not occupied by set[] and put them in free[]
-void MinorBase::freeidxM3(int set[], int free[])
+/* --------------------------------------------------------
+ *    Minors with 4 scratched lines
+ * --------------------------------------------------------
+ */
+double Minor5::M4ii(int u, int v, int i)
 {
-  free[0]=0;
-  free[1]=1;
-  free[2]=2;
-
-  int ic=0;
-  int nc=0;
-  while (ic < 3 && nc < 3) {
-    if (free[nc]==set[ic]) {
-      for (int cc=nc; cc<3; cc++) {
-        free[cc]++;
-      }
-      ic++;
-    } else {
-      nc++;
-    }
-  }
+  return (Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
 }
+
+double Minor5::M4ui(int u, int v, int i)
+{
+  return (Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
+}
+
+double Minor5::M4vi(int u, int v, int i)
+{
+  return (Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
+}
+
+double Minor5::M4uu(int u, int v, int i)
+{
+  return (Cay[nss(i,i)]*Cay[nss(v,v)]-Cay[ns (i,v)]*Cay[ns (i,v)]);
+}
+
+double Minor5::M4vu(int u, int v, int i)
+{
+  return (Cay[ns (i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
+}
+
+double Minor5::M4vv(int u, int v, int i)
+{
+  return (Cay[nss(i,i)]*Cay[nss(u,u)]-Cay[ns (i,u)]*Cay[ns (i,u)]);
+}
+
 
 /* --------------------------------------------------------
  *    Preprocessor definitions
@@ -234,7 +274,7 @@ void MinorBase::freeidxM3(int set[], int free[])
  *    Real 5-point kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3(), pmaxM2()
+Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5)
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -260,8 +300,6 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3(), pmaxM2(
   Cay[ 3]=m1+m3-s23; Cay[ 4]=m2+m3-p3;  Cay[ 5]=2*m3;
   Cay[ 6]=m1+m4-s15; Cay[ 7]=m2+m4-s34; Cay[ 8]=m3+m4-p4;  Cay[ 9]=2*m4;
   Cay[10]=m1+m5-p1;  Cay[11]=m2+m5-s12; Cay[12]=m3+m5-s45; Cay[13]=m4+m5-p5; Cay[14]=2*m5;
-
-  maxCay();
 
   // create subkinematics minors
   Ptr self=Ptr(this);
@@ -302,7 +340,7 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS4(), pmaxS3(), pmaxM2(
  *    Dummy 5-from-4 kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3(), pmaxM2()
+Minor5::Minor5(const Kinem4& k) : smax(1)
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -358,17 +396,6 @@ Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3(), pmaxM2()
  * --------------------------------------------------------
  */
 
-double Minor5::maxS4(int s)
-{
-  return pmaxS4[s-1];
-}
-
-double Minor5::maxS3(int s, int t)
-{
-  int idx = im2(s,t)-5;
-  return pmaxS3[idx];
-}
-
 void Minor5::maxCay()
 {
   for (int i=1; i<=DCay-1; i++) {
@@ -402,7 +429,26 @@ void Minor5::maxCay()
     pmaxS4[s-1]=fabs(pmaxS4[s-1]*M1(s,s)/M2(0,s,0,s));
     for (int t=s+1; t<=DCay-1; t++) {
       const int idx=im2(s,t)-5;
-      pmaxS3[idx]=fabs(pmaxS3[idx]*M2(s,t,s,t)/M3(0,s,t,0,s,t));
+
+      int i=0;
+      double dsits0t=0;
+      for (int ii=1; ii<=DCay-1; ii++) {
+        if (i==s || i==t) continue;
+        const double val=fabs(M3(0,s,t,ii,s,t));
+        if (val > dsits0t) {
+          dsits0t=val;
+          i=ii;
+        }
+      }
+      imax3[idx]=i;
+
+      const double maxcay3=pmaxS3[idx];
+      const double dstst=M2(s,t,s,t);
+      const double ds0ts0t=M3(0,s,t,0,s,t);
+
+      pmaxS3[idx]=fabs(maxcay3*dstst/ds0ts0t);
+      pmaxT3[idx]=fabs(ds0ts0t/(maxcay3*M3(0,s,t,i,s,t)));
+      pmaxU3[idx]=fabs(dstst/M3(0,s,t,i,s,t));
     }
   }
 }
@@ -850,7 +896,7 @@ void Minor5::I3stEval(int ep)
 ncomplex Minor5::I2stu(int ep, int s, int t, int u)
 {
   assert(t!=u && u!=s && s!=t);
-  if (ep==2) return 0;
+  if (ep>=2) return 0;
 
   if (not fEval[E_I2stu+ep]) {
     I2stuEval(ep);
@@ -931,7 +977,7 @@ void Minor5::I4DsEval(const int ep)
     ivalue=sum1/dss;
 
     const double x=dss/d0s0s;
-    if (maxS4(s) <= deps1) {
+    if (pmaxS4[s-1] <= deps1) {
     ncomplex sump;
     do {
       assert(ep==0);
@@ -1020,7 +1066,7 @@ void Minor5::I4DsiEval(int ep)
     if (s==i) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps1) {
+    if (pmaxS4[s-1] <= deps1) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s) continue;
@@ -1076,75 +1122,93 @@ void Minor5::I3DstEval(int ep)
     const double d0st0st=M3(0,s,t,0,s,t);
     ncomplex ivalue=0;
 
-    ncomplex sum1=0;
-    for (int u=1; u<=5; u++) {
-        if (u==t || u==s) continue;
-        sum1-=M3(u,s,t,0,s,t)*I2stu(ep, s, t, u);
-    }
-    sum1+=d0st0st*I3st(ep, s, t);
-    ivalue=sum1/(2*dstst)-0.5; // 2*(-1/2)/2 == -0.5
+    if ( pmaxT3[idx]!=0 && ( pmaxT3[idx] <= epsir1 && pmaxU3[idx] <= epsir1 ) ) {
+      // IR
+      int i=imax3[idx];
+      int iu[3]={i-1,s-1,t-1};
+      int tmp;
+      tswap(iu[0],iu[2],tmp);
+      tswap(iu[1],iu[2],tmp);
+      tswap(iu[0],iu[1],tmp);
+      int nu[3];
+      freeidxM3(iu, nu);
+      int u=nu[0]+1;
+      int v=nu[1]+1;
+      const double Dii=M4ii(u,v,i);
+      const double Dui=M4ui(u,v,i);
+      const double Dvi=M4vi(u,v,i);
+      ncomplex sum1=+Dii*(I2stu(0, s, t, i)+I2stu(1, s, t, i))  // (i, i)
+                    +Dui*(I2stu(0, s, t, u)+I2stu(1, s, t, u))  // (u, i)
+                    +Dvi*(I2stu(0, s, t, v)+I2stu(1, s, t, v)); // (v, i)
+      ivalue=0.5*sum1/M3(0,s,t,i,s,t);
+    } else if (pmaxS3[idx] <= ceps) {
+      // EXP
+      const double x=dstst/d0st0st;
+      ncomplex sump;
+      do {
+        double dstust0[6];
+        ncomplex sum1=0;
+        for (int u=1; u<=5; u++) {
+          if (u==t || u==s) continue;
+          dstust0[u]=M3(s,t,u,s,t,0);
+          sum1+=dstust0[u]*I2Dstu(0, s, t, u);
+        }
 
-    const double x=dstst/d0st0st;
-    if (maxS3(s,t) <= ceps) {
-    ncomplex sump;
-    do {
-      assert(ep==0);
+        double xn=1;
+        ncomplex dv;
 
-      double dstust0[6];
-      sum1=0;
-      for (int u=1; u<=5; u++) {
-        if (u==t || u==s) continue;
-        dstust0[u]=M3(s,t,u,s,t,0);
-        sum1+=dstust0[u]*I2Dstu(0, s, t, u);
-      }
-
-      double xn=1;
-      ncomplex dv;
-
-      ncomplex sum[3];
-      sum[0]=sump=sum1;
+        ncomplex sum[3];
+        sum[0]=sump=sum1;
 
 #define stepI3D(n,a,b) \
-      xn*=x; \
-      dv=0; \
-      for (int u=1; u<=5; u++) { \
-        if (u==t || u==s) continue; \
-        dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
-      } \
-      dv*=xn; \
-      sum1+=dv;
+        xn*=x; \
+        dv=0; \
+        for (int u=1; u<=5; u++) { \
+          if (u==t || u==s) continue; \
+          dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
+        } \
+        dv*=xn; \
+        sum1+=dv;
 
 #define stepWynn(n) \
-      sum[(2+n)%3]=sum1; \
-      if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-      dv=sump; \
-      sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-      if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-          && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+        sum[(2+n)%3]=sum1; \
+        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
+        dv=sump; \
+        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
+        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
+            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+            break;
+
+        stepI3D(2,4.,2.)
+        if (   fabs(sum1.real()*teps)>=fabs(dv.real())
+            && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
           break;
+        sum[1]=sump=sum1;
 
-      stepI3D(2,4.,2.)
-      if (   fabs(sum1.real()*teps)>=fabs(dv.real())
-          && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
-        break;
-      sum[1]=sump=sum1;
-
-      stepI3D(3,24.,20.)
-      sump=sum1;
-      stepWynn(0)
-      stepI3D(4,192.,208.)
-      stepWynn(1)
-      stepI3D(5,1920.,2464.)
-      stepWynn(2)
-      stepI3D(6,23040.,33408.)
-      stepWynn(3)
-//       stepI3D(7,322560.,513792.)
-//       stepWynn(4)
-
+        stepI3D(3,24.,20.)
+        sump=sum1;
+        stepWynn(0)
+        stepI3D(4,192.,208.)
+        stepWynn(1)
+        stepI3D(5,1920.,2464.)
+        stepWynn(2)
+        stepI3D(6,23040.,33408.)
+        stepWynn(3)
+//         stepI3D(7,322560.,513792.)
+//         stepWynn(4)
 #undef stepI3D
 #undef stepWynn
-    } while (0);
-    ivalue=sump/d0st0st;
+      } while (0);
+      ivalue=sump/d0st0st;
+    } else {
+      // NORMAL
+      ncomplex sum1=0;
+      for (int u=1; u<=5; u++) {
+        if (u==t || u==s) continue;
+        sum1-=M3(u,s,t,0,s,t)*I2stu(ep, s, t, u);
+      }
+      sum1+=d0st0st*I3st(ep, s, t);
+      ivalue=sum1/(2*dstst)-0.5; // 2*(-1/2)/2 == -0.5
     }
     pI3Dst[ep][idx]=ivalue;
   }
@@ -1182,7 +1246,7 @@ void Minor5::I4D2sEval(int ep) {
     ivalue=sum1/(3*dss)+1./9.; // +2*(1/6)/3
 
     const double x=dss/d0s0s;
-    if (maxS4(s) <= deps2) {
+    if (pmaxS4[s-1] <= deps2) {
     ncomplex sump;
     do {
       assert(ep==0);
@@ -1277,7 +1341,7 @@ void Minor5::I4D2siEval(int ep)
     if (s==i) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps2) {
+    if (pmaxS4[s-1] <= deps2) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s) continue;
@@ -1333,15 +1397,16 @@ void Minor5::I3DstiEval(int ep)
     int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
-    if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix
+    if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3Dsti is finite
       pI3Dsti[ep][i-1][idx]=0;
       continue;
     }
 
-    const double dstst=M2(s,t,s,t);
     ncomplex ivalue=0;
 
-    if (maxS3(s,t) > ceps) {
+    if ( ep!=0 ||
+       ( (pmaxT3[idx]==0 || (pmaxT3[idx] > epsir2 || pmaxU3[idx] > epsir2))
+      && pmaxS3[idx] > ceps ) ) {
       // Variant with Gram3
       ncomplex sum1=0;
       for (int u=1; u<=5; u++) {
@@ -1349,9 +1414,8 @@ void Minor5::I3DstiEval(int ep)
         sum1+=M3(u,s,t,i,s,t)*I2stu(ep,s,t,u);
       }
       sum1-=M3(0,s,t,i,s,t)*I3st(ep, s, t);
-      ivalue=sum1/dstst;
-    }
-    else {
+      ivalue=sum1/M2(s,t,s,t);
+    } else {
       ncomplex sum1=0;
       int iu[3]={i-1,s-1,t-1};
       int tmp;
@@ -1362,23 +1426,51 @@ void Minor5::I3DstiEval(int ep)
       freeidxM3(iu, nu);
       int u=nu[0]+1;
       int v=nu[1]+1;
-      const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-      const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
-      const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
-      if ( fabs(ds0ts0t) > 0. ) {
-        sum1+=Dii*I2stu(ep, s, t, i)  // (i, i)
-             +Dui*I2stu(ep, s, t, u)  // (u, i)
-             +Dvi*I2stu(ep, s, t, v); // (v, i)
+      if ( pmaxT3[idx] <= epsir2 && pmaxU3[idx] <= epsir2 ) {
+        // small G3 & C3
+        assert(ep==0);
+        int j=imax3[idx];
+        sum1=0;
+        ncomplex const I3term=I3st(ep,s,t)+2.*I3st(ep+1,s,t);
+        ncomplex const I2Uterm=I2stui(ep,s,t,u,i,v)+2.*I2stui(ep+1,s,t,u,i,v);
+        ncomplex const I2Vterm=I2stui(ep,s,t,v,i,u)+2.*I2stui(ep+1,s,t,v,i,u);
+        if (j==i) { // j->i
+          const double Dii=M4ii(u,v,i);
+          const double Dui=M4ui(u,v,i);
+          const double Dvi=M4vi(u,v,i);
+          sum1+=+Dii*(I3term)            // (i, i)
+                +Dui*(I2Uterm)           // (u, i)
+                +Dvi*(I2Vterm);          // (v, i)
+        } else if (j==u) { // j->u
+          const double Dui=M4ui(u,v,i);
+          const double Duu=M4uu(u,v,i);
+          const double Dvu=M4vu(u,v,i);
+          sum1+=+Dui*(I3term)            // (u, i)
+                +Duu*(I2Uterm)           // (u, u)
+                +Dvu*(I2Vterm);          // (v, u)
+        } else { assert(j==v); // j->v
+          const double Dvi=M4vi(u,v,i);
+          const double Dvu=M4vu(u,v,i);
+          const double Dvv=M4vv(u,v,i);
+          sum1+=+Dvi*(I3term)            // (v, i)
+                +Dvu*(I2Uterm)           // (v, u)
+                +Dvv*(I2Vterm);          // (v, v)
+        }
+        ivalue=sum1/(M3(s,0,t,s,j,t));
+      } else {
+        // small G3
+        assert(ep==0);
+        const double Dii=M4ii(u,v,i);
+        const double Dui=M4ui(u,v,i);
+        const double Dvi=M4vi(u,v,i);
+        sum1+=Dii*I2stu(ep,s,t,i)        // (i, i)
+             +Dui*I2stu(ep,s,t,u)        // (u, i)
+             +Dvi*I2stu(ep,s,t,v);       // (v, i)
         sum1+=M3(s,0,t,s,i,t)*(-2.*I3Dst(ep, s, t)-1.); //+2.*I3Dst(ep+1, s, t));
         ivalue=sum1/ds0ts0t;
       }
-      else {
-        ivalue=std::numeric_limits<double>::quiet_NaN();
-        // TODO fix it, need I2stui
-      }
     }
-//     printf("I3Dsti(%d,%d,%d) e^%d = (%.15e,%.15e)\n",s,t,i,ep,ivalue.real(),ivalue.imag());
     pI3Dsti[ep][i-1][idx]=ivalue;
   }
   }
@@ -1407,7 +1499,7 @@ void Minor5::I4D2sijEval(int ep)
   for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps2) {
+    if (pmaxS4[s-1] <= deps2) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s || t==i) continue;
@@ -1545,78 +1637,95 @@ void Minor5::I3D2stEval(int ep)
       const double dstst=M2(s,t,s,t);
       const double d0st0st=M3(0,s,t,0,s,t);
 
-      ncomplex sum1=0;
-      for (int u=1; u<=5; u++) {
-        if (u==t || u==s) continue;
-        sum1-=M3(u,s,t,0,s,t)*I2Dstu(ep, s, t, u);
-      }
-      sum1+=d0st0st*I3Dst(ep, s, t);
-      ivalue=sum1/(4*dstst)+I3D2st(ep+1, s, t)*0.5; // 2*x/4 == 0.5*x
+      if ( pmaxT3[idx]!=0 && ( pmaxT3[idx] <= epsir1 && pmaxU3[idx] <= epsir1 ) ) {
+        // IR
+        int i=imax3[idx];
+        int iu[3]={i-1,s-1,t-1};
+        int tmp;
+        tswap(iu[0],iu[2],tmp);
+        tswap(iu[1],iu[2],tmp);
+        tswap(iu[0],iu[1],tmp);
+        int nu[3];
+        freeidxM3(iu, nu);
+        int u=nu[0]+1;
+        int v=nu[1]+1;
+        const double Dii=M4ii(u,v,i);
+        const double Dui=M4ui(u,v,i);
+        const double Dvi=M4vi(u,v,i);
+        ncomplex sum1=+Dii*(I2Dstu(0, s, t, i)+0.5*I2Dstu(1, s, t, i))  // (i, i)
+                      +Dui*(I2Dstu(0, s, t, u)+0.5*I2Dstu(1, s, t, u))  // (u, i)
+                      +Dvi*(I2Dstu(0, s, t, v)+0.5*I2Dstu(1, s, t, v)); // (v, i)
+        ivalue=0.25*sum1/M3(0,s,t,i,s,t);
+      } else if (pmaxS3[idx] <= ceps) {
+        // EXP
+        const double x=dstst/d0st0st;
+        ncomplex sump;
+        do {
+          double dstust0[6];
+          ncomplex sum1=0;
+          for (int u=1; u<=5; u++) {
+            if (u==t || u==s) continue;
+            dstust0[u]=M3(s,t,u,s,t,0);
+            sum1+=dstust0[u]*I2D2stu(0, s, t, u);
+          }
 
-      const double x=dstst/d0st0st;
-      if (maxS3(s,t) <= ceps) {
-      ncomplex sump;
-      do {
-        assert(ep==0);
+          double xn=1;
+          ncomplex dv;
 
-        double dstust0[6];
-        sum1=0;
-        for (int u=1; u<=5; u++) {
-          if (u==t || u==s) continue;
-          dstust0[u]=M3(s,t,u,s,t,0);
-          sum1+=dstust0[u]*I2D2stu(0, s, t, u);
-        }
-
-        double xn=1;
-        ncomplex dv;
-
-        ncomplex sum[3];
-        sum[0]=sump=sum1;
+          ncomplex sum[3];
+          sum[0]=sump=sum1;
 
 #define stepI3D(n,a,b) \
-        xn*=x; \
-        dv=0; \
-        for (int u=1; u<=5; u++) { \
-          if (u==t || u==s) continue; \
-          dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
-        } \
-        dv*=xn; \
-        sum1+=dv;
+          xn*=x; \
+          dv=0; \
+          for (int u=1; u<=5; u++) { \
+            if (u==t || u==s) continue; \
+            dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
+          } \
+          dv*=xn; \
+          sum1+=dv;
 
 #define stepWynn(n) \
-        sum[(2+n)%3]=sum1; \
-        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-        dv=sump; \
-        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+          sum[(2+n)%3]=sum1; \
+          if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
+          dv=sump; \
+          sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
+          if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
+              && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+              break;
+
+          stepI3D(3,6.,2.)
+          if (   fabs(sum1.real()*teps)>=fabs(dv.real())
+              && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
             break;
+          sum[1]=sump=sum1;
 
-        stepI3D(3,6.,2.)
-        if (   fabs(sum1.real()*teps)>=fabs(dv.real())
-            && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
-          break;
-        sum[1]=sump=sum1;
-
-        stepI3D(4,48.,28.)
-        sump=sum1;
-        stepWynn(0)
-        stepI3D(5,480.,376.)
-        stepWynn(1)
-        stepI3D(6,5760.,5472.)
-        stepWynn(2)
-//       stepI3D(7,80640.,88128.)
-//       stepWynn(3)
-//       stepI3D(8,1290240.,1571328.)
-//       stepWynn(4)
-
+          stepI3D(4,48.,28.)
+          sump=sum1;
+          stepWynn(0)
+          stepI3D(5,480.,376.)
+          stepWynn(1)
+          stepI3D(6,5760.,5472.)
+          stepWynn(2)
+//           stepI3D(7,80640.,88128.)
+//           stepWynn(3)
+//           stepI3D(8,1290240.,1571328.)
+//           stepWynn(4)
 #undef stepI3D
 #undef stepWynn
-      } while (0);
-      ivalue=sump/d0st0st;
+        } while (0);
+        ivalue=sump/d0st0st;
+      } else {
+        // NORMAL
+        ncomplex sum1=0;
+        for (int u=1; u<=5; u++) {
+          if (u==t || u==s) continue;
+          sum1-=M3(u,s,t,0,s,t)*I2Dstu(ep, s, t, u);
+        }
+        sum1+=d0st0st*I3Dst(ep, s, t);
+        ivalue=sum1/(4*dstst)+I3D2st(ep+1, s, t)*0.5; // 2*x/4 == 0.5*x
       }
-    }
-    else {
+    } else {
       assert(ep==1);
       int iu[3]={0,s,t};
       int nu[3];
@@ -1659,7 +1768,7 @@ void Minor5::I4D3sEval(int ep)
       ivalue=sum1/(5*dss)+2.*I4D3s(ep+1, s)/5.;
 
       const double x=dss/d0s0s;
-      if (maxS4(s) <= deps3) {
+      if (pmaxS4[s-1] <= deps3) {
       ncomplex sump;
       do {
         assert(ep==0);
@@ -1759,10 +1868,10 @@ void Minor5::I3D2stiEval(int ep)
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
-    const double dstst=M2(s,t,s,t);
     ncomplex ivalue=0;
 
-    if (maxS3(s,t) > ceps) {
+    if ( (pmaxT3[idx]==0 || (pmaxT3[idx] > epsir2 || pmaxU3[idx] > epsir2))
+      && pmaxS3[idx] > ceps ) {
       // Variant with Gram3
       ncomplex sum1=0;
       for (int u=1; u<=5; u++) {
@@ -1770,11 +1879,9 @@ void Minor5::I3D2stiEval(int ep)
         sum1+=M3(u,s,t,i,s,t)*I2Dstu(ep,s,t,u);
       }
       sum1-=M3(0,s,t,i,s,t)*I3Dst(ep, s, t);
-      ivalue=sum1/dstst;
-    }
-    else {
+      ivalue=sum1/M2(s,t,s,t);
+    } else {
       assert(ep==0);
-      ncomplex sum1=0;
       int iu[3]={i-1,s-1,t-1};
       int tmp;
       tswap(iu[0],iu[2],tmp);
@@ -1784,47 +1891,51 @@ void Minor5::I3D2stiEval(int ep)
       freeidxM3(iu, nu);
       int u=nu[0]+1;
       int v=nu[1]+1;
-      const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-      const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
-      const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
-      const double ds0ts0t=M3(s,0,t,s,0,t);
-      if ( fabs(ds0ts0t) > 0. ) {
-        sum1+=Dii*I2Dstu(ep, s, t, i)  // (i, i)
-             +Dui*I2Dstu(ep, s, t, u)  // (u, i)
-             +Dvi*I2Dstu(ep, s, t, v); // (v, i)
-        sum1+=M3(s,0,t,s,i,t)*(-4.*I3D2st(ep, s, t)+2.*I3D2st(ep+1, s, t));
-        ivalue=sum1/ds0ts0t;
-      }
-      else {
-        assert(ep==0);
-        int j=1;
-        while(fabs(M3(s,0,t,s,j,t))<deps && j<=5) j++;
-        assert(j<=5);
-        sum1=0;
+      if ( pmaxT3[idx] <= epsir2 && pmaxU3[idx] <= epsir2 ) {
+        // small G3 & C3
+        int j=imax3[idx];
+        ncomplex sum1=0;
+        ncomplex const I3term=I3Dst(ep,s,t)-1./3.;  //+2./3.*I3Dst(ep+1,s,t))
+        ncomplex const I2Uterm=I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i);
+        ncomplex const I2Vterm=I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i);
+
         if (j==i) { // j->i
-          sum1+=+Dii*(I3Dst(ep,s,t)-1./3.) //+2./3.*I3Dst(ep+1,s,t))            // (i, i)
-                +Dui*(I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i))  // (u, i)
-                +Dvi*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, i)
-        }
-        else if (j==u) { // j->u
-          const double Duu=(Cay[nss(i,i)]*Cay[nss(v,v)]-Cay[ns(i,v)]*Cay[ns(i,v)]);
-          const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
-          sum1+=+Dui*(I3Dst(ep,s,t)-1./3.) //+2./3.*I3Dst(ep+1,s,t))            // (u, i)
-                +Duu*(I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i))  // (u, u)
-                +Dvu*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, u)
-        }
-        else { assert(j==v); // j->v
-          const double Dvv=(Cay[nss(i,i)]*Cay[nss(u,u)]-Cay[ns(i,u)]*Cay[ns(i,u)]);
-          const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
-          sum1+=+Dvi*(I3Dst(ep,s,t)-1./3.) //+2./3.*I3Dst(ep+1,s,t))            // (v, i)
-                +Dvu*(I2Dstui(ep, s, t, u, i)+2./3.*I2Dstui(ep+1, s, t, u, i))  // (v, u)
-                +Dvv*(I2Dstui(ep, s, t, v, i)+2./3.*I2Dstui(ep+1, s, t, v, i)); // (v, v)
+          const double Dii=M4ii(u,v,i);
+          const double Dui=M4ui(u,v,i);
+          const double Dvi=M4vi(u,v,i);
+          sum1+=+Dii*(I3term)             // (i, i)
+                +Dui*(I2Uterm)            // (u, i)
+                +Dvi*(I2Vterm);           // (v, i)
+        } else if (j==u) { // j->u
+          const double Dui=M4ui(u,v,i);
+          const double Duu=M4uu(u,v,i);
+          const double Dvu=M4vu(u,v,i);
+          sum1+=+Dui*(I3term)             // (u, i)
+                +Duu*(I2Uterm)            // (u, u)
+                +Dvu*(I2Vterm);           // (v, u)
+        } else { assert(j==v); // j->v
+          const double Dvi=M4vi(u,v,i);
+          const double Dvv=M4vv(u,v,i);
+          const double Dvu=M4vu(u,v,i);
+          sum1+=+Dvi*(I3term)             // (v, i)
+                +Dvu*(I2Uterm)            // (v, u)
+                +Dvv*(I2Vterm);           // (v, v)
         }
         ivalue=sum1/(3*M3(s,0,t,s,j,t));
+      } else {
+        // small G3
+        const double Dii=M4ii(u,v,i);
+        const double Dui=M4ui(u,v,i);
+        const double Dvi=M4vi(u,v,i);
+        ncomplex sum1=0;
+        sum1+=Dii*I2Dstu(ep, s, t, i)     // (i, i)
+             +Dui*I2Dstu(ep, s, t, u)     // (u, i)
+             +Dvi*I2Dstu(ep, s, t, v);    // (v, i)
+        sum1+=M3(s,0,t,s,i,t)*(-4.*I3D2st(ep, s, t)+2.*I3D2st(ep+1, s, t));
+        ivalue=sum1/M3(s,0,t,s,0,t);
       }
     }
-//     printf("I3D2sti(%d,%d,%d) e^%d = (%.15e,%.15e)\n",s,t,i,ep,ivalue.real(),ivalue.imag());
     pI3D2sti[ep][i-1][idx]=ivalue;
   }
   }
@@ -1854,7 +1965,7 @@ void Minor5::I4D3siEval(int ep)
     if (s==i) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s) continue;
@@ -1899,7 +2010,7 @@ void Minor5::I4D3sijEval(int ep)
   for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s || t==i) continue;
@@ -2036,8 +2147,8 @@ void Minor5::I3D2stijEval(int ep)
     int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
-    if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix
-      for (int ij=iss(1-1,1-1); ij<=iss(4-1,4-1); ij++) {
+    if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3D2stij is finite
+      for (int ij=iss(1-1,1-1); ij<=iss(CIDX-1,CIDX-1); ij++) {
         pI3D2stij[ep][ij][idx]=0;
       }
       continue;
@@ -2049,7 +2160,7 @@ void Minor5::I3D2stijEval(int ep)
     for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) > ceps) {
+      if (pmaxS3[idx] > ceps || ep!=0) {
         // Variant with Gram3
         ncomplex sum1=0;
         for (int u=1; u<=5; u++) {
@@ -2058,8 +2169,7 @@ void Minor5::I3D2stijEval(int ep)
         }
         sum1+=-M3(s,0,t,s,j,t)*I3Dsti(ep, s, t, i)+M3(s,i,t,s,j,t)*I3Dst(ep, s, t);
         ivalue=sum1/dstst;
-      }
-      else {
+      } else {
         ncomplex sum1=0;
         int iu[3]={j-1,s-1,t-1};
         int tmp;
@@ -2070,22 +2180,20 @@ void Minor5::I3D2stijEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Djj=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-        const double Duj=(Cay[nss(u,v)]*Cay[ns (j,v)]-Cay[ns (j,u)]*Cay[nss(v,v)]);
-        const double Dvj=(Cay[nss(u,v)]*Cay[ns (j,u)]-Cay[ns (j,v)]*Cay[nss(u,u)]);
+        const double Djj=M4ii(u,v,j);
+        const double Duj=M4ui(u,v,j);
+        const double Dvj=M4vi(u,v,j);
         if ( fabs(ds0ts0t) > 0. ) {
           if (j==i) {
             sum1+=+Djj*I3Dst(ep,s,t)
                   +Duj*I2Dstui(ep, s, t, u, i)
                   +Dvj*I2Dstui(ep, s, t, v, i);
-          }
-          else {
+          } else {
             sum1+=Djj*I2Dstui(ep, s, t, j, i);
             if (i==u) {
               sum1+=+Duj*I3Dst(ep,s,t)
                     +Dvj*I2Dstui(ep, s, t, v, i);
-            }
-            else {
+            } else {
               sum1+=+Dvj*I3Dst(ep,s,t)
                     +Duj*I2Dstui(ep, s, t, u, i);
             }
@@ -2095,13 +2203,11 @@ void Minor5::I3D2stijEval(int ep)
           else
             sum1+=M3(s,0,t,s,j,t)*(-3.*I3D2sti(ep, s, t, i));
           ivalue=sum1/ds0ts0t;
-        }
-        else {
+        } else {
           ivalue=std::numeric_limits<double>::quiet_NaN();
           // TODO add: need I2Dstuij and I2stui
         }
       }
-//       printf("I3D2stij(%d,%d,%d,%d) e^%d = (%.15e,%.15e)\n", s, t, i, j, ep, ivalue.real(),ivalue.imag());
       pI3D2stij[ep][iss(i-1,j-1)][idx]=ivalue;
     }
     }
@@ -2132,7 +2238,7 @@ void Minor5::I4D3sijkEval(int ep)
   for (int k=j; k<=CIDX; k++) { if (k==s) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
           if (s==t || t==i || t==j) continue;
@@ -2279,78 +2385,97 @@ void Minor5::I3D3stEval(int ep)
       const double dstst=M2(s,t,s,t);
       const double d0st0st=M3(0,s,t,0,s,t);
 
-      ncomplex sum1=0;
-      for (int u=1; u<=5; u++) {
-        if (u==t || u==s) continue;
-        sum1-=M3(u,s,t,0,s,t)*I2D2stu(ep, s, t, u);
-      }
-      sum1+=d0st0st*I3D2st(ep, s, t);
-      ivalue=sum1/(6*dstst)+I3D3st(ep+1, s, t)/3.;
+      if ( pmaxT3[idx]!=0 && ( pmaxT3[idx] <= epsir1 && pmaxU3[idx] <= epsir1 ) ) {
+        // IR
+        int i=imax3[idx];
+        int iu[3]={i-1,s-1,t-1};
+        int tmp;
+        tswap(iu[0],iu[2],tmp);
+        tswap(iu[1],iu[2],tmp);
+        tswap(iu[0],iu[1],tmp);
+        int nu[3];
+        freeidxM3(iu, nu);
+        int u=nu[0]+1;
+        int v=nu[1]+1;
+        const double Dii=M4ii(u,v,i);
+        const double Dui=M4ui(u,v,i);
+        const double Dvi=M4vi(u,v,i);
+        ncomplex sum1=+Dii*(I2D2stu(0, s, t, i)+I2D2stu(1, s, t, i)/3.)  // (i, i)
+                      +Dui*(I2D2stu(0, s, t, u)+I2D2stu(1, s, t, u)/3.)  // (u, i)
+                      +Dvi*(I2D2stu(0, s, t, v)+I2D2stu(1, s, t, v)/3.); // (v, i)
+        ivalue=sum1/(6*M3(0,s,t,i,s,t));
+      } else if (pmaxS3[idx] <= ceps) {
+        // EXP
+        const double x=dstst/d0st0st;
+        ncomplex sump;
+        do {
+          assert(ep==0);
 
-      const double x=dstst/d0st0st;
-      if (maxS3(s,t) <= ceps) {
-      ncomplex sump;
-      do {
-        assert(ep==0);
+          double dstust0[6];
+          ncomplex sum1=0;
+          for (int u=1; u<=5; u++) {
+            if (u==t || u==s) continue;
+            dstust0[u]=M3(s,t,u,s,t,0);
+            sum1+=dstust0[u]*I2D3stu(0, s, t, u);
+          }
 
-        double dstust0[6];
-        sum1=0;
-        for (int u=1; u<=5; u++) {
-          if (u==t || u==s) continue;
-          dstust0[u]=M3(s,t,u,s,t,0);
-          sum1+=dstust0[u]*I2D3stu(0, s, t, u);
-        }
+          double xn=1;
+          ncomplex dv;
 
-        double xn=1;
-        ncomplex dv;
-
-        ncomplex sum[3];
-        sum[0]=sump=sum1;
+          ncomplex sum[3];
+          sum[0]=sump=sum1;
 
 #define stepI3D(n,a,b) \
-        xn*=x; \
-        dv=0; \
-        for (int u=1; u<=5; u++) { \
-          if (u==t || u==s) continue; \
-          dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
-        } \
-        dv*=xn; \
-        sum1+=dv;
+          xn*=x; \
+          dv=0; \
+          for (int u=1; u<=5; u++) { \
+            if (u==t || u==s) continue; \
+            dv+=dstust0[u]*(a*I2D##n##stu(0, s, t, u) - b*I2D##n##stu(1, s, t, u)); \
+          } \
+          dv*=xn; \
+          sum1+=dv;
 
 #define stepWynn(n) \
-        sum[(2+n)%3]=sum1; \
-        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-        dv=sump; \
-        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+          sum[(2+n)%3]=sum1; \
+          if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
+          dv=sump; \
+          sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
+          if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
+              && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+              break;
+
+          stepI3D(4,8.,2.)
+          if (   fabs(sum1.real()*teps)>=fabs(dv.real())
+              && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
             break;
+          sum[1]=sump=sum1;
 
-        stepI3D(4,8.,2.)
-        if (   fabs(sum1.real()*teps)>=fabs(dv.real())
-            && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
-          break;
-        sum[1]=sump=sum1;
-
-        stepI3D(5,80.,36.)
-        sump=sum1;
-        stepWynn(0)
-        stepI3D(6,960.,592.)
-        stepWynn(1)
-//         stepI3D(7,13440.,10208.)
-//         stepWynn(2)
-//       stepI3D(8,215040.,190208.)
-//       stepWynn(3)
-//       stepI3D(9,3870720.,3853824.)
-//       stepWynn(4)
-
+          stepI3D(5,80.,36.)
+          sump=sum1;
+          stepWynn(0)
+          stepI3D(6,960.,592.)
+          stepWynn(1)
+//           stepI3D(7,13440.,10208.)
+//           stepWynn(2)
+//           stepI3D(8,215040.,190208.)
+//           stepWynn(3)
+//           stepI3D(9,3870720.,3853824.)
+//           stepWynn(4)
 #undef stepI3D
 #undef stepWynn
-      } while (0);
-      ivalue=sump/d0st0st;
+        } while (0);
+        ivalue=sump/d0st0st;
+      } else {
+        // NORMAL
+        ncomplex sum1=0;
+        for (int u=1; u<=5; u++) {
+          if (u==t || u==s) continue;
+          sum1-=M3(u,s,t,0,s,t)*I2D2stu(ep, s, t, u);
+        }
+        sum1+=d0st0st*I3D2st(ep, s, t);
+        ivalue=sum1/(6*dstst)+I3D3st(ep+1, s, t)/3.;
       }
-    }
-    else {
+    } else {
       assert(ep==1);
       int iu[3]={0,s,t};
       int nu[3];
@@ -2402,7 +2527,7 @@ void Minor5::I4D4sEval(int ep)
       ivalue=sum1/(7*dss)+2.*I4D4s(ep+1, s)/7.;
 
       const double x=dss/d0s0s;
-      if (maxS4(s) <= deps3) {
+      if (pmaxS4[s-1] <= deps3) {
       ncomplex sump;
       do {
         assert(ep==0);
@@ -2508,7 +2633,7 @@ void Minor5::I4D4siEval(int ep)
   for (int i=1; i<=CIDX; i++) { if (s==i) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s) continue;
@@ -2556,8 +2681,8 @@ void Minor5::I3D3stiEval(int ep)
     ncomplex ivalue=0;
 
     if (ep==0) {
-      const double dstst=M2(s,t,s,t);
-      if (maxS3(s,t) > ceps) {
+      if ( (pmaxT3[idx]==0 || (pmaxT3[idx] > epsir2 || pmaxU3[idx] > epsir2))
+        && pmaxS3[idx] > ceps ) {
         // Variant with Gram3
         ncomplex sum1=0;
         for (int u=1; u<=5; u++) {
@@ -2565,11 +2690,9 @@ void Minor5::I3D3stiEval(int ep)
           sum1+=M3(u,s,t,i,s,t)*I2D2stu(ep,s,t,u);
         }
         sum1-=M3(0,s,t,i,s,t)*I3D2st(ep,s,t);
-        ivalue=sum1/dstst;
-      }
-      else {
+        ivalue=sum1/M2(s,t,s,t);
+      } else {
         assert(ep==0);
-        ncomplex sum1=0;
         int iu[3]={i-1,s-1,t-1};
         int tmp;
         tswap(iu[0],iu[2],tmp);
@@ -2579,48 +2702,52 @@ void Minor5::I3D3stiEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Dii=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-        const double Dui=(Cay[nss(u,v)]*Cay[ns (i,v)]-Cay[ns (i,u)]*Cay[nss(v,v)]);
-        const double Dvi=(Cay[nss(u,v)]*Cay[ns (i,u)]-Cay[ns (i,v)]*Cay[nss(u,u)]);
 
-        const double ds0ts0t=M3(s,0,t,s,0,t);
-        if ( fabs(ds0ts0t) > 0. ) {
-          sum1+=Dii*I2D2stu(ep, s, t, i)  // (i, i)
-               +Dui*I2D2stu(ep, s, t, u)  // (u, i)
-               +Dvi*I2D2stu(ep, s, t, v); // (v, i)
-          sum1+=M3(s,0,t,s,i,t)*(-6.*I3D3st(ep, s, t)+2.*I3D3st(ep+1, s, t));
-          ivalue=sum1/ds0ts0t;
-        }
-        else {
-          assert(ep==0);
-          int j=1;
-          while(fabs(M3(s,0,t,s,j,t))<deps && j<=5) j++;
-          assert(j<=5);
-          sum1=0;
+        if ( pmaxT3[idx] <= epsir2 && pmaxU3[idx] <= epsir2 ) {
+          // small G3 & C3
+          int j=imax3[idx];
+          ncomplex sum1=0;
+          ncomplex const I3term=I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t);
+          ncomplex const I2Uterm=I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i);
+          ncomplex const I2Vterm=I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i);
+
           if (j==i) { // j->i
-            sum1+=+Dii*(I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t))                      // (i, i)
-                  +Dui*(I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i))  // (u, i)
-                  +Dvi*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, i)
-          }
-          else if (j==u) { // j->u
-            const double Duu=(Cay[nss(i,i)]*Cay[nss(v,v)]-Cay[ns(i,v)]*Cay[ns(i,v)]);
-            const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
-            sum1+=+Dui*(I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t))                      // (u, i)
-                  +Duu*(I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i))  // (u, u)
-                  +Dvu*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, u)
-          }
-          else { assert(j==v); // j->v
-            const double Dvv=(Cay[nss(i,i)]*Cay[nss(u,u)]-Cay[ns(i,u)]*Cay[ns(i,u)]);
-            const double Dvu=(Cay[ns(i,v)]*Cay[ns (i,u)]-Cay[ns (u,v)]*Cay[nss(i,i)]);
-            sum1+=+Dvi*(I3D2st(ep,s,t)+2./5.*I3D2st(ep+1,s,t))                      // (v, i)
-                  +Dvu*(I2D2stui(ep, s, t, u, i)+2./5.*I2D2stui(ep+1, s, t, u, i))  // (v, u)
-                  +Dvv*(I2D2stui(ep, s, t, v, i)+2./5.*I2D2stui(ep+1, s, t, v, i)); // (v, v)
+            const double Dii=M4ii(u,v,i);
+            const double Dui=M4ui(u,v,i);
+            const double Dvi=M4vi(u,v,i);
+            sum1+=+Dii*(I3term)                      // (i, i)
+                  +Dui*(I2Uterm)                     // (u, i)
+                  +Dvi*(I2Vterm);                    // (v, i)
+          } else if (j==u) { // j->u
+            const double Dui=M4ui(u,v,i);
+            const double Duu=M4uu(u,v,i);
+            const double Dvu=M4vu(u,v,i);
+            sum1+=+Dui*(I3term)                      // (u, i)
+                  +Duu*(I2Uterm)                     // (u, u)
+                  +Dvu*(I2Vterm);                    // (v, u)
+          } else { assert(j==v); // j->v
+            const double Dvi=M4vi(u,v,i);
+            const double Dvv=M4vv(u,v,i);
+            const double Dvu=M4vu(u,v,i);
+            sum1+=+Dvi*(I3term)                      // (v, i)
+                  +Dvu*(I2Uterm)                     // (v, u)
+                  +Dvv*(I2Vterm);                    // (v, v)
           }
           ivalue=sum1/(5*M3(s,0,t,s,j,t));
+        } else {
+          // small G3
+          const double Dii=M4ii(u,v,i);
+          const double Dui=M4ui(u,v,i);
+          const double Dvi=M4vi(u,v,i);
+          ncomplex sum1=0;
+          sum1+=Dii*I2D2stu(ep, s, t, i)             // (i, i)
+               +Dui*I2D2stu(ep, s, t, u)             // (u, i)
+               +Dvi*I2D2stu(ep, s, t, v);            // (v, i)
+          sum1+=M3(s,0,t,s,i,t)*(-6.*I3D3st(ep, s, t)+2.*I3D3st(ep+1, s, t));
+          ivalue=sum1/M3(s,0,t,s,0,t);
         }
       }
-    }
-    else {
+    } else {
       assert(ep==1);
       int iu[3]={0,s,t};
       int nu[3];
@@ -2631,7 +2758,6 @@ void Minor5::I3D3stiEval(int ep)
                  +Cay[nss(j,j)]+Cay[ns(j,k)]+Cay[nss(k,k)]
               )/120.;
     }
-//     printf("I3D3sti(%d,%d,%d) e^%d = (%.15e,%.15e)\n",s,t,i,ep,ivalue.real(),ivalue.imag());
     pI3D3sti[ep][i-1][idx]=ivalue;
   }
   }
@@ -2662,7 +2788,7 @@ void Minor5::I4D4sijEval(int ep)
   for (int j=i; j<=CIDX; j++) { if (s==j) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (t==s || t==i) continue;
@@ -2801,7 +2927,8 @@ void Minor5::I3D3stijEval(int ep)
     for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) > ceps) {
+      if ( (pmaxT3[idx]==0 || (pmaxT3[idx] > epsir2 || pmaxU3[idx] > epsir2))
+        && pmaxS3[idx] > ceps ) {
         // Variant with Gram3
         ncomplex sum1=0;
         for (int u=1; u<=5; u++) {
@@ -2810,9 +2937,8 @@ void Minor5::I3D3stijEval(int ep)
         }
         sum1+=-M3(s,0,t,s,j,t)*I3D2sti(ep, s, t, i)+M3(s,i,t,s,j,t)*I3D2st(ep, s, t);
         ivalue=sum1/dstst;
-      }
-      else {
-        ncomplex sum1=0;
+      } else {
+        assert(ep==0);
         int iu[3]={j-1,s-1,t-1};
         int tmp;
         tswap(iu[0],iu[2],tmp);
@@ -2822,105 +2948,92 @@ void Minor5::I3D3stijEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Djj=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-        const double Duj=(Cay[nss(u,v)]*Cay[ns (j,v)]-Cay[ns (j,u)]*Cay[nss(v,v)]);
-        const double Dvj=(Cay[nss(u,v)]*Cay[ns (j,u)]-Cay[ns (j,v)]*Cay[nss(u,u)]);
-        const double ds0ts0t=M3(s,0,t,s,0,t);
-        if ( fabs(ds0ts0t) > 0. ) {
-          if (j==i) {
-            sum1+=+Djj*I3D2st(ep,s,t)
-                  +Duj*I2D2stui(ep, s, t, u, i)
-                  +Dvj*I2D2stui(ep, s, t, v, i);
-          }
-          else {
-            sum1+=Djj*I2D2stui(ep, s, t, j, i);
-            if (i==u) {
-              sum1+=+Duj*I3D2st(ep,s,t)
-                    +Dvj*I2D2stui(ep, s, t, v, i);
-            }
-            else {
-              sum1+=+Dvj*I3D2st(ep,s,t)
-                    +Duj*I2D2stui(ep, s, t, u, i);
-            }
-          }
-          sum1+=M3(s,0,t,s,j,t)*(-5.*I3D3sti(ep, s, t, i)+2.*I3D3sti(ep+1, s, t, i));
-          ivalue=sum1/ds0ts0t;
-        }
-        else {
-          assert(ep==0);
-          int k=1;
-          while(fabs(M3(s,0,t,s,k,t))<deps && k<=5) k++;
-          assert(k<=5);
-          sum1=0;
+
+        const double Djj=M4ii(u,v,j);
+        const double Duj=M4ui(u,v,j);
+        const double Dvj=M4vi(u,v,j);
+        if ( pmaxT3[idx] <= epsir2 && pmaxU3[idx] <= epsir2 ) {
+          // small G3 & C3
+          int k=imax3[idx];
+          ncomplex sum1=0;
           if (i==j) {
             if (k==j) {
               sum1+=2*Djj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                      +Duj*(I2D2stuij(ep,s,t,u,j,j)+0.5*I2D2stuij(ep+1,s,t,u,j,j))
                      +Dvj*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
-            }
-            else if (k==u) {
-              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
-              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+            } else if (k==u) {
+              const double Duu=M4uu(u,v,j);
+              const double Duv=M4vu(u,v,j);
               sum1+=2*Duj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                      +Duu*(I2D2stuij(ep,s,t,u,j,j)+0.5*I2D2stuij(ep+1,s,t,u,j,j))
                      +Duv*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
-            }
-            else { // k==v
-              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
-              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+            } else { // k==v
+              const double Dvv=M4vv(u,v,j);
+              const double Dvu=M4vu(u,v,j);
               sum1+=2*Dvj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                      +Dvu*(I2D2stuij(ep,s,t,u,j,j)+0.5*I2D2stuij(ep+1,s,t,u,j,j))
                      +Dvv*(I2D2stuij(ep,s,t,v,j,j)+0.5*I2D2stuij(ep+1,s,t,v,j,j));
-
             }
-          }
-          else if (k==j) {
+          } else if (k==j) {
             sum1+=Djj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i));
             if (i==u) {
               sum1+=Duj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Dvj*(I2D2stuij(ep,s,t,v,i,j)+0.5*I2D2stuij(ep+1,s,t,v,i,j));
-            }
-            else { // i==v
+            } else { // i==v
               sum1+=Dvj*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Duj*(I2D2stuij(ep,s,t,u,i,j)+0.5*I2D2stuij(ep+1,s,t,u,i,j));
             }
-          }
-          else if (k==i) {
+          } else if (k==i) {
             if (k==u) {
-              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
-              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+              const double Duu=M4uu(u,v,j);
+              const double Duv=M4vu(u,v,j);
               sum1+=Duj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Duu*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Duv*(I2D2stuij(ep,s,t,v,i,j)+0.5*I2D2stuij(ep+1,s,t,v,i,j));
-            }
-            else { // k==v
-              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
-              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+            } else { // k==v
+              const double Dvv=M4vv(u,v,j);
+              const double Dvu=M4vu(u,v,j);
               sum1+=Dvj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Dvv*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Dvu*(I2D2stuij(ep,s,t,u,i,j)+0.5*I2D2stuij(ep+1,s,t,u,i,j));
             }
-          }
-          else {
+          } else {
             if (k==u) { // i==v
-              const double Duu=(Cay[nss(j,j)]*Cay[nss(v,v)]-Cay[ns(j,v)]*Cay[ns (j,v)]);
-              const double Duv=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+              const double Duu=M4uu(u,v,j);
+              const double Duv=M4vu(u,v,j);
               sum1+=Duj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Duv*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Duu*(I2D2stuij(ep,s,t,u,i,j)+0.5*I2D2stuij(ep+1,s,t,u,i,j));
-            }
-            else { // k==v, i==u
-              const double Dvv=(Cay[nss(j,j)]*Cay[nss(u,u)]-Cay[ns(j,u)]*Cay[ns (j,u)]);
-              const double Dvu=(Cay[ns (j,v)]*Cay[ns (j,u)]-Cay[ns(u,v)]*Cay[nss(j,j)]);
+            } else { // k==v, i==u
+              const double Dvv=M4vv(u,v,j);
+              const double Dvu=M4vu(u,v,j);
               sum1+=Dvj*(I3D2sti(ep,s,t,i)+0.5*I3D2sti(ep+1,s,t,i))
                    +Dvu*(I3D2sti(ep,s,t,j)+0.5*I3D2sti(ep+1,s,t,j))
                    +Dvv*(I2D2stuij(ep,s,t,v,i,j)+0.5*I2D2stuij(ep+1,s,t,v,i,j));
             }
           }
           ivalue=sum1/(4*M3(s,0,t,s,k,t));
+        } else {
+          // small G3
+          ncomplex sum1=0;
+          if (j==i) {
+            sum1+=+Djj*I3D2st(ep,s,t)
+                  +Duj*I2D2stui(ep, s, t, u, i)
+                  +Dvj*I2D2stui(ep, s, t, v, i);
+          } else {
+            sum1+=Djj*I2D2stui(ep, s, t, j, i);
+            if (i==u) {
+              sum1+=+Duj*I3D2st(ep,s,t)
+                    +Dvj*I2D2stui(ep, s, t, v, i);
+            } else {
+              sum1+=+Dvj*I3D2st(ep,s,t)
+                    +Duj*I2D2stui(ep, s, t, u, i);
+            }
+          }
+          sum1+=M3(s,0,t,s,j,t)*(-5.*I3D3sti(ep, s, t, i)+2.*I3D3sti(ep+1, s, t, i));
+          ivalue=sum1/M3(s,0,t,s,0,t);
         }
       }
-//       printf("I3D3stij(%d,%d,%d,%d) e^%d = (%.15e,%.15e)\n", s, t, i, j, ep, ivalue.real(),ivalue.imag());
       pI3D3stij[ep][iss(i-1,j-1)][idx]=ivalue;
     }
     }
@@ -2952,7 +3065,7 @@ void Minor5::I4D4sijkEval(int ep)
   for (int k=j; k<=CIDX; k++) { if (k==s) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (s==t || t==i || t==j) continue;
@@ -3113,9 +3226,9 @@ void Minor5::I3D3stijkEval(int ep)
     int idx = im2(s,t)-5;
 
     const double ds0ts0t=M3(s,0,t,s,0,t);
-    if (ep!=0 && fabs(ds0ts0t) > meps) { // if ds0ts0t!=0 I3Dsti is finite TODO: fix
-      for (int ij=iss(1-1,1-1,1-1); ij<=iss(4-1,4-1,4-1); ij++) {
-        pI3D3stijk[ep][ij][idx]=0;
+    if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3D3stijk is finite
+      for (int ijk=iss(1-1,1-1,1-1); ijk<=iss(CIDX-1,CIDX-1,CIDX-1); ijk++) {
+        pI3D3stijk[ep][ijk][idx]=0;
       }
       continue;
     }
@@ -3126,7 +3239,7 @@ void Minor5::I3D3stijkEval(int ep)
     for (int k=j; k<=CIDX; k++) { if (k==s || k==t) continue;
       ncomplex ivalue=0;
 
-      if (maxS3(s,t) > ceps) {
+      if (pmaxS3[idx] > ceps || ep!=0) {
         // Variant with Gram3
         ncomplex sum1=0;
         for (int u=1; u<=5; u++) {
@@ -3136,8 +3249,7 @@ void Minor5::I3D3stijkEval(int ep)
         sum1-=M3(s,0,t,s,k,t)*I3D2stij(ep, s, t, i, j);
         sum1+=M3(s,i,t,s,k,t)*I3D2sti(ep, s, t, j)+M3(s,j,t,s,k,t)*I3D2sti(ep, s, t, i);
         ivalue=sum1/dstst;
-      }
-      else {
+      } else {
         ncomplex sum1=0;
         int iu[3]={k-1,s-1,t-1};
         int tmp;
@@ -3148,41 +3260,36 @@ void Minor5::I3D3stijkEval(int ep)
         freeidxM3(iu, nu);
         int u=nu[0]+1;
         int v=nu[1]+1;
-        const double Dkk=(Cay[nss(u,u)]*Cay[nss(v,v)]-Cay[nss(u,v)]*Cay[nss(u,v)]);
-        const double Duk=(Cay[nss(u,v)]*Cay[ns (k,v)]-Cay[ns (k,u)]*Cay[nss(v,v)]);
-        const double Dvk=(Cay[nss(u,v)]*Cay[ns (k,u)]-Cay[ns (k,v)]*Cay[nss(u,u)]);
+        const double Dkk=M4ii(u,v,k);
+        const double Duk=M4ui(u,v,k);
+        const double Dvk=M4vi(u,v,k);
         if ( fabs(ds0ts0t) > 0. ) {
           if (j==i) {
             if (j==k) {
               sum1+=+2*Dkk*I3D2sti(ep,s,t,j)
                       +Duk*I2D2stuij(ep, s, t, u, j, j)
                       +Dvk*I2D2stuij(ep, s, t, v, j, j);
-            }
-            else {
+            } else {
               sum1+=Dkk*I2D2stuij(ep, s, t, k, j, j);
               if (j==u) {
                 sum1+=+2*Duk*I3D2sti(ep,s,t,j)
                         +Dvk*I2D2stuij(ep, s, t, v, j, j);
-              }
-              else {
+              } else {
                 sum1+=+2*Dvk*I3D2sti(ep,s,t,j)
                         +Duk*I2D2stuij(ep, s, t, u, j, j);
               }
             }
-          }
-          else {
+          } else {
             if (j==k) {
               sum1+=+Dkk*I3D2sti(ep,s,t,i);
               if (i==u) {
                 sum1+=+Duk*I3D2sti(ep,s,t,j)
                       +Dvk*I2D2stuij(ep, s, t, v, i, j);
-              }
-              else {
+              } else {
                 sum1+=+Dvk*I3D2sti(ep,s,t,j)
                       +Duk*I2D2stuij(ep, s, t, u, i, j);
               }
-            }
-            else {
+            } else {
               sum1+=+Duk*I3D2sti(ep,s,t,v)
                     +Dvk*I3D2sti(ep,s,t,u)
                     +Dkk*I2D2stuij(ep, s, t, k, i, j);
@@ -3193,14 +3300,11 @@ void Minor5::I3D3stijkEval(int ep)
           else
             sum1+=M3(s,0,t,s,k,t)*(-4.*I3D3stij(ep, s, t, i, j));
           ivalue=sum1/ds0ts0t;
-        }
-        else {
-//           assert(ep==0);
+        } else {
           ivalue=std::numeric_limits<double>::quiet_NaN();
         // TODO add and check, needs I2D2stuijk
         }
       }
-//     printf("I3D3stijk(%d,%d|%d,%d,%d) e^%d = (%.15e,%.15e)\n", s, t, i, j, k, ep, ivalue.real(),ivalue.imag());
     pI3D3stijk[ep][iss(i-1,j-1,k-1)][idx]=ivalue;
     }
     }
@@ -3233,7 +3337,7 @@ void Minor5::I4D4sijklEval(int ep)
   for (int l=k; l<=CIDX; l++) { if (s==l) continue;
     ncomplex ivalue=0;
 
-    if (maxS4(s) <= deps3) {
+    if (pmaxS4[s-1] <= deps3) {
       ncomplex sum1=0;
       for (int t=1; t<=5; t++) {
         if (s==t || t==i || t==j || t==k) continue;

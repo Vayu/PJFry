@@ -130,7 +130,6 @@ class MinorBase : public SRefCnt
     }
 
     // Utility functions
-    static int imN(int s) CONST;
     static int im3(int i, int j, int k) CONST; // Antisymmetric index for "3 out of 6" minors
     static int im2(int i, int j) CONST;        // Antisymmetric index for "2 out of 6" minors
     static int signM3ud(int i, int j, int k, int l, int m, int n) CONST; // Signature[{i,j,k}]*Signature[{l,m,n}]
@@ -161,8 +160,12 @@ class MinorBase : public SRefCnt
     static const double seps1; // two-point cutoff
     static const double seps2; // two-point cutoff
 
+    static const double epsir1; // 3-point IR cutoff
+    static const double epsir2; // 3-point IR cutoff
+
     static double deps;
     static double meps; // onshell cutoff
+    static double m3eps; // I3 IR cutoff
 };
 
 template <int N>
@@ -277,23 +280,25 @@ class Minor5 : public Minor<5>
     double M2(int i, int j, int l, int m) PURE;
     double M3(int i, int j, int k, int l, int m, int n) PURE;
 
-    double maxS4(int s) PURE;
-    double maxS3(int s, int t) PURE;
-
     double gram3(double p1, double p2, double p3) PURE;
 
   private:
     Minor5(const Kinem5 &k);                        // prevent direct creation
     Minor5(const Kinem4 &k);                        // prevent direct creation
-    Minor5(const Minor5 &m) { assert(0); };             // prevent copy-constructing
+    Minor5(const Minor5 &m) : smax(0) { assert(0); };   // prevent copy-constructing
     Minor5& operator= (const Minor5& m) { assert(0); }; // prevent reassignment
 
     Kinem5 kinem;
-    int smax;
+    const int smax;
 
     // Maximal elements of sub-Cayley's
     double pmaxS4[DCay-1];           // s{1..5}
+
     double pmaxS3[10];               // s,t  - symm 5x5 w/o diag els
+    double pmaxT3[10];               // s,t  - symm 5x5 w/o diag els
+    double pmaxU3[10];               // s,t  - symm 5x5 w/o diag els
+    int imax3[10];
+
     double pmaxM2[10];               // i,ip - symm 5x5 w/o diag els
 
     // flags marking evuation steps
@@ -458,6 +463,17 @@ class Minor5 : public Minor<5>
     void I3D6stEval(int ep);
     void I2D6stuEval(int idx, int ep, int s, int t, int u, int m, int n, double qsq);
     void I3D7stEval(int ep);
+
+    // IR
+    ncomplex I2mDstu(int ep, int s, int t, int u, int m, int n);
+    ncomplex I2stui(int ep, int s, int t, int u, int i, int ip);
+
+    double M4ii(int u, int v, int i) PURE;
+    double M4ui(int u, int v, int i) PURE;
+    double M4vi(int u, int v, int i) PURE;
+    double M4uu(int u, int v, int i) PURE;
+    double M4vu(int u, int v, int i) PURE;
+    double M4vv(int u, int v, int i) PURE;
 };
 
 class Minor4 : public Minor<4>
@@ -493,8 +509,8 @@ class Minor4 : public Minor<4>
 
     Kinem4 kinem;
 
-    Minor5::Ptr pm5;
-    int ps, offs;
+    const Minor5::Ptr pm5;
+    const int ps, offs;
 };
 
 class Minor3 : public Minor<3>
@@ -527,8 +543,8 @@ class Minor3 : public Minor<3>
 
     Kinem3 kinem;
 
-    Minor5::Ptr pm5;
-    int ps, pt, offs;
+    const Minor5::Ptr pm5;
+    const int ps, pt, offs;
 };
 
 class Minor2 : public Minor<2>
@@ -558,8 +574,8 @@ class Minor2 : public Minor<2>
 
     Kinem2 kinem;
 
-    Minor5::Ptr pm5;
-    int ps, pt, pu, offs;
+    const Minor5::Ptr pm5;
+    const int ps, pt, pu, offs;
 };
 
 
