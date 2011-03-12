@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "kinem.h"
+#include "cache.h"
 
 // #define USE_ONELOOP 1
 // #define USE_QCDLOOP 1
@@ -19,10 +20,10 @@ class Initialize
     Initialize();
 };
 
-ncomplex qlI1(const Kinem1& k, int ep);
-ncomplex qlI2(const Kinem2& k, int ep);
-ncomplex qlI3(const Kinem3& k, int ep);
-ncomplex qlI4(const Kinem4& k, int ep);
+ICache::Ival qlI1(const Kinem1& k);
+ICache::Ival qlI2(const Kinem2& k);
+ICache::Ival qlI3(const Kinem3& k);
+ICache::Ival qlI4(const Kinem4& k);
 
 #ifdef USE_QCDLOOP
 # ifdef HAVE_QCDLOOP1_H

@@ -53,6 +53,8 @@ class ICache : public Cache
   friend class Golem;
 #endif
   public:
+    typedef struct { ncomplex val[3]; } Ival;
+
     enum Ecoefs {ee0=1,ee1,ee2,ee3,ee4,
       ee00,ee11,ee12,ee13,ee14,ee22,ee23,ee24,ee33,ee34,ee44,
       ee001,ee002,ee003,ee004,
@@ -175,21 +177,21 @@ class ICache : public Cache
     // ------------------------------
     // Scalar integrals
     // ------------------------------
-    typedef MEntry< Kinem4, ncomplex > EntryS4;
+    typedef MEntry< Kinem4, Ival > EntryS4;
     typedef DArray< EntryS4, size4 > ArrayS4;
-    static ArrayS4 ics4[3];
+    static ArrayS4 ics4;
 
-    typedef MEntry< Kinem3, ncomplex > EntryS3;
+    typedef MEntry< Kinem3, Ival > EntryS3;
     typedef DArray< EntryS3, size3 > ArrayS3;
-    static ArrayS3 ics3[3];
+    static ArrayS3 ics3;
 
-    typedef MEntry< Kinem2, ncomplex > EntryS2;
+    typedef MEntry< Kinem2, Ival > EntryS2;
     typedef DArray< EntryS2, size2 > ArrayS2;
-    static ArrayS2 ics2[3];
+    static ArrayS2 ics2;
 
-    typedef MEntry< Kinem1, ncomplex > EntryS1;
+    typedef MEntry< Kinem1, Ival > EntryS1;
     typedef DArray< EntryS1, size1 > ArrayS1;
-    static ArrayS1 ics1[3];
+    static ArrayS1 ics1;
 };
 
 inline

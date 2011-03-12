@@ -31,24 +31,49 @@ Initialize::Initialize()
   }
 }
 
-ncomplex qlI1(const Kinem1& k, int ep)
+ICache::Ival qlI1(const Kinem1& k)
 {
+  int ep;
+  ICache::Ival ivalue;
+
   double m1=k.m1();
   double mu2=ICache::getMu2();
-  return F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+
+  ep=0;
+  ivalue.val[0]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+  ep=-1;
+  ivalue.val[1]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+  ep=-2;
+  ivalue.val[2]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+
+  return ivalue;
 }
 
-ncomplex qlI2(const Kinem2& k, int ep)
+ICache::Ival qlI2(const Kinem2& k)
 {
+  int ep;
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double m1=k.m1();
   double m2=k.m2();
   double mu2=ICache::getMu2();
-  return F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+
+  ep=0;
+  ivalue.val[0]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+  ep=-1;
+  ivalue.val[1]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+  ep=-2;
+  ivalue.val[2]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+
+  return ivalue;
 }
 
-ncomplex qlI3(const Kinem3& k, int ep)
+ICache::Ival qlI3(const Kinem3& k)
 {
+  int ep;
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double p2=k.p2();
   double p3=k.p3();
@@ -56,11 +81,22 @@ ncomplex qlI3(const Kinem3& k, int ep)
   double m2=k.m2();
   double m3=k.m3();
   double mu2=ICache::getMu2();
-  return F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+
+  ep=0;
+  ivalue.val[0]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ep=-1;
+  ivalue.val[1]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ep=-2;
+  ivalue.val[2]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+
+  return ivalue;
 }
 
-ncomplex qlI4(const Kinem4& k, int ep)
+ICache::Ival qlI4(const Kinem4& k)
 {
+  int ep;
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double p2=k.p2();
   double p3=k.p3();
@@ -72,17 +108,34 @@ ncomplex qlI4(const Kinem4& k, int ep)
   double m3=k.m3();
   double m4=k.m4();
   double mu2=ICache::getMu2();
+
   if (s12==0. || s23==0.) {
     if (p1!=0. && p3!=0.) {
-      return F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-    }
-    else if (p2!=0. && p4!=0.) {
-      return F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-    }
-    else { assert(0); }
+      ep=0;
+      ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ep=-1;
+      ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ep=-2;
+      ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+    } else if (p2!=0. && p4!=0.) {
+      ep=0;
+      ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ep=-1;
+      ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ep=-2;
+      ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+    } else { assert(0); }
+  } else {
+    ep=0;
+    ivalue.val[0]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ep=-1;
+    ivalue.val[1]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ep=-2;
+    ivalue.val[2]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
   }
-  return F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+  return ivalue;
 }
+
 #endif /* USE_QCDLOOP */
 
 #ifdef USE_ONELOOP
@@ -97,26 +150,40 @@ Initialize::Initialize()
   F77_FUNC_(avh_olo_onshell,AVH_OLO_ONSHELL)(&thrs);
 }
 
-ncomplex qlI1(const Kinem1& k, int ep)
+ICache::Ival qlI1(const Kinem1& k)
 {
+  ICache::Ival ivalue;
+
   double m1=k.m1();
   std::complex<double> rslt[3];
   F77_FUNC_(avh_olo_a0m,AVH_OLO_A0M)(rslt, &m1);
-  return rslt[abs(ep)];
+
+  ivalue.val[0]=rslt[0];
+  ivalue.val[1]=rslt[1];
+  ivalue.val[2]=rslt[2];
+  return ivalue;
 }
 
-ncomplex qlI2(const Kinem2& k, int ep)
+ICache::Ival qlI2(const Kinem2& k)
 {
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double m1=k.m1();
   double m2=k.m2();
   std::complex<double> rslt[3];
   F77_FUNC_(avh_olo_b0m,AVH_OLO_B0M)(rslt, &p1, &m1, &m2);
-  return rslt[abs(ep)];
+
+  ivalue.val[0]=rslt[0];
+  ivalue.val[1]=rslt[1];
+  ivalue.val[2]=rslt[2];
+  return ivalue;
 }
 
-ncomplex qlI3(const Kinem3& k, int ep)
+ICache::Ival qlI3(const Kinem3& k)
 {
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double p2=k.p2();
   double p3=k.p3();
@@ -125,11 +192,17 @@ ncomplex qlI3(const Kinem3& k, int ep)
   double m3=k.m3();
   std::complex<double> rslt[3];
   F77_FUNC_(avh_olo_c0m,AVH_OLO_C0M)(rslt, &p1, &p2, &p3, &m1, &m2, &m3);
-  return rslt[abs(ep)];
+
+  ivalue.val[0]=rslt[0];
+  ivalue.val[1]=rslt[1];
+  ivalue.val[2]=rslt[2];
+  return ivalue;
 }
 
-ncomplex qlI4(const Kinem4& k, int ep)
+ICache::Ival qlI4(const Kinem4& k)
 {
+  ICache::Ival ivalue;
+
   double p1=k.p1();
   double p2=k.p2();
   double p3=k.p3();
@@ -144,13 +217,17 @@ ncomplex qlI4(const Kinem4& k, int ep)
   if (s12==0. || s23==0.) {
     if (p1!=0. && p3!=0.) {
       F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4);
-    }
-    else if (p2!=0. && p4!=0.) {
+    } else if (p2!=0. && p4!=0.) {
       F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1);
-    }
-    else { assert(0); }
+    } else { assert(0); }
+  } else {
+    F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4);
   }
-  F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4);
-  return rslt[abs(ep)];
+
+  ivalue.val[0]=rslt[0];
+  ivalue.val[1]=rslt[1];
+  ivalue.val[2]=rslt[2];
+  return ivalue;
 }
+
 #endif /* USE_QCDLOOP1 */

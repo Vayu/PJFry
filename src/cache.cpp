@@ -48,14 +48,10 @@ void ICache::Clear()
   ic2[0].reset();
   ic2[1].reset();
 
-  ics4[0].reset();
-  ics4[1].reset();
-  ics3[0].reset();
-  ics3[1].reset();
-  ics2[0].reset();
-  ics2[1].reset();
-  ics1[0].reset();
-  ics1[1].reset();
+  ics4.reset();
+  ics3.reset();
+  ics2.reset();
+  ics1.reset();
 }
 
 void MCache::Clear()
@@ -78,10 +74,10 @@ ICache::Array4 ICache::ic4[3];
 ICache::Array3 ICache::ic3[3];
 ICache::Array2 ICache::ic2[3];
 
-ICache::ArrayS4 ICache::ics4[3];
-ICache::ArrayS3 ICache::ics3[3];
-ICache::ArrayS2 ICache::ics2[3];
-ICache::ArrayS1 ICache::ics1[3];
+ICache::ArrayS4 ICache::ics4;
+ICache::ArrayS3 ICache::ics3;
+ICache::ArrayS2 ICache::ics2;
+ICache::ArrayS1 ICache::ics1;
 
 /* ===========================================================
  *
@@ -545,18 +541,20 @@ getSave(2)
 #define getIN(n) \
 ncomplex ICache::getI##n(int ep, const Kinem##n &k) \
 { \
-  ncomplex ivalue(sNAN.d64, 0); \
-  for (ArrayS##n::iterator it##n=ics##n[ep].begin(); it##n != ics##n[ep].end(); ++it##n) { \
+  Ival ivalue; \
+  bool found=false; \
+  for (ArrayS##n::iterator it##n=ics##n.begin(); it##n != ics##n.end(); ++it##n) { \
     if (it##n->key == k) { \
       ivalue=it##n->val; \
+      found=true; \
       break; \
     } \
   } \
-  if (ivalue.real() == sNAN) { \
-    ivalue=qlI##n(k, -ep); \
-    ics##n[ep].insert(EntryS##n(k,ivalue)); \
+  if ( ! found ) { \
+    ivalue=qlI##n(k); \
+    ics##n.insert(EntryS##n(k,ivalue)); \
   } \
-  return ivalue; \
+  return ivalue.val[ep]; \
 }
 
 getIN(1)
