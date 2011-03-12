@@ -274,7 +274,7 @@ double Minor5::M4vv(int u, int v, int i)
  *    Real 5-point kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5)
+Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5), pmaxS3(), pmaxS4()
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -340,7 +340,7 @@ Minor5::Minor5(const Kinem5& k) : kinem(k), smax(5)
  *    Dummy 5-from-4 kinematics
  * --------------------------------------------------------
  */
-Minor5::Minor5(const Kinem4& k) : smax(1)
+Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS3(), pmaxS4()
 {
 #ifdef USE_GOLEM_MODE_6
   psix=6;
@@ -446,7 +446,7 @@ void Minor5::maxCay()
       const double dstst=M2(s,t,s,t);
       const double ds0ts0t=M3(0,s,t,0,s,t);
 
-      pmaxS3[idx]=fabs(maxcay3*dstst/ds0ts0t);
+      pmaxS3[idx]=fabs((maxcay3*dstst)/ds0ts0t);
       pmaxT3[idx]=fabs(ds0ts0t/(maxcay3*M3(0,s,t,i,s,t)));
       pmaxU3[idx]=fabs(dstst/M3(0,s,t,i,s,t));
     }
