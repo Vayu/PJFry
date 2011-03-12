@@ -2633,23 +2633,38 @@ void Minor5::I4D4siEval(int ep)
   for (int i=1; i<=CIDX; i++) { if (s==i) continue;
     ncomplex ivalue=0;
 
-    if (pmaxS4[s-1] <= deps3) {
-      ncomplex sum1=0;
-      for (int t=1; t<=5; t++) {
-        if (t==s) continue;
-        sum1+=M3(0, s, t, 0, s, i)*I3D3st(ep, s, t);
+    if (ep == 0) {
+      if (pmaxS4[s-1] <= deps3) {
+        ncomplex sum1=0;
+        for (int t=1; t<=5; t++) {
+          if (t==s) continue;
+          sum1+=M3(0, s, t, 0, s, i)*I3D3st(ep, s, t);
+        }
+        sum1+=M2(0, s, i, s)*(-7.*I4D4s(ep, s)+2.*I4D4s(ep+1, s));
+        ivalue=sum1/M2(0, s, 0, s);
+      } else {
+        ncomplex sum1=0;
+        for (int t=1; t<=5; t++) {
+          if (t==s) continue;
+          sum1+=M2(s,t,s,i)*I3D3st(ep, s, t);
+        }
+        sum1-=M2(s,0,s,i)*I4D3s(ep, s);
+        sum1/=M1(s,s);
+        ivalue=sum1;
       }
-      sum1+=M2(0, s, i, s)*(-7.*I4D4s(ep, s)+2.*I4D4s(ep+1, s));
-      ivalue=sum1/M2(0, s, 0, s);
     } else {
-      ncomplex sum1=0;
-      for (int t=1; t<=5; t++) {
-        if (t==s) continue;
-        sum1+=M2(s,t,s,i)*I3D3st(ep, s, t);
+      assert(ep==1);
+      double sum1=0;
+      sum1+=Cay[nss(i,i)];
+      for (int j=1; j<=5; j++) {
+        if (j==s) continue;
+        sum1+=Cay[ns(i,j)];
+        for (int k=j; k<=5; k++) {
+          if (k==s) continue;
+          sum1+=Cay[nss(j,k)];
+        }
       }
-      sum1-=M2(s,0,s,i)*I4D3s(ep, s);
-      sum1/=M1(s,s);
-      ivalue=sum1;
+      ivalue=sum1/720.;
     }
     pI4D4si[ep][i-1][s-1]=ivalue;
   }
