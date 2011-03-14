@@ -19,11 +19,10 @@ if EMU_GOLEM
   libpjfry_la_SOURCES += golem.cpp
 endif
 
-EXTRA_DIST=libpjfry.vers
 if HAVE_LD_VERSION_SCRIPT
   # Versioned symbols and restricted exports
-  libpjfry_la_LDFLAGS += -Wl,--version-script=${srcdir}/libpjfry.vers
-  libpjfry_la_DEPENDENCIES = ${srcdir}/libpjfry.vers
+  libpjfry_la_LDFLAGS += -Wl,--version-script=${builddir}/libpjfry.vers
+  libpjfry_la_DEPENDENCIES = ${builddir}/libpjfry.vers
 else
   # Skip because '-export-symbols' doesn't work with C++
 endif

@@ -232,6 +232,15 @@ AC_ARG_ENABLE(golem-mode,[AS_HELP_STRING([--enable-golem-mode],
             [test "x$enable_golem_mode" == "xyes" && AC_DEFINE(USE_GOLEM_MODE,"1","build golem95-like interface")],
             [enable_golem_mode=no])
 AM_CONDITIONAL(EMU_GOLEM, test "x$enable_golem_mode" == "xyes")
+if test "x$enable_golem_mode" == "xyes" ; then
+  enable_golem_mode_begin=""
+  enable_golem_mode_end=""
+else
+  enable_golem_mode_begin="/*"
+  enable_golem_mode_end="*/"
+fi
+AC_SUBST(enable_golem_mode_begin)
+AC_SUBST(enable_golem_mode_end)
 
 
 AC_ARG_ENABLE(cache-high,[AS_HELP_STRING([--enable-cache-high],
@@ -259,6 +268,7 @@ AC_SUBST(PJFRY_VERSION_INFO)
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 src/libpjfry.vers
                  mlink/Makefile
                  examples/Makefile])
 
