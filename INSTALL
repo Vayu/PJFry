@@ -1,26 +1,70 @@
 
 Installing libpjfry version 1.0.0
+=================================
 
-On Unix/Linux and similar systems, you can simply type
-
-./configure [--prefix=/path] [--with-mcc-path=/path/mcc]
+On Unix/Linux and similar systems, execute the following commands:
+./configure [--prefix=/path] \
+    [--with-mcc-path=/path/mcc] \
+    [--with-integrals=auto,qcdloop,oneloop] \
+    [LDFLAGS=linker flags] \
+    [CXXFLAGS=c++ flags]
 make
 make install
 
-Use 'make check' to compile a simple example of library use in FORTRAN
+If --prefix is not specified, the library will be installed
+to the system default library path (usually /usr/local/lib).
+
+If --with-mcc option is not specified, configure script will try to find Mathematica
+installation in system PATH and a few common locations.
+You can override this behaviour by setting --with-mcc-path=no
+or give full path to the appropriate mcc tool --with-mcc-path=/path/mcc
+
+If --with-integrals option is not specified, configure script will try to find
+any usable scalar integrals library from the supported list:
+QCDLoop (libqcdloop.a and libff.a) or OneLOoop (libavh_olo.a)
+
+You can select which library to use by --with-integral=oneloop or --with-integral=qcdloop
+And tell configure where to look for it by setting LDFLAGS='-L/path/to/scalar/integral/library'
+(additional linking flags like '-lgfortran' should be also added to LDFLAGS)
+
+
+MathLink interface
+==================
+MathLink interface consists of single executable, which will be installed to
+ $prefix/bin/PJFry
+
+Use the following command to run it inside Mathematica:
+ Install["path/bin/PJFry"]
+
+NOTE if dynamic linking was chosen by configure script, the libpjfry.so
+should be in system library search path or in LD_LIBRARY_PATH environment variable
+
+
+Running FORTRAN examples
+=====================================
+
+Use 'make check' to compile a few simple examples of library use in FORTRAN
 (also see note for g77 users)
 
 
-Configure script will try to find Mathematica installation and mcc tool.
-You can turn it off by setting --with-mcc-path=no
-or give full path to apropriate mcc tool --with-mcc-path=/path/mcc
+REMARK for g77 users
+====================
 
-
-REMARK for g77 users:
 Current FORTRAN interface follows GNU calling conventions for COMPLEX type.
 
 To work with g77 this library needs to be compiled with FFLAGS='-fno-f2c'
-(also library for scalar integrals)
+(also library for scalar integrals).
 
 Alternatively you can replace FORTRAN wrapper functions in pjfry.h and pjfry.cpp with subroutines.
 e.g. "pj_complex pa0_(double *m1, int *ep)" -> "void pa0_(pj_complex *rslt, double *m1, int *ep)"
+
+// FFLAGS='-fno-f2c'
+pj_complex pa0_( double *m1, int *ep) {
+  return PJFry::A0v0(*m1,*ep);
+}
+
+// FFLAGS='-ff2c'
+void pa0_( pj_complex *rslt, double *m1, int *ep) {
+  *rslt=PJFry::A0v0(*m1,*ep);
+  return;
+}
