@@ -1,7 +1,7 @@
 /*
- * common.h - common includes for PJFry library
+ * common.h - common includes and parameters for PJFry library
  *
- * Valery Yundin <valery.yundin@desy.de>
+ * Valery Yundin <yuvalery@gmail.com>
  */
 
 #ifndef QUL_COMMON_H

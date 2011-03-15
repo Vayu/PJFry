@@ -1,7 +1,7 @@
 /*
  * minorex.cpp - extra integrals for asymptotic expansion for PJFry library
  *
- * Valery Yundin <valery.yundin@desy.de>
+ * Valery Yundin <yuvalery@gmail.com>
  */
 
 #include "minor.h"

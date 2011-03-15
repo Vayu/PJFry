@@ -1,7 +1,7 @@
 /*
  * integral.h - scalar integrals for PJFry library
  *
- * Valery Yundin <valery.yundin@desy.de>
+ * Valery Yundin <yuvalery@gmail.com>
  */
 
 #ifndef QUL_INTEGRAL_H

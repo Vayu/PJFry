@@ -1,7 +1,7 @@
 /*
  * pointer.h - smart pointer and array classes for PJFry library
  *
- * Valery Yundin <valery.yundin@desy.de>
+ * Valery Yundin <yuvalery@gmail.com>
  */
 
 #ifndef QUL_POINTER_H

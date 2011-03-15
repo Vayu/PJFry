@@ -1,3 +1,8 @@
+/*
+ * cache.h - golem-mode wrapper function for PJFry library
+ *
+ * Valery Yundin <yuvalery@gmail.com>
+ */
 
 #include "common.h"
 #include "cache.h"

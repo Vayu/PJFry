@@ -1,14 +1,16 @@
-/* To launch this program from within Mathematica use:
-*   In[1]:= link = Install["lhapdf"]
-*
-* Or, launch this program from a shell and establish a
-* peer-to-peer connection.  When given the prompt Create Link:
-* type a port name. ( On Unix platforms, a port name is a
-* number less than 65536.  On Mac or Windows platforms,
-* it's an arbitrary word.)
-* Then, from within Mathematica use:
-*   In[1]:= link = Install["portname", LinkMode->Connect]
-*/
+/*
+ * PJFry.tm - MathLink inteface for PJFry library
+ *
+ * To launch this program from within Mathematica use:
+ *   In[1]:= link = Install["PJFry"]
+ *
+ * Or, launch this program from a shell and establish a peer-to-peer connection.
+ * When given the prompt Create Link: type a port name.
+ * Then, from within Mathematica use:
+ *   In[1]:= link = Install["portname", LinkMode->Connect]
+ *
+ * Valery Yundin <yuvalery@gmail.com>
+ */
 
 #include <iostream>
 #include <mathlink.h>

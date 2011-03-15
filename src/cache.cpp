@@ -1,8 +1,7 @@
-// Copyright 2010 Valery Yundin <valery.yundin@desy.de>
 /*
- * cache.cpp
+ * cache.h - cache classes for PJFry library
  *
- *
+ * Valery Yundin <yuvalery@gmail.com>
  */
 
 #include "cache.h"
