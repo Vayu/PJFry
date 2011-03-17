@@ -37,7 +37,7 @@ class MEntry
 class Cache
 {
   protected:
-    static const int size6=2;
+    static const int size6=1;
 
     static const int size5=size6*6;
     static const int size4=size6*15;

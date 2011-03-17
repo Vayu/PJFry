@@ -39,7 +39,7 @@ class Kinem
      4504  - 1.00e-12
     45036  - 1.00e-11
     */
-    static const uint64_t idelta=45; // unsigned !!!
+    static const uint64_t idelta=5; // unsigned !!!
 
     inline
     bool eq(const double& a, const double &b) const
