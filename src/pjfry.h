@@ -1,7 +1,8 @@
 /*
- * pjfry.h - interface header for PJFry library
+ * pjfry.h - interface header
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_PJFRY_H

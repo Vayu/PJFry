@@ -1,7 +1,8 @@
 /*
- * minor.h - signed minors classes for PJFry library
+ * minor.h - signed minors classes
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_MINOR_H

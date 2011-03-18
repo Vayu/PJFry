@@ -9,7 +9,8 @@
  * Then, from within Mathematica use:
  *   In[1]:= link = Install["portname", LinkMode->Connect]
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include <iostream>

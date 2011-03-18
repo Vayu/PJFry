@@ -1,7 +1,8 @@
 /*
- * pjfry.cpp - interface functions for PJFry library
+ * pjfry.cpp - interface functions
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "common.h"

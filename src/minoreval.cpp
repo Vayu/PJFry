@@ -1,7 +1,8 @@
 /*
- * minoreval.cpp - integral coefficient functions for PJFry library
+ * minoreval.cpp - integral coefficient functions
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "minor.h"

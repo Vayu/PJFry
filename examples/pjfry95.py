@@ -1,4 +1,7 @@
 
+# this file is part of PJFry library
+# Copyright 2011 Valery Yundin
+
 pg_prefix = "pg"
 pj_prefix = "pj"
 

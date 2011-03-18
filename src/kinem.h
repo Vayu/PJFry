@@ -1,7 +1,8 @@
 /*
- * kinem.h - kinematics classes for PJFry library
+ * kinem.h - kinematics classes
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_KINEM_H

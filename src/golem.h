@@ -1,7 +1,8 @@
 /*
- * cache.h - golem-mode header for PJFry library
+ * cache.h - golem-mode header
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_GOLEM_H

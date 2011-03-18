@@ -1,7 +1,8 @@
 /*
- * minorex.cpp - extra integrals for asymptotic expansion for PJFry library
+ * minorex.cpp - extra integrals for asymptotic expansion
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "minor.h"

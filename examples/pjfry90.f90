@@ -1,10 +1,9 @@
-
+!  this file is part of PJFry library
+!  Copyright 2011 Valery Yundin
 
 module precision_golem
     !
     integer, parameter :: ki=kind(1.0d0)
-    integer, parameter :: ki_lt=kind(1.0d0)
-    integer, parameter :: ki_avh=kind(1.0d0)
     integer, parameter :: ki_pjf=kind(1.0d0)
     !
 end module precision_golem

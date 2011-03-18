@@ -1,7 +1,8 @@
 /*
- * cache.h - cache classes for PJFry library
+ * cache.h - cache classes
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "cache.h"

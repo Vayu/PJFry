@@ -1,7 +1,8 @@
 /*
- * minor.cpp - constructors, signed minors and integrals for PJFry library
+ * minor.cpp - constructors, signed minors and integrals
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "minor.h"

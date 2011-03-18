@@ -1,7 +1,8 @@
 /*
- * integral.h - scalar integrals wrappers for PJFry library
+ * integral.h - scalar integrals wrappers
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #include "integral.h"

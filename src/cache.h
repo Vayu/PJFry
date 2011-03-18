@@ -1,7 +1,8 @@
 /*
- * cache.h - cache classes header for PJFry library
+ * cache.h - cache classes header
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_CACHE_H

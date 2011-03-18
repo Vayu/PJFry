@@ -1,7 +1,8 @@
 /*
- * common.h - common includes and parameters for PJFry library
+ * common.h - common includes and parameters
  *
- * Valery Yundin <yuvalery@gmail.com>
+ * this file is part of PJFry library
+ * Copyright 2011 Valery Yundin
  */
 
 #ifndef QUL_COMMON_H

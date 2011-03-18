@@ -1,5 +1,9 @@
 
-                  PJFry 1.0.0 - one loop tensor integral library
+PJFry 1.0.0 - one loop tensor integral library
+(see LICENSE for the status of this software)
+
+The algorithms are based on the results of http://arxiv.org/abs/1009.4436
+Please cite arXiv:1009.4436v3 [hep-ph] if you use PJFry in scientific publications.
 
 For more information and the latest source code,
 please visit project page at https://github.com/Vayu/PJFry/
