@@ -137,5 +137,4 @@
       write (*,*) "E00234",PE0ijklm(0,0,2,3,4,ps1,ps2,ps3,ps4,ps5,
      & s12, s23, s34, s45, s15, ms1,ms2,ms3,ms4,ms5,0)
 
-      return
       end
