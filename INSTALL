@@ -47,6 +47,19 @@ Use 'make check' to compile a few simple examples of library use in FORTRAN
 (also see note for g77 users)
 
 
+REMARK for gcc 4.1 users with 32-bit OS
+=======================================
+
+On 32-bit OS with old versions of gcc, enabling optimization produces wrong code.
+You have this problem if 'examples/demo' produces NaN's in the output.
+Possible solutions:
+1. Use gcc of more recent version (>=4.3)
+2. Compile with -O instead -O2 (e.g. CXXFLAGS='-g -O')
+3. Use SSE instructions for floating point operations (if you CPU supports them)
+ (e.g. CXXFLAGS='-g -O2 -mfpmath=sse')
+4. Try disabling faulty optimizations: CXXFLAGS='-g -O2 -fno-schedule-insns -fno-regmove'
+
+
 REMARK for g77 users
 ====================
 
