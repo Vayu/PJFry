@@ -30,22 +30,22 @@
 class MinorBase : public SRefCnt
 {
   public:
-    MinorBase() {};
+    MinorBase() {}
 
 #ifdef USE_GOLEM_MODE
 #define EVALUNDEF return std::numeric_limits<double>::signaling_NaN();
-    virtual ncomplex A(int ep) { EVALUNDEF };
-    virtual ncomplex A(int ep, int i) { EVALUNDEF };
-    virtual ncomplex A(int ep, int i, int j) { EVALUNDEF };
-    virtual ncomplex A(int ep, int i, int j, int k) { EVALUNDEF };
-    virtual ncomplex A(int ep, int i, int j, int k, int l) { EVALUNDEF };
-    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { EVALUNDEF };
-    virtual ncomplex B(int ep) { EVALUNDEF };
-    virtual ncomplex B(int ep, int i) { EVALUNDEF; };
-    virtual ncomplex B(int ep, int i, int j) { EVALUNDEF };
-    virtual ncomplex B(int ep, int i, int j, int k) { EVALUNDEF };
-    virtual ncomplex C(int ep) { EVALUNDEF };
-    virtual ncomplex C(int ep, int i) { EVALUNDEF };
+    virtual ncomplex A(int ep) { EVALUNDEF }
+    virtual ncomplex A(int ep, int i) { EVALUNDEF }
+    virtual ncomplex A(int ep, int i, int j) { EVALUNDEF }
+    virtual ncomplex A(int ep, int i, int j, int k) { EVALUNDEF }
+    virtual ncomplex A(int ep, int i, int j, int k, int l) { EVALUNDEF }
+    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { EVALUNDEF }
+    virtual ncomplex B(int ep) { EVALUNDEF }
+    virtual ncomplex B(int ep, int i) { EVALUNDEF; }
+    virtual ncomplex B(int ep, int i, int j) { EVALUNDEF }
+    virtual ncomplex B(int ep, int i, int j, int k) { EVALUNDEF }
+    virtual ncomplex C(int ep) { EVALUNDEF }
+    virtual ncomplex C(int ep, int i) { EVALUNDEF }
 #undef EVALUNDEF
 #endif /* USE_GOLEM_MODE */
 
@@ -53,18 +53,18 @@ class MinorBase : public SRefCnt
     inline static int ns(int i, int j) CONST
     {
       return ( i<=j ? (i-1)+((j-1)*j)/2 : (j-1)+((i-1)*i)/2 );
-    };
+    }
 
     inline static int nss(int i, int j) CONST // ordered
     {
       return (i-1)+((j-1)*j)/2;
-    };
+    }
 
     // Symmetric index - generic
     inline static int is(int i, int j) CONST
     {
       return ( i<=j ? i+j*(j+1)/2 : j+i*(i+1)/2 );
-    };
+    }
 
     inline static int is(int i, int j, int k) CONST
     {
@@ -74,7 +74,7 @@ class MinorBase : public SRefCnt
       else {
         return (i >  k ? is(j,k)+ti3[i] : j+ti2[i]+ti3[k]);
       }
-    };
+    }
 
     inline static int is(int i, int j, int k, int l) CONST
     {
@@ -98,7 +98,7 @@ class MinorBase : public SRefCnt
                          : is(i,j,l)+ti4[k]  );
         }
       }
-    };
+    }
 
     inline static int iss(int i, int j) CONST // ordered
     {
@@ -172,7 +172,7 @@ template <int N>
 class Minor : public MinorBase
 {
   public:
-    Minor() {};
+    Minor() {}
 
     inline double Kay(int i, int j) PURE
     {
@@ -181,7 +181,7 @@ class Minor : public MinorBase
       } else {
         return j==0 ? 1 : Cay[ns(i,j)];
       }
-    };
+    }
 
   protected:
     // Cayley matrix (symmetric)
@@ -194,8 +194,8 @@ class Minor5 : public Minor<5>
   public:
     friend class SPtr<Minor5>;
     typedef SPtr<Minor5> Ptr;
-    static Ptr create(const Kinem5 &k) { return Ptr(new Minor5(k)); };
-    static Ptr create(const Kinem4 &k) { return Ptr(new Minor5(k)); };
+    static Ptr create(const Kinem5 &k) { return Ptr(new Minor5(k)); }
+    static Ptr create(const Kinem4 &k) { return Ptr(new Minor5(k)); }
 
     ncomplex evalE(int ep);
     ncomplex evalE(int ep, int i);
@@ -211,18 +211,18 @@ class Minor5 : public Minor<5>
 #else
     #define ix(i) i
 #endif
-    virtual ncomplex A(int ep) { return evalE(ep); };
-    virtual ncomplex A(int ep, int i) { return evalE(ep, ix(i)); };
-    virtual ncomplex A(int ep, int i, int j) { return evalE(ep, ix(i), ix(j)); };
-    virtual ncomplex A(int ep, int i, int j, int k) { return evalE(ep, ix(i), ix(j), ix(k)); };
-    virtual ncomplex A(int ep, int i, int j, int k, int l) { return evalE(ep, ix(i), ix(j), ix(k), ix(l)); };
-    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { return evalE(ep, ix(i), ix(j), ix(k), ix(l), ix(m)); };
-    virtual ncomplex B(int ep) { return evalE(ep, 0, 0); };
-    virtual ncomplex B(int ep, int i) { return evalE(ep, 0, 0, ix(i)); };
-    virtual ncomplex B(int ep, int i, int j) { return evalE(ep, 0, 0, ix(i), ix(j)); };
-    virtual ncomplex B(int ep, int i, int j, int k) { return evalE(ep, 0, 0, ix(i), ix(j), ix(k)); };
-    virtual ncomplex C(int ep) { return evalE(ep, 0, 0, 0, 0); };
-    virtual ncomplex C(int ep, int i) { return evalE(ep, 0, 0, 0, 0, ix(i)); };
+    virtual ncomplex A(int ep) { return evalE(ep); }
+    virtual ncomplex A(int ep, int i) { return evalE(ep, ix(i)); }
+    virtual ncomplex A(int ep, int i, int j) { return evalE(ep, ix(i), ix(j)); }
+    virtual ncomplex A(int ep, int i, int j, int k) { return evalE(ep, ix(i), ix(j), ix(k)); }
+    virtual ncomplex A(int ep, int i, int j, int k, int l) { return evalE(ep, ix(i), ix(j), ix(k), ix(l)); }
+    virtual ncomplex A(int ep, int i, int j, int k, int l, int m) { return evalE(ep, ix(i), ix(j), ix(k), ix(l), ix(m)); }
+    virtual ncomplex B(int ep) { return evalE(ep, 0, 0); }
+    virtual ncomplex B(int ep, int i) { return evalE(ep, 0, 0, ix(i)); }
+    virtual ncomplex B(int ep, int i, int j) { return evalE(ep, 0, 0, ix(i), ix(j)); }
+    virtual ncomplex B(int ep, int i, int j, int k) { return evalE(ep, 0, 0, ix(i), ix(j), ix(k)); }
+    virtual ncomplex C(int ep) { return evalE(ep, 0, 0, 0, 0); }
+    virtual ncomplex C(int ep, int i) { return evalE(ep, 0, 0, 0, 0, ix(i)); }
     #undef ix
 #endif /* USE_GOLEM_MODE */
 
@@ -285,8 +285,8 @@ class Minor5 : public Minor<5>
   private:
     Minor5(const Kinem5 &k);                        // prevent direct creation
     Minor5(const Kinem4 &k);                        // prevent direct creation
-    Minor5(const Minor5 &m) : smax(0) { assert(0); };   // prevent copy-constructing
-    Minor5& operator= (const Minor5& m) { assert(0); }; // prevent reassignment
+    Minor5(const Minor5 &m) : smax(0) { assert(0); }   // prevent copy-constructing
+    Minor5& operator= (const Minor5& m) { assert(0); } // prevent reassignment
 
     Kinem5 kinem;
     const int smax;
@@ -484,7 +484,7 @@ class Minor4 : public Minor<4>
     static Ptr create(const Kinem4 &k, Minor5::Ptr mptr5, int s, int is)
     {
       return Ptr(new Minor4(k, mptr5, s, is));
-    };
+    }
 
     ncomplex evalD(int ep);
     ncomplex evalD(int ep, int i);
@@ -521,7 +521,7 @@ class Minor3 : public Minor<3>
     static Ptr create(const Kinem3 &k, Minor5::Ptr mptr5, int s, int t, int is)
     {
       return Ptr(new Minor3(k, mptr5, s, t, is));
-    };
+    }
 
     ncomplex evalC(int ep);
     ncomplex evalC(int ep, int i);
@@ -555,7 +555,7 @@ class Minor2 : public Minor<2>
     static Ptr create(const Kinem2 &k, Minor5::Ptr mptr5, int s, int t, int u, int is)
     {
       return Ptr(new Minor2(k, mptr5, s, t, u, is));
-    };
+    }
 
     ncomplex evalB(int ep);
     ncomplex evalB(int ep, int i);

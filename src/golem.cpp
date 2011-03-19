@@ -83,7 +83,7 @@ double Golem::getmat(int i, int j)
   int idx=MinorBase::ns(i,j);
   assert(idx<caylen);
   unsigned int mark=1<<idx;
-  assert(bitfield & mark != 0);
+  assert((bitfield & mark) != 0);
   return Cay[idx];
 }
 

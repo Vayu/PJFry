@@ -12,7 +12,7 @@
 class SRefCnt
 {
   public:
-    SRefCnt() : count(0) { };
+    SRefCnt() : count(0) { }
 
   protected:
     int count;
@@ -22,30 +22,30 @@ template <typename T>
 class SPtr
 {
   public:
-    T* operator-> () const { return pObj; };
-    bool operator== (const T* pobj) const { return pobj==pObj; };
-    bool operator!= (const T* pobj) const { return pobj!=pObj; };
+    T* operator-> () const { return pObj; }
+    bool operator== (const T* pobj) const { return pobj==pObj; }
+    bool operator!= (const T* pobj) const { return pobj!=pObj; }
 
-    bool operator== (const SPtr<T> &spobj) const { return spobj.pObj==pObj; };
-    bool operator!= (const SPtr<T> &spobj) const { return spobj.pObj!=pObj; };
+    bool operator== (const SPtr<T> &spobj) const { return spobj.pObj==pObj; }
+    bool operator!= (const SPtr<T> &spobj) const { return spobj.pObj!=pObj; }
 
     SPtr(T* pobj=0) : pObj(pobj) {
       if (pObj) { pObj->count++; }
-    };
+    }
     SPtr(const SPtr &ptr) : pObj(ptr.pObj) {
       if (pObj) { pObj->count++; }
-    };
+    }
 
     SPtr& operator= (const SPtr& ptr) {
       if (this == &ptr) { return *this; }
       if (pObj && --(pObj->count) == 0) { delete pObj; }
       if ( (pObj=ptr.pObj) ) { pObj->count++; }
       return *this;
-    };
+    }
 
     ~SPtr() {
       if (pObj && --(pObj->count) == 0) { delete pObj; }
-    };
+    }
 
   private:
     T* pObj;
@@ -64,7 +64,7 @@ class NIter
     inline bool operator== (const NIter& iter) { return idx==iter.idx && ptr==iter.ptr; }
     inline bool operator!= (const NIter& iter) { return idx!=iter.idx || ptr!=iter.ptr; }
 
-    NIter(T* begin, int last) : ptr(begin), idx(last) {};
+    NIter(T* begin, int last) : ptr(begin), idx(last) {}
   private:
     T* ptr;
     int idx;
@@ -75,18 +75,18 @@ template <typename T, int N>
 class DArray
 {
   public:
-    DArray () : last(N), len(0) {};
+    DArray () : last(N), len(0) {}
 
     typedef NIter<T, N> iterator;
-    iterator begin() { return iterator(elems, last); };
-    iterator end()   { return iterator(elems, last+len); };
+    iterator begin() { return iterator(elems, last); }
+    iterator end()   { return iterator(elems, last+len); }
 
     T& insert(const T& el) {
       len = (len == N ? len : len+1);
       last=((last-1)+N)%N;
       elems[last]=el;
       return elems[last];
-    };
+    }
 
     void reset() {
       for (int i=0; i<len; i++) {
@@ -94,11 +94,11 @@ class DArray
       }
       last=N;
       len=0;
-    };
+    }
 
     static const int size = N;
-    const T& operator [](const int idx) const { return elems[idx]; };
-    T& operator [](const int idx) { return elems[idx]; };
+    const T& operator [](const int idx) const { return elems[idx]; }
+    T& operator [](const int idx) { return elems[idx]; }
 
   private:
     T elems[N];
@@ -117,17 +117,17 @@ class CArray
       for (iterator i=begin(); i!=end(); ++i) {
         *i=dval;
       }
-    };
+    }
 
     typedef T* iterator;
-    iterator begin() { return &elems[0]; };
-    iterator end()   { return &elems[N]; };
+    iterator begin() { return &elems[0]; }
+    iterator end()   { return &elems[N]; }
 
 
     static const int size = N;
 
-    const T& operator [](const int idx) const { return elems[idx]; };
-    T& operator [](const int idx) { return elems[idx]; };
+    const T& operator [](const int idx) const { return elems[idx]; }
+    T& operator [](const int idx) { return elems[idx]; }
 
   private:
     T elems[N];

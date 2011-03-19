@@ -21,10 +21,10 @@ class Kinem
     double mass(int i) const
     {
       return kdata[(i-1)*(i+2)/2];
-    };
+    }
 
   protected:
-    Kinem() {};
+    Kinem() {}
 
     void zero(); // initialize to zero
 
@@ -46,14 +46,16 @@ class Kinem
     {
         const int64_t ia=reinterpret_cast<const int64_t&>(a);
         const int64_t ib=reinterpret_cast<const int64_t&>(b);
-        return llabs( ia - ib ) <= idelta;
+        const uint64_t diff=llabs( ia - ib );
+        return diff <= idelta;
     }
     inline
     bool neq(const double& a, const double &b) const
     {
         const int64_t ia=reinterpret_cast<const int64_t&>(a);
         const int64_t ib=reinterpret_cast<const int64_t&>(b);
-        return llabs( ia - ib ) > idelta;
+        const uint64_t diff=llabs( ia - ib );
+        return diff > idelta;
     }
 
     static const int KLEN=R*(R+1)/2;
@@ -88,37 +90,37 @@ void Kinem<R>::zero()
 class Kinem1 : public Kinem<1>
 {
   public:
-    Kinem1() { zero(); };
+    Kinem1() { zero(); }
     Kinem1(double xm1) {
       kdata[im1]=xm1;
-    };
+    }
 
-    inline double m1()  const { return kdata[im1];  };
+    inline double m1()  const { return kdata[im1];  }
 };
 
 // 2-point kinematics
 class Kinem2 : public Kinem<2>
 {
   public:
-    Kinem2() { zero(); };
+    Kinem2() { zero(); }
     Kinem2(double xp1,
            double xm1,  double xm2)
     {
       kdata[ip1]=xp1;
       kdata[im1]=xm1;
       kdata[im2]=xm2;
-    };
+    }
 
-    inline double p1()  const { return kdata[ip1];  };
-    inline double m1()  const { return kdata[im1];  };
-    inline double m2()  const { return kdata[im2];  };
+    inline double p1()  const { return kdata[ip1];  }
+    inline double m1()  const { return kdata[im1];  }
+    inline double m2()  const { return kdata[im2];  }
 };
 
 // 3-point kinematics
 class Kinem3 : public Kinem<3>
 {
   public:
-    Kinem3() { zero(); };
+    Kinem3() { zero(); }
     Kinem3(double xp1,  double xp2,  double xp3,
            double xm1,  double xm2,  double xm3)
     {
@@ -128,21 +130,21 @@ class Kinem3 : public Kinem<3>
       kdata[im1]=xm1;
       kdata[im2]=xm2;
       kdata[im3]=xm3;
-    };
+    }
 
-    inline double p1()  const { return kdata[ip1];  };
-    inline double p2()  const { return kdata[ip2];  };
-    inline double p3()  const { return kdata[ip3];  };
-    inline double m1()  const { return kdata[im1];  };
-    inline double m2()  const { return kdata[im2];  };
-    inline double m3()  const { return kdata[im3];  };
+    inline double p1()  const { return kdata[ip1];  }
+    inline double p2()  const { return kdata[ip2];  }
+    inline double p3()  const { return kdata[ip3];  }
+    inline double m1()  const { return kdata[im1];  }
+    inline double m2()  const { return kdata[im2];  }
+    inline double m3()  const { return kdata[im3];  }
 };
 
 // 4-point kinematics
 class Kinem4 : public Kinem<4>
 {
   public:
-    Kinem4() { zero(); };
+    Kinem4() { zero(); }
     Kinem4(double xp1,  double xp2,  double xp3,  double xp4,
            double xs12, double xs23,
            double xm1,  double xm2,  double xm3,  double xm4)
@@ -157,25 +159,25 @@ class Kinem4 : public Kinem<4>
       kdata[im2]=xm2;
       kdata[im3]=xm3;
       kdata[im4]=xm4;
-    };
+    }
 
-    inline double p1()  const { return kdata[ip1];  };
-    inline double p2()  const { return kdata[ip2];  };
-    inline double p3()  const { return kdata[ip3];  };
-    inline double p4()  const { return kdata[ip4];  };
-    inline double m1()  const { return kdata[im1];  };
-    inline double m2()  const { return kdata[im2];  };
-    inline double m3()  const { return kdata[im3];  };
-    inline double m4()  const { return kdata[im4];  };
-    inline double s12() const { return kdata[is12]; };
-    inline double s23() const { return kdata[is23]; };
+    inline double p1()  const { return kdata[ip1];  }
+    inline double p2()  const { return kdata[ip2];  }
+    inline double p3()  const { return kdata[ip3];  }
+    inline double p4()  const { return kdata[ip4];  }
+    inline double m1()  const { return kdata[im1];  }
+    inline double m2()  const { return kdata[im2];  }
+    inline double m3()  const { return kdata[im3];  }
+    inline double m4()  const { return kdata[im4];  }
+    inline double s12() const { return kdata[is12]; }
+    inline double s23() const { return kdata[is23]; }
 };
 
 // 5-point kinematics
 class Kinem5 : public Kinem<5>
 {
   public:
-    Kinem5() { zero(); };
+    Kinem5() { zero(); }
     Kinem5(double xp1,  double xp2,  double xp3,  double xp4,  double xp5,
            double xs12, double xs23, double xs34, double xs45, double xs15,
            double xm1,  double xm2,  double xm3,  double xm4,  double xm5)
@@ -195,23 +197,23 @@ class Kinem5 : public Kinem<5>
       kdata[im3]=xm3;
       kdata[im4]=xm4;
       kdata[im5]=xm5;
-    };
+    }
 
-    inline double p1()  const { return kdata[ip1];  };
-    inline double p2()  const { return kdata[ip2];  };
-    inline double p3()  const { return kdata[ip3];  };
-    inline double p4()  const { return kdata[ip4];  };
-    inline double p5()  const { return kdata[ip5];  };
-    inline double m1()  const { return kdata[im1];  };
-    inline double m2()  const { return kdata[im2];  };
-    inline double m3()  const { return kdata[im3];  };
-    inline double m4()  const { return kdata[im4];  };
-    inline double m5()  const { return kdata[im5];  };
-    inline double s12() const { return kdata[is12]; };
-    inline double s23() const { return kdata[is23]; };
-    inline double s34() const { return kdata[is34]; };
-    inline double s45() const { return kdata[is45]; };
-    inline double s15() const { return kdata[is15]; };
+    inline double p1()  const { return kdata[ip1];  }
+    inline double p2()  const { return kdata[ip2];  }
+    inline double p3()  const { return kdata[ip3];  }
+    inline double p4()  const { return kdata[ip4];  }
+    inline double p5()  const { return kdata[ip5];  }
+    inline double m1()  const { return kdata[im1];  }
+    inline double m2()  const { return kdata[im2];  }
+    inline double m3()  const { return kdata[im3];  }
+    inline double m4()  const { return kdata[im4];  }
+    inline double m5()  const { return kdata[im5];  }
+    inline double s12() const { return kdata[is12]; }
+    inline double s23() const { return kdata[is23]; }
+    inline double s34() const { return kdata[is34]; }
+    inline double s45() const { return kdata[is45]; }
+    inline double s15() const { return kdata[is15]; }
 };
 
 #endif /* QUL_KINEM_H */

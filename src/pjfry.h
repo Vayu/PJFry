@@ -163,7 +163,7 @@ namespace PJFry {
 
     double GetMu2();
     double SetMu2(double newmu2);
-};
+}
 #endif /* __cplusplus */
 
 

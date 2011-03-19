@@ -18,8 +18,8 @@ template <typename TK, typename TV>
 class MEntry
 {
   public:
-    MEntry() : key(), val() {};
-    MEntry(const TK& k, TV& v) : key(k), val(v) {};
+    MEntry() : key(), val() {}
+    MEntry(const TK& k, TV& v) : key(k), val(v) {}
 
     MEntry& operator= (const MEntry& entry)
     {
@@ -115,25 +115,25 @@ class ICache : public Cache
     static ncomplex getE(int ep, int i, int j, int k, int l, int m, const Kinem5 &kin);
 
     // Tensor BOX
-    static ncomplex getD(int ep, const Kinem4 &kin) { return getI4(ep, kin); };
+    static ncomplex getD(int ep, const Kinem4 &kin) { return getI4(ep, kin); }
     static ncomplex getD(int ep, int i, const Kinem4 &kin);
     static ncomplex getD(int ep, int i, int j, const Kinem4 &kin);
     static ncomplex getD(int ep, int i, int j, int k, const Kinem4 &kin);
     static ncomplex getD(int ep, int i, int j, int k, int l, const Kinem4 &kin);
 
     // Tensor TRIANGLE
-    static ncomplex getC(int ep, const Kinem3 &kin) { return getI3(ep, kin); };
+    static ncomplex getC(int ep, const Kinem3 &kin) { return getI3(ep, kin); }
     static ncomplex getC(int ep, int i, const Kinem3 &kin);
     static ncomplex getC(int ep, int i, int j, const Kinem3 &kin);
     static ncomplex getC(int ep, int i, int j, int k, const Kinem3 &kin);
 
     // Tensor BUBBLE
-    static ncomplex getB(int ep, const Kinem2 &kin) { return getI2(ep, kin); };
+    static ncomplex getB(int ep, const Kinem2 &kin) { return getI2(ep, kin); }
     static ncomplex getB(int ep, int i, const Kinem2 &kin);
     static ncomplex getB(int ep, int i, int j, const Kinem2 &kin);
 
     // Tadpole
-    static ncomplex getA(int ep, const Kinem1 &kin) { return getI1(ep, kin); };
+    static ncomplex getA(int ep, const Kinem1 &kin) { return getI1(ep, kin); }
 
     static void Clear();
 
