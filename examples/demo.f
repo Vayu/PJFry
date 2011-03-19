@@ -8,7 +8,8 @@
       REAL*8 s12,s23,s34,s45,s15 
 
 !     set renormalization scale mu^2
-      write(*,*) "mu^2=", psetmusq(36D0)
+      call psetmusq(36D0)
+      write(*,*) "mu^2=", pgetmusq()
 
       write (*,*) "-----------------------------------------------"
 
