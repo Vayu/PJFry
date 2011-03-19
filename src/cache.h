@@ -142,7 +142,8 @@ class ICache : public Cache
 
   private:
     static double mu2;
-    typedef union { int64_t i64; double d64; } ID64;
+    typedef union { int64_t i64; double  d64; } ID64;
+    typedef union { double  d64; int64_t i64; } DI64;
     static const ID64 sNAN;
     friend bool operator==(const double &x, const ICache::ID64 &y);
 
@@ -197,7 +198,8 @@ class ICache : public Cache
 inline
 bool operator==(const double &x, const ICache::ID64 &y)
 {
-    return reinterpret_cast<const int64_t&>(x) == y.i64;
+    const ICache::DI64 ix={x};
+    return ix.i64 == y.i64;
 }
 
 

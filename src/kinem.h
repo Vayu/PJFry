@@ -28,6 +28,7 @@ class Kinem
 
     void zero(); // initialize to zero
 
+    typedef union { double d64; int64_t i64; } DI64;
 //     static const double mdelta=1e-14;
 //     static const int64_t idelta=1+mdelta/DBL_EPSILON; // needs cfloat
     /*
@@ -44,17 +45,17 @@ class Kinem
     inline
     bool eq(const double& a, const double &b) const
     {
-        const int64_t ia=reinterpret_cast<const int64_t&>(a);
-        const int64_t ib=reinterpret_cast<const int64_t&>(b);
-        const uint64_t diff=llabs( ia - ib );
+        const DI64 ia={a};
+        const DI64 ib={b};
+        const uint64_t diff=llabs( ia.i64 - ib.i64 );
         return diff <= idelta;
     }
     inline
     bool neq(const double& a, const double &b) const
     {
-        const int64_t ia=reinterpret_cast<const int64_t&>(a);
-        const int64_t ib=reinterpret_cast<const int64_t&>(b);
-        const uint64_t diff=llabs( ia - ib );
+        const DI64 ia={a};
+        const DI64 ib={b};
+        const uint64_t diff=llabs( ia.i64 - ib.i64 );
         return diff > idelta;
     }
 
