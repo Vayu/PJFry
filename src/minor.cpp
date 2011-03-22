@@ -13,7 +13,7 @@ const unsigned char MinorBase::ti3[8]={0, 1, 4, 10, 20, 35, 56, 84};
 const unsigned char MinorBase::ti4[8]={0, 1, 5, 15, 35, 70, 126, 210};
 const unsigned char MinorBase::ti5[8]={0, 1, 6, 21, 56, 126, 252, 0};//462};
 
-const double MinorBase::teps=1e-12;
+const double MinorBase::teps=1e-14;
 
 const double MinorBase::ceps=5e-2;
 
