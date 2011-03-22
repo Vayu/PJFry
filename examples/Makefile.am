@@ -5,6 +5,7 @@ check_PROGRAMS = demo
 demo_LDADD = ../src/libpjfry.la
 demo_SOURCES = demo.f
 EXTRA_demo_SOURCES = pjfry.f
+EXTRA_DIST = demo.txt
 
 if EMU_GOLEM
   noinst_LTLIBRARIES = libgolem_demo_module.la libpjfry95pg_module.la
