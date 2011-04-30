@@ -216,15 +216,20 @@ class MCache : public Cache
     static Minor3::Ptr getMinor3(const Kinem3 &k);
     static Minor2::Ptr getMinor2(const Kinem2 &k);
 
-    static Minor5::Ptr checkMinor5(const Kinem5 &k);
-    static Minor4::Ptr checkMinor4(const Kinem4 &k);
-    static Minor3::Ptr checkMinor3(const Kinem3 &k);
-    static Minor2::Ptr checkMinor2(const Kinem2 &k);
-
     static void insertMinor5(const Kinem5 &k, Minor5::Ptr &m);
     static void insertMinor4(const Kinem4 &k, Minor4::Ptr &m);
     static void insertMinor3(const Kinem3 &k, Minor3::Ptr &m);
     static void insertMinor2(const Kinem2 &k, Minor2::Ptr &m);
+
+#ifdef USE_SMART_INSERT
+#   define INSERTMINOR3 smartinsertMinor3
+#   define INSERTMINOR2 smartinsertMinor2
+    static void smartinsertMinor3(const Kinem3 &k, Minor3::Ptr &m);
+    static void smartinsertMinor2(const Kinem2 &k, Minor2::Ptr &m);
+#else
+#   define INSERTMINOR3 insertMinor3
+#   define INSERTMINOR2 insertMinor2
+#endif
 
     static void Clear();
 

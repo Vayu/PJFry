@@ -9,6 +9,7 @@
 #define QUL_POINTER_H
 
 #include <memory>
+#include <cstring>
 
 class SRefCnt
 {
@@ -52,10 +53,12 @@ class SPtr
     T* pObj;
 };
 
+template <typename T, int N> class DArray;
 // Iterator for DArray class
 template <typename T, int N>
 class NIter
 {
+  friend class DArray<T, N>;
   public:
     inline T& operator* () { return ptr[idx%N]; }
     inline T* operator-> () { return &ptr[idx%N]; }
@@ -88,6 +91,23 @@ class DArray
       elems[last]=el;
       return elems[last];
     }
+
+#ifdef USE_SMART_INSERT
+    void remove(iterator &it) {
+//       assert(it.ptr==elems);
+      int i=it.idx%N;
+      elems[i]=T();
+      if (i>=last) {
+        memmove(&elems[last+1],&elems[last],(i-last)*sizeof(T));
+        memset(&elems[last],0,sizeof(T));
+        last=(last+1)%N;
+      } else {
+        memmove(&elems[i],&elems[i+1],(last-i-1)*sizeof(T));
+        memset(&elems[last-1],0,sizeof(T));
+      }
+      len=len-1;
+    }
+#endif
 
     void reset() {
       for (int i=0; i<len; i++) {

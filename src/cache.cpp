@@ -650,24 +650,33 @@ Minor4::Ptr MCache::getMinor4(const Kinem4 &k)
   return minor;
 }
 
-#define checkMinorN(n) \
-Minor##n::Ptr MCache::checkMinor##n(const Kinem##n &k) \
-{ \
-  Minor##n::Ptr minor; \
-  for (Array##n::iterator it##n=cm##n.begin(); it##n!=cm##n.end(); ++it##n) { \
-    if (it##n->key == k) { \
-      minor=it##n->val; \
-      break; \
-    } \
-  } \
-  return minor; \
+
+#ifdef USE_SMART_INSERT
+
+void MCache::smartinsertMinor3(const Kinem3 &k, Minor3::Ptr &m)
+{
+  Minor3::Ptr minor;
+  for (Array3::iterator it3=cm3.begin(); it3!=cm3.end(); ++it3) {
+    if (it3->key == k) {
+      cm3.remove(it3);
+      break;
+    }
+  }
+  insertMinor3(k,m);
 }
 
-checkMinorN(5)
-checkMinorN(4)
-checkMinorN(3)
-checkMinorN(2)
+void MCache::smartinsertMinor2(const Kinem2 &k, Minor2::Ptr &m)
+{
+  Minor2::Ptr minor;
+  for (Array2::iterator it2=cm2.begin(); it2!=cm2.end(); ++it2) {
+    if (it2->key == k) {
+      cm2.remove(it2);
+      break;
+    }
+  }
+  insertMinor2(k,m);
+}
 
-#undef checkMinorN
+#endif
 
 // -------------------------------------------------------

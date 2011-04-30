@@ -261,14 +261,14 @@ double Minor5::M4vv(int u, int v, int i)
 { \
   Kinem3 k3=Kinem3(k5st##s##t); \
   Minor3::Ptr minor=Minor3::create(k3,self,s,t, offs); \
-  MCache::insertMinor3(k3,minor); \
+  MCache::INSERTMINOR3(k3,minor); \
 }
 
 #define m5create2(s,t,u) \
 { \
   Kinem2 k2=Kinem2(k5stu##s##t##u); \
   Minor2::Ptr minor=Minor2::create(k2,self,s,t,u, offs); \
-  MCache::insertMinor2(k2,minor); \
+  MCache::INSERTMINOR2(k2,minor); \
 }
 
 /* --------------------------------------------------------

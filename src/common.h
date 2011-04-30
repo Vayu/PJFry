@@ -47,5 +47,8 @@ class Kinem2;
 #   define USE_GOLEM_ZERO_CHECK "1" /* enable checks for i,j,k==s,t,u */
 #endif
 
+// Approx 1% slowdown
+#define USE_SMART_INSERT        "1" /* before adding new, delete same old entries in MCache2,3 */
+
 #endif /* QUL_COMMON_H */
 
