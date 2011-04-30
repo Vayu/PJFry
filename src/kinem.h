@@ -48,16 +48,16 @@ class Kinem
     {
         const DI64 ia={a};
         const DI64 ib={b};
-        const uint64_t diff=llabs( ia.i64 - ib.i64 );
-        return diff <= idelta;
+        const int64_t diff=ia.i64-ib.i64;
+        return diff == 0LL || static_cast<uint64_t>(llabs(diff)) <= idelta;
     }
     inline
     bool neq(const double& a, const double &b) const
     {
         const DI64 ia={a};
         const DI64 ib={b};
-        const uint64_t diff=llabs( ia.i64 - ib.i64 );
-        return diff > idelta;
+        const int64_t diff=ia.i64-ib.i64;
+        return diff != 0LL && static_cast<uint64_t>(llabs(diff)) > idelta;
     }
 
     static const int KLEN=R*(R+1)/2;
@@ -75,7 +75,7 @@ template <int R>
 bool Kinem<R>::operator == (const Kinem<R>& kinem) const
 {
   for (int i=0; i<KLEN; i++) {
-    if (neq(kdata[i], kinem.kdata[i])) return false;
+    if (not eq(kdata[i], kinem.kdata[i])) return false;
   }
   return true;
 }
