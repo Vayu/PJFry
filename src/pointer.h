@@ -110,9 +110,11 @@ class DArray
 #endif
 
     void reset() {
+#ifndef USE_DIRTY_RESET
       for (int i=0; i<len; i++) {
         elems[i]=T();
       }
+#endif
       last=N;
       len=0;
     }

@@ -164,6 +164,7 @@ namespace PJFry {
 
     double GetMu2();
     double SetMu2(double newmu2);
+    void ClearCache();
 }
 #endif /* __cplusplus */
 
@@ -174,6 +175,7 @@ extern "C" {
 
 double pgetmusq_();
 void psetmusq_(double *mu2);
+void pclearcache_();
 
 pj_complex pa0_(double *m1, int *ep);
 

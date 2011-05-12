@@ -39,6 +39,13 @@ double ICache::setMu2(const double newmu2)
 
 void ICache::Clear()
 {
+  ClearCC();
+  ClearIC();
+}
+
+/* clear coefficient cache */
+void ICache::ClearCC()
+{
   ic5[0].reset();
   ic5[1].reset();
   ic4[0].reset();
@@ -47,13 +54,18 @@ void ICache::Clear()
   ic3[1].reset();
   ic2[0].reset();
   ic2[1].reset();
+}
 
+/* clear scalar integral cache */
+void ICache::ClearIC()
+{
   ics4.reset();
   ics3.reset();
   ics2.reset();
   ics1.reset();
 }
 
+/* clear minor cache */
 void MCache::Clear()
 {
   cm5.reset();

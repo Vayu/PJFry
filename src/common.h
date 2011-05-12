@@ -50,5 +50,7 @@ class Kinem2;
 // Approx 1% slowdown
 #define USE_SMART_INSERT        "1" /* before adding new, delete same old entries in MCache2,3 */
 
+#define USE_DIRTY_RESET         "1" /* when told to clear caches, just set len=0 */
+
 #endif /* QUL_COMMON_H */
 

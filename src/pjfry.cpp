@@ -393,18 +393,31 @@ double PJFry::SetMu2(const double mu2)
   return ICache::setMu2(mu2);
 }
 
+void PJFry::ClearCache()
+{
+  // clear only coefficient cache and minor cache
+  // keep scalar integrals cache
+  ICache::ClearCC();
+  MCache::Clear();
+}
+
 // =============================================================
 // =============================================================
 // =============================================================
 
 double pgetmusq_()
 {
-  return ICache::getMu2();
+  return PJFry::GetMu2();
 }
 
 void psetmusq_(double *mu2)
 {
-  ICache::setMu2(*mu2);
+  PJFry::SetMu2(*mu2);
+}
+
+void pclearcache_()
+{
+  PJFry::ClearCache();
 }
 
 pj_complex pe0_( double *p1,  double *p2,  double *p3,  double *p4,  double *p5,

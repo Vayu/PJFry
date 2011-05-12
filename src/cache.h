@@ -137,6 +137,8 @@ class ICache : public Cache
     static ncomplex getA(int ep, const Kinem1 &kin) { return getI1(ep, kin); }
 
     static void Clear();
+    static void ClearCC();
+    static void ClearIC();
 
     static double getMu2();
     static double setMu2(const double newmu2);
