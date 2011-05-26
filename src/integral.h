@@ -19,6 +19,7 @@ class Initialize
 {
   public:
     Initialize();
+    ~Initialize();
 };
 
 ICache::Ival qlI1(const Kinem1& k);
@@ -27,11 +28,14 @@ ICache::Ival qlI3(const Kinem3& k);
 ICache::Ival qlI4(const Kinem4& k);
 
 #ifdef USE_QCDLOOP
+#define qlprec F77_FUNC(ffprec,FFPREC)
+#define qlflag F77_FUNC(ffflag,FFFLAG)
 # ifdef HAVE_QCDLOOP1_H
 #   include <qcdloop1.h>
 # else
   extern "C" {
-    void qlinit_();
+    void F77_FUNC(qlinit,QLINIT)();
+    void F77_FUNC(ffexi,FFEXI)();
     std::complex<double> F77_FUNC(qli1,QLI1)(double *m1, double *mu2, int *ep);
     std::complex<double> F77_FUNC(qli2,QLI2)(double *p1, double *m1, double *m2, double *mu2, int *ep);
     std::complex<double> F77_FUNC(qli3,QLI3)(double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, double *mu2, int *ep);
@@ -39,7 +43,11 @@ ICache::Ival qlI4(const Kinem4& k);
 
     extern struct {
       double xloss,precx,precc,xalogm,xclogm,xalog2,xclog2,reqprc;
-    } F77_FUNC(ffprec,FFPREC);
+    } qlprec;
+    extern struct {
+      int lwrite,ltest,l4also,ldc3c4,lmem,lwarn,ldot,
+          nevent,ner,id,idsub,nwidth,nschem,onshel,idot;
+    } qlflag;
   }
 #endif /* HAVE_QCDLOOP1_H */
 #endif /* USE_QCDLOOP */

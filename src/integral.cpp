@@ -17,24 +17,35 @@ Initialize::Initialize()
   printf("PJFRY init\n");
   const double dbl_min=std::numeric_limits<double>::min();
 
-  qlinit_();
+  F77_FUNC(qlinit,QLINIT)();
 
-  if (ffprec_.xalogm < dbl_min) {
-    ffprec_.xalogm=dbl_min;
-    ffprec_.xalog2=sqrt(dbl_min);
+  if (qlprec.xalogm < dbl_min) {
+    qlprec.xalogm=dbl_min;
+    qlprec.xalog2=sqrt(dbl_min);
     #ifndef NDEBUG
-    printf("Set xalogm to normalized value %e\n", ffprec_.xalogm);
-    printf("Set xalog2 to normalized value %e\n", ffprec_.xalog2);
+    printf("Set xalogm to normalized value %e\n", qlprec.xalogm);
+    printf("Set xalog2 to normalized value %e\n", qlprec.xalog2);
     #endif
   }
-  if (ffprec_.xclogm < dbl_min) {
-    ffprec_.xclogm=dbl_min;
-    ffprec_.xclog2=sqrt(dbl_min);
+  if (qlprec.xclogm < dbl_min) {
+    qlprec.xclogm=dbl_min;
+    qlprec.xclog2=sqrt(dbl_min);
     #ifndef NDEBUG
-    printf("Set xclogm to normalized value %e\n", ffprec_.xclogm);
-    printf("Set xclog2 to normalized value %e\n", ffprec_.xclog2);
+    printf("Set xclogm to normalized value %e\n", qlprec.xclogm);
+    printf("Set xclog2 to normalized value %e\n", qlprec.xclog2);
     #endif
   }
+  if (qlflag.lwarn) {
+    qlflag.lwarn=0;
+    #ifndef NDEBUG
+    printf("Disable FF warnings %d\n",qlflag.lwarn);
+    #endif
+  }
+}
+
+Initialize::~Initialize()
+{
+  F77_FUNC(ffexi,FFEXI)();
 }
 
 ICache::Ival qlI1(const Kinem1& k)
