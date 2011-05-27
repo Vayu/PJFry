@@ -56,12 +56,25 @@ ICache::Ival qlI1(const Kinem1& k)
   double m1=k.m1();
   double mu2=ICache::getMu2();
 
+#ifdef USE_F2C
+  std::complex<double> rslt;
+  ep=0;
+  F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
+  ivalue.val[0]=rslt;
+  ep=-1;
+  F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
+  ivalue.val[1]=rslt;
+  ep=-2;
+  F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
+  ivalue.val[2]=rslt;
+#else
   ep=0;
   ivalue.val[0]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
   ep=-1;
   ivalue.val[1]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
   ep=-2;
   ivalue.val[2]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+#endif
 
   return ivalue;
 }
@@ -76,12 +89,25 @@ ICache::Ival qlI2(const Kinem2& k)
   double m2=k.m2();
   double mu2=ICache::getMu2();
 
+#ifdef USE_F2C
+  std::complex<double> rslt;
+  ep=0;
+  F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
+  ivalue.val[0]=rslt;
+  ep=-1;
+  F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
+  ivalue.val[1]=rslt;
+  ep=-2;
+  F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
+  ivalue.val[2]=rslt;
+#else
   ep=0;
   ivalue.val[0]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
   ep=-1;
   ivalue.val[1]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
   ep=-2;
   ivalue.val[2]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+#endif
 
   return ivalue;
 }
@@ -99,12 +125,25 @@ ICache::Ival qlI3(const Kinem3& k)
   double m3=k.m3();
   double mu2=ICache::getMu2();
 
+#ifdef USE_F2C
+  std::complex<double> rslt;
+  ep=0;
+  F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ivalue.val[0]=rslt;
+  ep=-1;
+  F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ivalue.val[1]=rslt;
+  ep=-2;
+  F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ivalue.val[2]=rslt;
+#else
   ep=0;
   ivalue.val[0]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
   ep=-1;
   ivalue.val[1]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
   ep=-2;
   ivalue.val[2]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+#endif
 
   return ivalue;
 }
@@ -128,27 +167,66 @@ ICache::Ival qlI4(const Kinem4& k)
 
   if (s12==0. || s23==0.) {
     if (p1!=0. && p3!=0.) {
+#   ifdef USE_F2C
+      std::complex<double> rslt;
+      ep=0;
+      F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ivalue.val[0]=rslt;
+      ep=-1;
+      F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ivalue.val[1]=rslt;
+      ep=-2;
+      F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ivalue.val[2]=rslt;
+#   else
       ep=0;
       ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
       ep=-1;
       ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
       ep=-2;
       ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+#   endif
     } else if (p2!=0. && p4!=0.) {
+#   ifdef USE_F2C
+      std::complex<double> rslt;
+      ep=0;
+      F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ivalue.val[0]=rslt;
+      ep=-1;
+      F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ivalue.val[1]=rslt;
+      ep=-2;
+      F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ivalue.val[2]=rslt;
+#   else
       ep=0;
       ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
       ep=-1;
       ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
       ep=-2;
       ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+#   endif
     } else { assert(0); }
   } else {
+# ifdef USE_F2C
+    std::complex<double> rslt;
+    ep=0;
+    F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ivalue.val[0]=rslt;
+    ep=-1;
+    F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ivalue.val[1]=rslt;
+    ep=-2;
+    F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ivalue.val[2]=rslt;
+# else
     ep=0;
     ivalue.val[0]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
     ep=-1;
     ivalue.val[1]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
     ep=-2;
     ivalue.val[2]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+# endif
   }
   return ivalue;
 }

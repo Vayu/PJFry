@@ -36,10 +36,18 @@ ICache::Ival qlI4(const Kinem4& k);
   extern "C" {
     void F77_FUNC(qlinit,QLINIT)();
     void F77_FUNC(ffexi,FFEXI)();
+
+#ifdef USE_F2C
+    void F77_FUNC(qli1,QLI1)(std::complex<double> *rslt, double *m1, double *mu2, int *ep);
+    void F77_FUNC(qli2,QLI2)(std::complex<double> *rslt, double *p1, double *m1, double *m2, double *mu2, int *ep);
+    void F77_FUNC(qli3,QLI3)(std::complex<double> *rslt, double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, double *mu2, int *ep);
+    void F77_FUNC(qli4,QLI4)(std::complex<double> *rslt, double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, double *mu2, int *ep);
+#else
     std::complex<double> F77_FUNC(qli1,QLI1)(double *m1, double *mu2, int *ep);
     std::complex<double> F77_FUNC(qli2,QLI2)(double *p1, double *m1, double *m2, double *mu2, int *ep);
     std::complex<double> F77_FUNC(qli3,QLI3)(double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, double *mu2, int *ep);
     std::complex<double> F77_FUNC(qli4,QLI4)(double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, double *mu2, int *ep);
+#endif
 
     extern struct {
       double xloss,precx,precc,xalogm,xclogm,xalog2,xclog2,reqprc;

@@ -256,6 +256,10 @@ AC_ARG_ENABLE(cache-low,[AS_HELP_STRING([--enable-cache-low],
             [test "x$enable_cache_low" == "xyes" && AC_DEFINE(USE_CACHE_LOW,"1","enable cache for 2-,3-,4-point coefficients")],
             [enable_cache_low=no])
 
+AC_ARG_ENABLE(f2c,[AS_HELP_STRING([--enable-f2c],
+            [Use g77 and ifort calling conventions @<:@default=no@:>@])],
+            [test "x$enable_f2c" == "xyes" && AC_DEFINE(USE_F2C,"1","Use g77 and ifort calling conventions for complex return values")],
+            [enable_f2c=no])
 
 # Substitutions for .in files
 AC_SUBST(PJFRY_MAJOR)

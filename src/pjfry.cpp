@@ -420,6 +420,162 @@ void pclearcache_()
   PJFry::ClearCache();
 }
 
+#ifdef USE_F2C
+// f2c,g77,ifort calling convention section (result is the first parameter)
+void pe0_(pj_complex *rslt,
+          double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+          double *s12, double *s23, double *s34, double *s45, double *s15,
+          double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v0(*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pe0i_(pj_complex *rslt,
+           int *i,
+           double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+           double *s12, double *s23, double *s34, double *s45, double *s15,
+           double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v1(*i,*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pe0ij_(pj_complex *rslt,
+            int *i, int *j,
+            double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+            double *s12, double *s23, double *s34, double *s45, double *s15,
+            double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v2(*i,*j,*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pe0ijk_(pj_complex *rslt,
+             int *i, int *j, int *k,
+             double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+             double *s12, double *s23, double *s34, double *s45, double *s15,
+             double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v3(*i,*j,*k,*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pe0ijkl_(pj_complex *rslt,
+              int *i, int *j, int *k, int *l,
+              double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+              double *s12, double *s23, double *s34, double *s45, double *s15,
+              double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v4(*i,*j,*k,*l,*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pe0ijklm_(pj_complex *rslt,
+               int *i, int *j, int *k, int *l, int *m,
+               double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
+               double *s12, double *s23, double *s34, double *s45, double *s15,
+               double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
+{
+  *rslt=PJFry::E0v5(*i,*j,*k,*l,*m,*p1,*p2,*p3,*p4,*p5,*s12,*s23,*s34,*s45,*s15,*m1,*m2,*m3,*m4,*m5,*ep);
+}
+
+void pd0_(pj_complex *rslt,
+          double *p1,  double *p2,  double *p3,  double *p4,
+          double *s12, double *s23,
+          double *m1,  double *m2,  double *m3,  double *m4, int *ep)
+{
+  *rslt=PJFry::D0v0(*p1,*p2,*p3,*p4,*s12,*s23,*m1,*m2,*m3,*m4,*ep);
+}
+
+void pd0i_(pj_complex *rslt,
+           int *i,
+           double *p1,  double *p2,  double *p3,  double *p4,
+           double *s12, double *s23,
+           double *m1,  double *m2,  double *m3,  double *m4, int *ep)
+{
+  *rslt=PJFry::D0v1(*i,*p1,*p2,*p3,*p4,*s12,*s23,*m1,*m2,*m3,*m4,*ep);
+}
+
+void pd0ij_(pj_complex *rslt,
+            int *i, int *j,
+            double *p1,  double *p2,  double *p3,  double *p4,
+            double *s12, double *s23,
+            double *m1,  double *m2,  double *m3,  double *m4, int *ep)
+{
+  *rslt=PJFry::D0v2(*i,*j,*p1,*p2,*p3,*p4,*s12,*s23,*m1,*m2,*m3,*m4,*ep);
+}
+
+void pd0ijk_(pj_complex *rslt,
+             int *i, int *j, int *k,
+             double *p1,  double *p2,  double *p3,  double *p4,
+             double *s12, double *s23,
+             double *m1,  double *m2,  double *m3,  double *m4, int *ep)
+{
+  *rslt=PJFry::D0v3(*i,*j,*k,*p1,*p2,*p3,*p4,*s12,*s23,*m1,*m2,*m3,*m4,*ep);
+}
+
+void pd0ijkl_(pj_complex *rslt,
+              int *i, int *j, int *k, int *l,
+              double *p1,  double *p2,  double *p3,  double *p4,
+              double *s12, double *s23,
+              double *m1,  double *m2,  double *m3,  double *m4, int *ep)
+{
+  *rslt=PJFry::D0v4(*i,*j,*k,*l,*p1,*p2,*p3,*p4,*s12,*s23,*m1,*m2,*m3,*m4,*ep);
+}
+
+void pc0_(pj_complex *rslt,
+          double *p1, double *p2, double *p3,
+          double *m1, double *m2, double *m3, int *ep)
+{
+  *rslt=PJFry::C0v0(*p1,*p2,*p3,*m1,*m2,*m3,*ep);
+}
+
+void pc0i_(pj_complex *rslt,
+           int *i,
+           double *p1, double *p2, double *p3,
+           double *m1, double *m2, double *m3, int *ep)
+{
+  *rslt=PJFry::C0v1(*i,*p1,*p2,*p3,*m1,*m2,*m3,*ep);
+}
+
+void pc0ij_(pj_complex *rslt,
+            int *i, int *j,
+            double *p1, double *p2, double *p3,
+            double *m1, double *m2, double *m3, int *ep)
+{
+  *rslt=PJFry::C0v2(*i,*j,*p1,*p2,*p3,*m1,*m2,*m3,*ep);
+}
+
+void pc0ijk_(pj_complex *rslt,
+             int *i, int *j, int *k,
+             double *p1, double *p2, double *p3,
+             double *m1, double *m2, double *m3, int *ep)
+{
+  *rslt=PJFry::C0v3(*i,*j,*k,*p1,*p2,*p3,*m1,*m2,*m3,*ep);
+}
+
+void pb0_(pj_complex *rslt,
+          double *p1, double *m1, double *m2, int *ep)
+{
+  *rslt=PJFry::B0v0(*p1,*m1,*m2,*ep);
+}
+
+void pb0i_(pj_complex *rslt,
+           int *i,
+           double *p1, double *m1, double *m2, int *ep)
+{
+  *rslt=PJFry::B0v1(*i,*p1,*m1,*m2,*ep);
+}
+
+void pb0ij_(pj_complex *rslt,
+            int *i, int *j,
+            double *p1, double *m1, double *m2, int *ep)
+{
+  *rslt=PJFry::B0v2(*i,*j,*p1,*m1,*m2,*ep);
+}
+
+void pa0_(pj_complex *rslt, double *m1, int *ep)
+{
+  *rslt=PJFry::A0v0(*m1,*ep);
+}
+#else
+// GNU calling convention section (result is a complex return value)
 pj_complex pe0_( double *p1,  double *p2,  double *p3,  double *p4,  double *p5,
                double *s12, double *s23, double *s34, double *s45, double *s15,
                double *m1,  double *m2,  double *m3,  double *m4,  double *m5, int *ep)
@@ -554,4 +710,4 @@ pj_complex pa0_( double *m1, int *ep)
 {
   return PJFry::A0v0(*m1,*ep);
 }
-
+#endif

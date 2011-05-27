@@ -30,6 +30,7 @@ And tell configure where to look for it by setting LDFLAGS='-L/path/to/scalar/in
 
 MathLink interface
 ==================
+
 MathLink interface consists of single executable, which will be installed to
  $prefix/bin/PJFry
 
@@ -44,7 +45,7 @@ Running FORTRAN examples
 =====================================
 
 Use 'make check' to compile a few simple examples of library use in FORTRAN
-(also see note for g77 users)
+(also see note for g77 and ifort users)
 
 
 REMARK for gcc 4.1 users with 32-bit OS
@@ -60,24 +61,17 @@ Possible solutions:
 4. Try disabling faulty optimizations: CXXFLAGS='-g -O2 -fno-schedule-insns -fno-regmove'
 
 
-REMARK for g77 users
+REMARK for g77 and ifort users
 ====================
 
-Current FORTRAN interface follows GNU calling conventions for COMPLEX type.
+FORTRAN interface follows GNU calling conventions for COMPLEX type by default.
 
 To work with g77 this library needs to be compiled with FFLAGS='-fno-f2c'
 (also library for scalar integrals).
 
-Alternatively you can replace FORTRAN wrapper functions in pjfry.h and pjfry.cpp with subroutines.
-e.g. "pj_complex pa0_(double *m1, int *ep)" -> "void pa0_(pj_complex *rslt, double *m1, int *ep)"
+Alternatively (and with ifort) you can use ./configure --enable-f2c=yes
+This will make program expect f2c conventions from scalar integral library
+and expose its interface following the same convention.
 
-// FFLAGS='-fno-f2c'
-pj_complex pa0_( double *m1, int *ep) {
-  return PJFry::A0v0(*m1,*ep);
-}
-
-// FFLAGS='-ff2c'
-void pa0_( pj_complex *rslt, double *m1, int *ep) {
-  *rslt=PJFry::A0v0(*m1,*ep);
-  return;
-}
+NOTE that this option does not add -ff2c flag, if you are use it with gfortran
+you would have to add -ff2c manually to FFLAGS and FCFLAGS

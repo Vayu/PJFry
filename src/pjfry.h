@@ -177,6 +177,47 @@ double pgetmusq_();
 void psetmusq_(double *mu2);
 void pclearcache_();
 
+#ifdef USE_F2C
+// f2c,g77,ifort calling convention section (result is the first parameter)
+void pa0_(pj_complex *rslt, double *m1, int *ep);
+
+void pb0_(pj_complex *rslt, double *p1, double *m1, double *m2, int *ep);
+void pb0i_(pj_complex *rslt, int *i,
+                double *p1, double *m1, double *m2, int *ep);
+void pb0ij_(pj_complex *rslt, int *i, int *j,
+                double *p1, double *m1, double *m2, int *ep);
+
+void pc0_(pj_complex *rslt, double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, int *ep);
+void pc0i_(pj_complex *rslt, int *i,
+                double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, int *ep);
+void pc0ij_(pj_complex *rslt, int *i, int *j,
+                double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, int *ep);
+void pc0ijk_(pj_complex *rslt, int *i, int *j, int *k,
+                double *p1, double *p2, double *p3, double *m1, double *m2, double *m3, int *ep);
+
+void pd0_(pj_complex *rslt, double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, int *ep);
+void pd0i_(pj_complex *rslt, int *i,
+                double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, int *ep);
+void pd0ij_(pj_complex *rslt, int *i, int *j,
+                double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, int *ep);
+void pd0ijk_(pj_complex *rslt, int *i, int *j, int *k,
+                double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, int *ep);
+void pd0ijkl_(pj_complex *rslt, int *i, int *j, int *k, int *l,
+                double *p1, double *p2, double *p3, double *p4, double *s12, double *s23, double *m1, double *m2, double *m3, double *m4, int *ep);
+
+void pe0_(pj_complex *rslt, double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+void pe0i_(pj_complex *rslt, int *i,
+                double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+void pe0ij_(pj_complex *rslt, int *i, int *j,
+                double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+void pe0ijk_(pj_complex *rslt, int *i, int *j, int *k,
+                double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+void pe0ijkl_(pj_complex *rslt, int *i, int *j, int *k, int *l,
+                double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+void pe0ijklm_(pj_complex *rslt, int *i, int *j, int *k, int *l, int *m,
+                double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+#else
+// GNU calling convention section (result is a complex return value)
 pj_complex pa0_(double *m1, int *ep);
 
 pj_complex pb0_(double *p1, double *m1, double *m2, int *ep);
@@ -214,6 +255,7 @@ pj_complex pe0ijkl_(int *i, int *j, int *k, int *l,
                 double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
 pj_complex pe0ijklm_(int *i, int *j, int *k, int *l, int *m,
                 double *p1, double *p2, double *p3, double *p4, double *p5, double *s12, double *s23, double *s34, double *s45, double *s15, double *m1, double *m2, double *m3, double *m4, double *m5, int *ep);
+#endif
 
 #ifdef USE_GOLEM_MODE
   double pggetmusq_();
