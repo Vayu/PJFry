@@ -12,4 +12,4 @@
         external pd0, pd0i, pd0ij, pd0ijk, pd0ijkl
         external pe0, pe0i, pe0ij, pe0ijk, pe0ijkl, pe0ijklm
         external pgetmusq, psetmusq
-        external clearcache
+        external pclearcache
