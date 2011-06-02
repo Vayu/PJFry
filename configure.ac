@@ -118,12 +118,12 @@ auto)
     AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
   else
     AC_F77_FUNC(qlinit)
-    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes],[],[-L$FLIBS])
+    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes],[],[$FLIBS])
     if test "x$use_qcdloop" == "xyes" ; then
       AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
     else
       AC_F77_FUNC(avh_olo_mu_set)
-      AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],[LIBS="$LIBS -lavh_olo" use_oneloop=yes],[],[-L$FLIBS])
+      AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],[LIBS="$LIBS -lavh_olo" use_oneloop=yes],[],[$FLIBS])
       if test "x$use_oneloop" == "xyes" ; then
         AC_DEFINE(USE_ONELOOP,"1",[use libavh_olo for scalar integrals])
       else
@@ -142,13 +142,13 @@ oneloop)
   AC_F77_FUNC(avh_olo_mu_set)
   AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],
     [LIBS="$LIBS -lavh_olo" use_oneloop=yes AC_DEFINE(USE_ONELOOP,"1",[use libavh_olo for scalar integrals])],
-    [AC_MSG_ERROR([libavh_olo library is missing])],[-L$FLIBS])
+    [AC_MSG_ERROR([libavh_olo library is missing])],[$FLIBS])
 ;;
 qcdloop)
   AC_F77_FUNC(qlinit)
   AC_CHECK_LIB([qcdloop], [$qlinit],
     [LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])],
-    [AC_MSG_ERROR([libqcdloop library is missing])],[-L$FLIBS])
+    [AC_MSG_ERROR([libqcdloop library is missing])],[$FLIBS])
 ;;
 *)
   AC_MSG_ERROR([Bad value for --with-integrals: $with_integrals])
