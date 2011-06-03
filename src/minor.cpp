@@ -14,6 +14,7 @@ const unsigned char MinorBase::ti4[8]={0, 1, 5, 15, 35, 70, 126, 210};
 const unsigned char MinorBase::ti5[8]={0, 1, 6, 21, 56, 126, 252, 0};//462};
 
 const double MinorBase::teps=1e-14;
+const double MinorBase::heps=1e-15;
 
 const double MinorBase::ceps=5e-2;
 
@@ -992,7 +993,7 @@ void Minor5::I4DsEval(const int ep)
       }
 
       double xn=1;
-      ncomplex dv;
+      ncomplex dv,s21;
 
       ncomplex sum[3];
       sum[0]=sump=sum1;
@@ -1007,20 +1008,12 @@ void Minor5::I4DsEval(const int ep)
       dv*=xn; \
       sum1+=dv;
 
-#define stepWynn(n) \
-      sum[(2+n)%3]=sum1; \
-      if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-      dv=sump; \
-      sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-      if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-          && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-          break;
-
       stepI4D(2,3.,2.)
       if (   fabs(sum1.real()*teps)>=fabs(dv.real())
           && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
         break;
       sum[1]=sump=sum1;
+      s21=sum[1]-sum[0];
 
       stepI4D(3,15.,16.)
       sump=sum1;
@@ -1038,7 +1031,6 @@ void Minor5::I4DsEval(const int ep)
 //       stepI4D(9,34459425.,74475360.)
 //       stepWynn(6)
 #undef stepI4D
-#undef stepWynn
     } while (0);
     ivalue=sump/d0s0s;
     }
@@ -1156,7 +1148,7 @@ void Minor5::I3DstEval(int ep)
         }
 
         double xn=1;
-        ncomplex dv;
+        ncomplex dv,s21;
 
         ncomplex sum[3];
         sum[0]=sump=sum1;
@@ -1171,20 +1163,12 @@ void Minor5::I3DstEval(int ep)
         dv*=xn; \
         sum1+=dv;
 
-#define stepWynn(n) \
-        sum[(2+n)%3]=sum1; \
-        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-        dv=sump; \
-        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-            break;
-
         stepI3D(2,4.,2.)
         if (   fabs(sum1.real()*teps)>=fabs(dv.real())
             && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
           break;
         sum[1]=sump=sum1;
+        s21=sum[1]-sum[0];
 
         stepI3D(3,24.,20.)
         sump=sum1;
@@ -1198,7 +1182,6 @@ void Minor5::I3DstEval(int ep)
 //         stepI3D(7,322560.,513792.)
 //         stepWynn(4)
 #undef stepI3D
-#undef stepWynn
       } while (0);
       ivalue=sump/d0st0st;
     } else {
@@ -1261,7 +1244,7 @@ void Minor5::I4D2sEval(int ep) {
       }
 
       double xn=1;
-      ncomplex dv;
+      ncomplex dv,s21;
 
       ncomplex sum[3];
       sum[0]=sump=sum1;
@@ -1276,20 +1259,12 @@ void Minor5::I4D2sEval(int ep) {
       dv*=xn; \
       sum1+=dv;
 
-#define stepWynn(n) \
-      sum[(2+n)%3]=sum1; \
-      if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-      dv=sump; \
-      sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-      if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-          && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-          break;
-
       stepI4D(3,5.,2.)
       if (   fabs(sum1.real()*teps)>=fabs(dv.real())
           && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
         break;
       sum[1]=sump=sum1;
+      s21=sum[1]-sum[0];
 
       stepI4D(4,35.,24.)
       sump=sum1;
@@ -1305,7 +1280,6 @@ void Minor5::I4D2sEval(int ep) {
 //       stepI4D(9,11486475.,17167470.)
 //       stepWynn(5)
 #undef stepI4D
-#undef stepWynn
     } while (0);
     ivalue=sump/d0s0s;
     }
@@ -1671,7 +1645,7 @@ void Minor5::I3D2stEval(int ep)
           }
 
           double xn=1;
-          ncomplex dv;
+          ncomplex dv,s21;
 
           ncomplex sum[3];
           sum[0]=sump=sum1;
@@ -1686,20 +1660,12 @@ void Minor5::I3D2stEval(int ep)
           dv*=xn; \
           sum1+=dv;
 
-#define stepWynn(n) \
-          sum[(2+n)%3]=sum1; \
-          if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-          dv=sump; \
-          sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-          if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-              && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-              break;
-
           stepI3D(3,6.,2.)
           if (   fabs(sum1.real()*teps)>=fabs(dv.real())
               && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
             break;
           sum[1]=sump=sum1;
+          s21=sum[1]-sum[0];
 
           stepI3D(4,48.,28.)
           sump=sum1;
@@ -1713,7 +1679,6 @@ void Minor5::I3D2stEval(int ep)
 //           stepI3D(8,1290240.,1571328.)
 //           stepWynn(4)
 #undef stepI3D
-#undef stepWynn
         } while (0);
         ivalue=sump/d0st0st;
       } else {
@@ -1783,7 +1748,7 @@ void Minor5::I4D3sEval(int ep)
         }
 
         double xn=1;
-        ncomplex dv;
+        ncomplex dv,s21;
 
         ncomplex sum[3];
         sum[0]=sump=sum1;
@@ -1798,20 +1763,12 @@ void Minor5::I4D3sEval(int ep)
         dv*=xn; \
         sum1+=dv;
 
-#define stepWynn(n) \
-        sum[(2+n)%3]=sum1; \
-        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-        dv=sump; \
-        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-            break;
-
         stepI4D(4,7.,2.)
         if (   fabs(sum1.real()*teps)>=fabs(dv.real())
             && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
           break;
         sum[1]=sump=sum1;
+        s21=sum[1]-sum[0];
 
         stepI4D(5,63.,32.)
         sump=sum1;
@@ -1827,7 +1784,6 @@ void Minor5::I4D3sEval(int ep)
 //       stepI4D(10,43648605.,52371534.)
 //         stepWynn(5)
 #undef stepI4D
-#undef stepWynn
       } while (0);
       ivalue=sump/d0s0s;
       }
@@ -2421,7 +2377,7 @@ void Minor5::I3D3stEval(int ep)
           }
 
           double xn=1;
-          ncomplex dv;
+          ncomplex dv,s21;
 
           ncomplex sum[3];
           sum[0]=sump=sum1;
@@ -2436,20 +2392,12 @@ void Minor5::I3D3stEval(int ep)
           dv*=xn; \
           sum1+=dv;
 
-#define stepWynn(n) \
-          sum[(2+n)%3]=sum1; \
-          if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-          dv=sump; \
-          sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-          if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-              && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-              break;
-
           stepI3D(4,8.,2.)
           if (   fabs(sum1.real()*teps)>=fabs(dv.real())
               && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
             break;
           sum[1]=sump=sum1;
+          s21=sum[1]-sum[0];
 
           stepI3D(5,80.,36.)
           sump=sum1;
@@ -2463,7 +2411,6 @@ void Minor5::I3D3stEval(int ep)
 //           stepI3D(9,3870720.,3853824.)
 //           stepWynn(4)
 #undef stepI3D
-#undef stepWynn
         } while (0);
         ivalue=sump/d0st0st;
       } else {
@@ -2542,7 +2489,7 @@ void Minor5::I4D4sEval(int ep)
         }
 
         double xn=1;
-        ncomplex dv;
+        ncomplex dv,s21;
 
         ncomplex sum[3];
         sum[0]=sump=sum1;
@@ -2557,20 +2504,12 @@ void Minor5::I4D4sEval(int ep)
         dv*=xn; \
         sum1+=dv;
 
-#define stepWynn(n) \
-        sum[(2+n)%3]=sum1; \
-        if (sum[(2+n)%3]==sum[(1+n)%3]) break; \
-        dv=sump; \
-        sump=sum[(1+n)%3]+1./(1./(sum[(2+n)%3]-sum[(1+n)%3])-(1./(sum[(1+n)%3]-sum[(0+n)%3]))); \
-        if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
-            && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
-            break;
-
         stepI4D(5,9.,2.)
         if (   fabs(sum1.real()*teps)>=fabs(dv.real())
             && fabs(sum1.imag()*teps)>=fabs(dv.imag()))
           break;
         sum[1]=sump=sum1;
+        s21=sum[1]-sum[0];
 
         stepI4D(6,99.,40.)
         sump=sum1;
@@ -2586,7 +2525,6 @@ void Minor5::I4D4sEval(int ep)
 //         stepI4D(11,130945815.,132172542.)
 //         stepWynn(5)
 #undef stepI4D
-#undef stepWynn
 
       } while (0);
       ivalue=sump/d0s0s;

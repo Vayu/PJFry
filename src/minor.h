@@ -13,6 +13,26 @@
 #include "pointer.h"
 #include <bitset>
 
+// one step of Wynn epsilon improvement
+#define stepWynn(n) \
+  sum[(2+n)%3]=sum1; \
+  { \
+    const ncomplex s2=sum[(2+n)%3]; \
+    const ncomplex s1=sum[(1+n)%3]; \
+    const ncomplex s10=s21; \
+    s21=s2-s1; \
+    if (   s21==s10 \
+        || (   fabs(s2.real()*heps)>=fabs(s21.real()) \
+            && fabs(s2.imag()*heps)>=fabs(s21.imag()) ) ) \
+        break; \
+    dv=sump; \
+    sump=s1+1./(1./s21-1./s10); \
+  } \
+  if (   fabs(sump.real()*teps)>=fabs(sump.real()-dv.real()) \
+      && fabs(sump.imag()*teps)>=fabs(sump.imag()-dv.imag()) ) \
+      break;
+// -------------
+
 #define tswap(x,y,t) \
     if (x > y) { \
     t=y; \
@@ -151,6 +171,7 @@ class MinorBase : public SRefCnt
     static const unsigned char idxtbl[64];
 
     static const double teps; // expansion target accuracy
+    static const double heps; // near double precision eps
 
     static const double ceps;
 
