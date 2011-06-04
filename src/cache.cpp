@@ -379,6 +379,9 @@ ncomplex ICache::getC(int ep, int i, int j, int k, const Kinem3 &kin)
   Minor3::Ptr pm3=MCache::getMinor3(kin);
   ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i, j, k) : sNAN.d64 );
 #endif /* USE_CACHE_LOW */
+#ifndef NDEBUG
+  if (pm3==0) printf("KIN: C%d%d%d(%.18e,%.18e,%.18e,%e,%e,%e)=%f\n",i,j,k,kin.p1(),kin.p2(),kin.p3(),kin.m1(),kin.m2(),kin.m3(),ivalue.real());
+#endif
   return ivalue;
 }
 
@@ -403,6 +406,9 @@ ncomplex ICache::getC(int ep, int i, int j, const Kinem3 &kin)
   Minor3::Ptr pm3=MCache::getMinor3(kin);
   ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i, j) : sNAN.d64 );
 #endif /* USE_CACHE_LOW */
+#ifndef NDEBUG
+  if (pm3==0) printf("KIN: C%d%d(%.18e,%.18e,%.18e,%e,%e,%e)=%f\n",i,j,kin.p1(),kin.p2(),kin.p3(),kin.m1(),kin.m2(),kin.m3(),ivalue.real());
+#endif
   return ivalue;
 }
 
@@ -426,6 +432,9 @@ ncomplex ICache::getC(int ep, int i, const Kinem3 &kin)
   Minor3::Ptr pm3=MCache::getMinor3(kin);
   ncomplex ivalue= ( pm3!=0 ? pm3->evalC(ep, i) : sNAN.d64 );
 #endif /* USE_CACHE_LOW */
+#ifndef NDEBUG
+  if (pm3==0) printf("KIN: C%d(%.18e,%.18e,%.18e,%e,%e,%e)=%f\n",i,kin.p1(),kin.p2(),kin.p3(),kin.m1(),kin.m2(),kin.m3(),ivalue.real());
+#endif
   return ivalue;
 }
 
@@ -457,6 +466,9 @@ ncomplex ICache::getB(int ep, int i, int j, const Kinem2 &kin)
   Minor2::Ptr pm2=MCache::getMinor2(kin);
   ncomplex ivalue= ( pm2!=0 ? pm2->evalB(ep, i, j) : sNAN.d64 );
 #endif /* USE_CACHE_LOW */
+#ifndef NDEBUG
+  if (pm2==0) printf("KIN: B%d%d(%.18e,%.18e,%.18e)=%f\n",i,j,kin.p1(),kin.m1(),kin.m2(),ivalue.real());
+#endif
   return ivalue;
 }
 
@@ -480,6 +492,9 @@ ncomplex ICache::getB(int ep, int i, const Kinem2 &kin)
   Minor2::Ptr pm2=MCache::getMinor2(kin);
   ncomplex ivalue= ( pm2!=0 ? pm2->evalB(ep, i) : sNAN.d64 );
 #endif /* USE_CACHE_LOW */
+#ifndef NDEBUG
+  if (pm2==0) printf("KIN: B%d(%.18e,%.18e,%.18e)=%f\n",i,kin.p1(),kin.m1(),kin.m2(),ivalue.real());
+#endif
   return ivalue;
 }
 

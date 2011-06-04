@@ -2162,6 +2162,7 @@ void Minor5::I3D2stijEval(int ep)
           ivalue=sum1/ds0ts0t;
         } else {
           ivalue=std::numeric_limits<double>::quiet_NaN();
+          printf("ERR: small G_2 in IR-div I3D2stij, fixable contact the authors\n");
           // TODO add: need I2Dstuij and I2stui
         }
       }
@@ -3256,7 +3257,8 @@ void Minor5::I3D3stijkEval(int ep)
           ivalue=sum1/ds0ts0t;
         } else {
           ivalue=std::numeric_limits<double>::quiet_NaN();
-        // TODO add and check, needs I2D2stuijk
+          printf("ERR: small G_2 in IR-div I3D3stijk, fixable contact the authors\n");
+          // TODO add: need I2D2stuijk
         }
       }
     pI3D3stijk[ep][iss(i-1,j-1,k-1)][idx]=ivalue;
