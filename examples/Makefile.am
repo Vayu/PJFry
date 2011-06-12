@@ -14,7 +14,10 @@ if EMU_GOLEM
   nodist_libpjfry95pg_module_la_SOURCES = pjfry95pg.f90
   EXTRA_libpjfry95pg_module_la_SOURCES = pjfry95.py pjfry90.f90
 
-  check_PROGRAMS += golem_4point golem_5point golem_6point
+  check_PROGRAMS += golem_3point golem_4point golem_5point golem_6point
+
+  golem_3point_LDADD = ../src/libpjfry.la libgolem_demo_module.la libpjfry95pg_module.la
+  golem_3point_SOURCES = golem_3point.f90
 
   golem_4point_LDADD = ../src/libpjfry.la libgolem_demo_module.la libpjfry95pg_module.la
   golem_4point_SOURCES = golem_4point.f90
