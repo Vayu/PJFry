@@ -619,6 +619,8 @@ MCache::Array2 MCache::cm2;
 //   return minor;
 // }
 
+#ifndef USE_TRIANGLES
+
 #define getMinorN(n) \
 Minor##n::Ptr MCache::getMinor##n(const Kinem##n &k) \
 { \
@@ -641,6 +643,46 @@ getMinorN(3)
 getMinorN(2)
 
 #undef getMinorN
+
+#else // USE_TRIANGLES
+
+Minor3::Ptr MCache::getMinor3(const Kinem3 &k)
+{
+  Minor3::Ptr minor;
+  for (Array3::iterator it3=cm3.begin(); it3!=cm3.end(); ++it3) {
+    if (it3->key == k) {
+      minor=it3->val;
+      break;
+    }
+  }
+  if (minor==0) {
+    Minor5::create(k);
+    minor=cm3.begin()->val;
+    cm3.insert(Entry3(k,minor));
+  }
+  assert(minor!=0);
+  return minor;
+}
+
+Minor2::Ptr MCache::getMinor2(const Kinem2 &k)
+{
+  Minor2::Ptr minor;
+  for (Array2::iterator it2=cm2.begin(); it2!=cm2.end(); ++it2) {
+    if (it2->key == k) {
+      minor=it2->val;
+      break;
+    }
+  }
+  if (minor==0) {
+    Minor5::create(k);
+    minor=cm2.begin()->val;
+    cm2.insert(Entry2(k,minor));
+  }
+  assert(minor!=0);
+  return minor;
+}
+
+#endif // USE_TRIANGLES
 
 Minor5::Ptr MCache::getMinor5(const Kinem5 &k)
 {

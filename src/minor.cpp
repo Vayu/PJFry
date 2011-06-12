@@ -54,7 +54,7 @@ const unsigned char MinorBase::idxtbl[64]={
   9,     //23   12   0b1100
   4,     //023  13   0b1101
   10,    //123  14   0b1110
-  104,   //     15   0b1111
+  0,     //0123 15   0b1111
   4,     //4    16   0b10000
   3,     //04   17   0b10001
   7,     //14   18   0b10010
@@ -62,15 +62,15 @@ const unsigned char MinorBase::idxtbl[64]={
   10,    //24   20   0b10100
   5,     //024  21   0b10101
   11,    //124  22   0b10110
-  104,   //     23   0b10111
+  1,     //0124 23   0b10111
   12,    //34   24   0b11000
   7,     //034  25   0b11001
   13,    //134  26   0b11010
-  104,   //     27   0b11011
+  3,     //0134 27   0b11011
   16,    //234  28   0b11100
-  104,   //     29   0b11101
-  104,   //     30   0b11110
-  105,   //     31   0b11111
+  6,     //0234 29   0b11101
+  10,    //1234 30   0b11110
+  0,     //     31   0b11111
   5,     //5    32   0b100000
   4,     //05   33   0b100001
   8,     //15   34   0b100010
@@ -78,30 +78,30 @@ const unsigned char MinorBase::idxtbl[64]={
   11,    //25   36   0b100100
   6,     //025  37   0b100101
   12,    //125  38   0b100110
-  104,   //     39   0b100111
+  2,     //0125 39   0b100111
   13,    //35   40   0b101000
   8,     //035  41   0b101001
   14,    //135  42   0b101010
-  104,   //     43   0b101011
+  4,     //0135 43   0b101011
   17,    //235  44   0b101100
-  104,   //     45   0b101101
-  104,   //     46   0b101110
-  105,   //     47   0b101111
+  7,     //0235 45   0b101101
+  11,    //1235 46   0b101110
+  1,     //     47   0b101111
   14,    //45   48   0b110000
   9,     //045  49   0b110001
   15,    //145  50   0b110010
-  104,   //     51   0b110011
+  5,     //0145 51   0b110011
   18,    //245  52   0b110100
-  104,   //     53   0b110101
-  104,   //     54   0b110110
-  105,   //     55   0b110111
+  8,     //0245 53   0b110101
+  12,    //1245 54   0b110110
+  2,     //     55   0b110111
   19,    //345  56   0b111000
-  104,   //     57   0b111001
-  104,   //     58   0b111010
-  105,   //     59   0b111011
-  104,   //     60   0b111100
-  105,   //     61   0b111101
-  105,   //     62   0b111110
+  9,     //0345 57   0b111001
+  13,    //1345 58   0b111010
+  3,     //     59   0b111011
+  14,    //2345 60   0b111100
+  4,     //     61   0b111101
+  5,     //     62   0b111110
   255,   //     63   0b111111
 };
 
@@ -387,6 +387,75 @@ Minor5::Minor5(const Kinem4& k) : smax(1), pmaxS4(), pmaxS3()
   maxCay(); // triggers chain of evalM1, evalM2 and evalM3
 }
 
+#ifdef USE_TRIANGLES
+/* --------------------------------------------------------
+ *    Dummy 5-from-3 kinematics
+ * --------------------------------------------------------
+ */
+Minor5::Minor5(const Kinem3& k) : smax(1), pmaxS4(), pmaxS3()
+{
+#ifdef USE_GOLEM_MODE_6
+  psix=6;
+#endif
+//  12 23 pinched dummy 5-point kinematics
+  const double p4=k.p2();
+  const double p5=k.p3();
+  const double s45=k.p1();
+  const double m3=k.m1();
+  const double m4=k.m2();
+  const double m5=k.m3();
+  kinem=Kinem5(0.,0.,0.,p4,p5,0.,0.,0.,s45,0.,0.,0.,m3,m4,m5);
+
+  Cay[ 0]=0;
+  Cay[ 1]=0;   Cay[ 2]=0;
+  Cay[ 3]=0;   Cay[ 4]=0;  Cay[ 5]=2*m3;
+  Cay[ 6]=0;   Cay[ 7]=0;  Cay[ 8]=m3+m4-p4;  Cay[ 9]=2*m4;
+  Cay[10]=0;   Cay[11]=0;  Cay[12]=m3+m5-s45; Cay[13]=m4+m5-p5; Cay[14]=2*m5;
+
+  // create subkinematics minors
+  Ptr self=Ptr(this);
+  const int offs=2;
+
+  m5create3(1,2);
+
+  m5create2(1,2,3);
+  m5create2(1,2,4);
+  m5create2(1,2,5);
+
+  maxCay(); // triggers chain of evalM1, evalM2 and evalM3
+}
+
+/* --------------------------------------------------------
+ *    Dummy 5-from-2 kinematics
+ * --------------------------------------------------------
+ */
+Minor5::Minor5(const Kinem2& k) : smax(1), pmaxS4(), pmaxS3()
+{
+#ifdef USE_GOLEM_MODE_6
+  psix=6;
+#endif
+//  12 23 34 pinched dummy 5-point kinematics
+  const double p5=k.p1();
+  const double m4=k.m1();
+  const double m5=k.m2();
+  kinem=Kinem5(0.,0.,0.,0.,p5,0.,0.,0.,0.,0.,0.,0.,0.,m4,m5);
+
+  Cay[ 0]=0;
+  Cay[ 1]=0;   Cay[ 2]=0;
+  Cay[ 3]=0;   Cay[ 4]=0;  Cay[ 5]=0;
+  Cay[ 6]=0;   Cay[ 7]=0;  Cay[ 8]=0; Cay[ 9]=2*m4;
+  Cay[10]=0;   Cay[11]=0;  Cay[12]=0; Cay[13]=m4+m5-p5; Cay[14]=2*m5;
+
+  // create subkinematics minors
+  Ptr self=Ptr(this);
+  const int offs=3;
+
+  m5create2(1,2,3);
+
+  maxCay(); // triggers chain of evalM1, evalM2 and evalM3
+}
+#endif /* USE_TRIANGLES */
+
 #undef m5create4
 #undef m5create3
 #undef m5create2
@@ -443,10 +512,12 @@ void Minor5::maxCay()
         }
       }
       imax3[idx]=i;
-
       const double maxcay3=pmaxS3[idx];
       const double dstst=M2(s,t,s,t);
       const double ds0ts0t=M3(0,s,t,0,s,t);
+#ifdef USE_GOLEM_MODE
+      if (maxcay3==0 && dstst==0 && ds0ts0t==0) imax3[idx]=0;
+#endif
 
       pmaxS3[idx]=fabs((maxcay3*dstst)/ds0ts0t);
       pmaxT3[idx]=fabs(ds0ts0t/(maxcay3*M3(0,s,t,i,s,t)));
@@ -1111,6 +1182,9 @@ void Minor5::I3DstEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     const double dstst=M2(s,t,s,t);
     const double d0st0st=M3(0,s,t,0,s,t);
     ncomplex ivalue=0;
@@ -1370,13 +1444,14 @@ void Minor5::I3DstiEval(int ep)
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
-
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3Dsti is finite
       pI3Dsti[ep][i-1][idx]=0;
       continue;
     }
-
     ncomplex ivalue=0;
 
     if ( ep!=0 ||
@@ -1606,6 +1681,9 @@ void Minor5::I3D2stEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -1825,6 +1903,9 @@ void Minor5::I3D2stiEval(int ep)
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     ncomplex ivalue=0;
 
     if ( (pmaxT3[idx]==0 || (pmaxT3[idx] > epsir2 || pmaxU3[idx] > epsir2))
@@ -2102,7 +2183,9 @@ void Minor5::I3D2stijEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
-
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3D2stij is finite
       for (int ij=iss(1-1,1-1); ij<=iss(CIDX-1,CIDX-1); ij++) {
@@ -2112,6 +2195,7 @@ void Minor5::I3D2stijEval(int ep)
     }
 
     const double dstst=M2(s,t,s,t);
+
     // symmetric in 'i,j'
     for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
     for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
@@ -2337,6 +2421,9 @@ void Minor5::I3D3stEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -2633,6 +2720,9 @@ void Minor5::I3D3stiEval(int ep)
   for (int s=1; s<=smax; s++) { if (i==s) continue;
   for (int t=s+1; t<=5; t++) {  if (i==t) continue;
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     ncomplex ivalue=0;
 
     if (ep==0) {
@@ -2876,6 +2966,9 @@ void Minor5::I3D3stijEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     const double dstst=M2(s,t,s,t);
     // symmetric in 'i,j'
     for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
@@ -3179,7 +3272,9 @@ void Minor5::I3D3stijkEval(int ep)
   for (int s=1; s<=smax; s++) {
   for (int t=s+1; t<=5; t++) {
     int idx = im2(s,t)-5;
-
+#ifdef USE_GOLEM_MODE
+    if (imax3[idx]==0) continue;
+#endif
     const double ds0ts0t=M3(s,0,t,s,0,t);
     if (ep!=0 && fabs(ds0ts0t) > m3eps) { // if ds0ts0t!=0 I3D3stijk is finite
       for (int ijk=iss(1-1,1-1,1-1); ijk<=iss(CIDX-1,CIDX-1,CIDX-1); ijk++) {
@@ -3189,6 +3284,7 @@ void Minor5::I3D3stijkEval(int ep)
     }
 
     const double dstst=M2(s,t,s,t);
+
     for (int i=1; i<=CIDX; i++) { if (i==s || i==t) continue;
     for (int j=i; j<=CIDX; j++) { if (j==s || j==t) continue;
     for (int k=j; k<=CIDX; k++) { if (k==s || k==t) continue;

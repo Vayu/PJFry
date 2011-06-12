@@ -793,3 +793,13 @@ ncomplex Minor2::evalB(int ep, int i, int j)
   return ivalue;
 }
 
+/* --------------------------------------------------------
+    1-point coefficients rank-0
+ * --------------------------------------------------------
+ */
+#ifdef USE_GOLEM_MODE
+ncomplex Minor1::A(int ep)
+{
+  return ICache::getI1(ep,kinem);
+}
+#endif

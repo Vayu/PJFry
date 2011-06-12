@@ -45,10 +45,11 @@ class Kinem2;
 #   define USE_ZERO_CHORD       "1" /* calculate formfactors for zero-chord */
 #   define USE_GOLEM_MODE_6     "1" /* support 6-pinched kinematics         */
 #   define USE_GOLEM_ZERO_CHECK "1" /* enable checks for i,j,k==s,t,u */
+#   define USE_TRIANGLES        "1" /* enable dummy kinematics for triangles and bubbles */
+#else
+//  Approx 1% slowdown, does not work with golem mode
+#   define USE_SMART_INSERT     "1" /* before adding new, delete same old entries in MCache2,3 */
 #endif
-
-// Approx 1% slowdown
-#define USE_SMART_INSERT        "1" /* before adding new, delete same old entries in MCache2,3 */
 
 #define USE_DIRTY_RESET         "1" /* when told to clear caches, just set len=0 */
 

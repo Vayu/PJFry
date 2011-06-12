@@ -20,6 +20,7 @@ Minor5::Ptr Golem::minors5[6];
 Minor4::Ptr Golem::minors4[15];
 Minor3::Ptr Golem::minors3[20];
 Minor2::Ptr Golem::minors2[15];
+Minor1::Ptr Golem::minors1[6];
 
 double Golem::Cay[6*(6+1)/2];
 unsigned int Golem::bitfield;
@@ -27,7 +28,7 @@ unsigned int Golem::bitmask;
 
 void Golem::initgolem95(int n)
 {
-  assert(4<=n && n<=6);
+  assert(1<=n && n<=6);
 // cleanup old minor cache
   switch (N)
   {
@@ -67,6 +68,18 @@ void Golem::initgolem95(int n)
       for (int i=0; i<6; i++) {
         minors2[i]=Minor2::Ptr();
       }
+      break;
+    case 3:
+      minors3[0]=Minor3::Ptr();
+      for (int i=0; i<3; i++) {
+        minors2[i]=Minor2::Ptr();
+      }
+      break;
+    case 2:
+      minors2[0]=Minor2::Ptr();
+      break;
+    case 1:
+      minors1[0]=Minor1::Ptr();
       break;
   }
 // set N to the new value
@@ -117,44 +130,48 @@ void Golem::prepare6()
     minortbl[(1<<i5)]=minors5[6-i5].operator->();
 
     MCache::Array4::iterator it4=MCache::cm4.begin();
-    Minor4::Ptr* mptr4=minors4;
     for (int s=6; s>=1; s--) {
       if (s==i5) continue;
-      (*mptr4)=it4->val;
-      minortbl[(1<<i5)|(1<<s)]=mptr4->operator->();
+      const int idx=(1<<i5)|(1<<s);
+      minors4[MinorBase::idxtbl[idx>>1]]=it4->val;
+      minortbl[idx]=it4->val.operator->();
       ++it4;
-      ++mptr4;
     }
 
     MCache::Array3::iterator it3=MCache::cm3.begin();
-    Minor3::Ptr* mptr3=minors3;
     for (int s=6; s>=1; s--) {
       if (s==i5) continue;
       for (int t=6; t>=s+1; t--) {
         if (t==i5) continue;
-        (*mptr3)=it3->val;
-        minortbl[(1<<i5)|(1<<s)|(1<<t)]=mptr3->operator->();
+        const int idx=(1<<i5)|(1<<s)|(1<<t);
+        minors3[MinorBase::idxtbl[idx>>1]]=it3->val;
+        minortbl[idx]=it3->val.operator->();
         ++it3;
-        ++mptr3;
       }
     }
 
     MCache::Array2::iterator it2=MCache::cm2.begin();
-    Minor2::Ptr* mptr2=minors2;
     for (int s=6; s>=1; s--) {
       if (s==i5) continue;
       for (int t=6; t>=s+1; t--) {
         if (t==i5) continue;
         for (int u=6; u>=t+1; u--) {
           if (u==i5) continue;
-          (*mptr2)=it2->val;
-          minortbl[(1<<i5)|(1<<s)|(1<<t)|(1<<u)]=mptr2->operator->();
+          const int idx=(1<<i5)|(1<<s)|(1<<t)|(1<<u);
+          minors2[MinorBase::idxtbl[idx>>1]]=it2->val;
+          minortbl[idx]=it2->val.operator->();
           ++it2;
-          ++mptr2;
         }
       }
     }
   }
+
+  #define nss(i,j) MinorBase::nss(i,j)
+  for (int s=1; s<=6; s++) {
+    minors1[s-1]=Minor1::create(Kinem1(-0.5*Cay[nss(s,s)]));
+    minortbl[126^(1<<s)]=minors1[s-1].operator->();
+  }
+  #undef nss
 }
 #endif /* USE_GOLEM_MODE_6 */
 
@@ -219,6 +236,13 @@ void Golem::prepare5()
       }
     }
   }
+
+  #define nss(i,j) MinorBase::nss(i,j)
+  for (int s=1; s<=5; s++) {
+    minors1[s-1]=Minor1::create(Kinem1(-0.5*Cay[nss(s,s)]));
+    minortbl[62^(1<<s)]=minors1[s-1].operator->();
+  }
+  #undef nss
 }
 
 void Golem::prepare4()
@@ -262,6 +286,78 @@ void Golem::prepare4()
       ++mptr2;
     }
   }
+
+  minors1[0]=Minor1::create(Kinem1(m1));
+  minors1[1]=Minor1::create(Kinem1(m2));
+  minors1[2]=Minor1::create(Kinem1(m3));
+  minors1[3]=Minor1::create(Kinem1(m4));
+  for (int s=1; s<=4; s++) {
+    minortbl[30^(1<<s)]=minors1[s-1].operator->();
+  }
+}
+
+void Golem::prepare3()
+{
+  const double m1 = -0.5*Cay[0];
+  const double m2 = -0.5*Cay[2];
+  const double p2 = Cay[1]+m1+m2;
+  const double m3 = -0.5*Cay[5];
+  const double p1 = Cay[3]+m1+m3;
+  const double p3 = Cay[4]+m2+m3;
+  Kinem3 k3(p1, p2, p3, m1, m2, m3);
+
+  // we can check that top m5 is 3-point and m3->key==k3
+  // but it is simpler to just create it anew
+  Minor5::create(k3);
+  Minor3::Ptr mptr3=MCache::cm3.begin()->val;
+  MCache::cm3.insert(MCache::Entry3(k3,mptr3));
+  minors3[0]=mptr3;
+  minortbl[0]=minors3[0].operator->();
+
+  MCache::Array2::iterator it2=MCache::cm2.begin();
+  Minor2::Ptr* mptr2=minors2;
+  for (int s=3; s>=1; s--) {
+    (*mptr2)=it2->val;
+    minortbl[(1<<s)]=mptr2->operator->();
+    ++it2;
+    ++mptr2;
+  }
+
+  minors1[0]=Minor1::create(Kinem1(m1));
+  minors1[1]=Minor1::create(Kinem1(m2));
+  minors1[2]=Minor1::create(Kinem1(m3));
+  for (int s=1; s<=3; s++) {
+    minortbl[14^(1<<s)]=minors1[s-1].operator->();
+  }
+}
+
+void Golem::prepare2()
+{
+  const double m1 = -0.5*Cay[0];
+  const double m2 = -0.5*Cay[2];
+  const double p1 = Cay[1]+m1+m2;
+  Kinem2 k2(p1, m1, m2);
+
+  // we can check that top m5 is 2-point and m2->key==k2
+  // but it is simpler to just create it anew
+  Minor5::create(k2);
+  Minor2::Ptr mptr2=MCache::cm2.begin()->val;
+  MCache::cm2.insert(MCache::Entry2(k2,mptr2));
+  minors2[0]=mptr2;
+  minortbl[0]=minors2[0].operator->();
+
+  minors1[0]=Minor1::create(Kinem1(m1));
+  minors1[1]=Minor1::create(Kinem1(m2));
+  for (int s=1; s<=2; s++) {
+    minortbl[6^(1<<s)]=minors1[s-1].operator->();
+  }
+}
+
+void Golem::prepare1()
+{
+  const double m1 = -0.5*Cay[0];
+  minors1[0]=Minor1::create(Kinem1(m1));
+  minortbl[0]=minors1[0].operator->();
 }
 
 void Golem::preparesmatrix()
@@ -279,8 +375,17 @@ void Golem::preparesmatrix()
     case 4:
       prepare4();
       break;
+    case 3:
+      prepare3();
+      break;
+    case 2:
+      prepare2();
+      break;
+    case 1:
+      prepare1();
+      break;
     default:
-      assert(4<=N && N<=6);
+      assert(1<=N && N<=6);
   }
 }
 
@@ -388,7 +493,6 @@ ncomplex Golem::gc55(int i, int s, int ep)
   golem5(C,(ep, i))
   return -ivalue;
 }
-
 #undef golem5
 
 // Skip coefficient cache
@@ -454,7 +558,6 @@ ncomplex Golem::gc44(int s, int ep)
   golem4(C,(ep))
   return ivalue;
 }
-
 #undef golem4
 
 // Skip coefficient cache
@@ -500,7 +603,6 @@ ncomplex Golem::gb33(int i, int s, int ep)
   golem3(B,(ep, i))
   return -ivalue;
 }
-
 #undef golem3
 
 // Skip coefficient cache
@@ -532,8 +634,18 @@ ncomplex Golem::gb22(int s, int ep)
   golem2(B,(ep))
   return ivalue;
 }
-
 #undef golem2
+
+// Skip coefficient cache
+#define golem1(type,indices) \
+  ncomplex ivalue=minortbl[s]->type indices;
+
+ncomplex Golem::ga10(int s, int ep)
+{
+  golem1(A,(ep))
+  return ivalue;
+}
+#undef golem1
 
 #undef ZCHK
 
@@ -728,4 +840,9 @@ pj_complex pga22_(int *i, int *j, int *s, int *ep)
 pj_complex pgb22_(int *s, int *ep)
 {
   return Golem::gb22(*s,*ep);
+}
+
+pj_complex pga10_(int *s, int *ep)
+{
+  return Golem::ga10(*s,*ep);
 }

@@ -302,6 +302,8 @@ pj_complex pe0ijklm_(int *i, int *j, int *k, int *l, int *m,
   pj_complex pga22_(int *i, int *j, int *s, int *ep);
   pj_complex pgb22_(int *s, int *ep);
 
+  pj_complex pga10_(int *s, int *ep);
+
 #endif /* USE_GOLEM_MODE */
 
 #ifdef __cplusplus

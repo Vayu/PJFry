@@ -54,10 +54,15 @@ class Golem
     static ncomplex ga22(int i, int j, int s, int ep);
     static ncomplex gb22(int s, int ep);
 
+    static ncomplex ga10(int s, int ep);
+
   private:
     static void prepare6();
     static void prepare5();
     static void prepare4();
+    static void prepare3();
+    static void prepare2();
+    static void prepare1();
 
     static int N;
     static int caylen;
@@ -67,6 +72,7 @@ class Golem
     static Minor4::Ptr minors4[15];
     static Minor3::Ptr minors3[20];
     static Minor2::Ptr minors2[15];
+    static Minor1::Ptr minors1[6];
 
     static double Cay[6*(6+1)/2]; // upto rank 6
     static unsigned int bitfield;

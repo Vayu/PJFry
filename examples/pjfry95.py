@@ -178,7 +178,7 @@ def write_module_golem95pj(name, min_legs, max_legs, max_rank):
 # -------------------------------------
 
 if __name__ == "__main__":
-  min_legs = 2
+  min_legs = 1
   max_legs = 6
   max_rank = 6
   write_module_golem95pj("pjfry95pj", min_legs, max_legs, max_rank)

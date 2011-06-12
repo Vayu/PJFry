@@ -38,14 +38,20 @@ class MEntry
 class Cache
 {
   protected:
-    static const int size6=1;
-
+#ifdef USE_GOLEM_MODE
+    static const int size5=1;
+    static const int size4=size5*5;
+    static const int size3=size5*10;
+    static const int size2=size5*10;
+    static const int size1=size5*5;
+#else
+    static const int size6=3;
     static const int size5=size6*6;
     static const int size4=size6*15;
     static const int size3=size6*20;
     static const int size2=size6*15;
     static const int size1=size6*6;
-
+#endif
 };
 
 class ICache : public Cache

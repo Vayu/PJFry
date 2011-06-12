@@ -150,6 +150,7 @@ class MinorBase : public SRefCnt
       return meps;
     }
 
+    static const unsigned char idxtbl[64];
     // Utility functions
     static int im3(int i, int j, int k) CONST; // Antisymmetric index for "3 out of 6" minors
     static int im2(int i, int j) CONST;        // Antisymmetric index for "2 out of 6" minors
@@ -168,8 +169,6 @@ class MinorBase : public SRefCnt
     static const unsigned char ti5[8];
 
   protected:
-    static const unsigned char idxtbl[64];
-
     static const double teps; // expansion target accuracy
     static const double heps; // near double precision eps
 
@@ -218,6 +217,10 @@ class Minor5 : public Minor<5>
     typedef SPtr<Minor5> Ptr;
     static Ptr create(const Kinem5 &k) { return Ptr(new Minor5(k)); }
     static Ptr create(const Kinem4 &k) { return Ptr(new Minor5(k)); }
+#ifdef USE_TRIANGLES
+    static Ptr create(const Kinem3 &k) { return Ptr(new Minor5(k)); }
+    static Ptr create(const Kinem2 &k) { return Ptr(new Minor5(k)); }
+#endif
 
     ncomplex evalE(int ep);
     ncomplex evalE(int ep, int i);
@@ -307,6 +310,10 @@ class Minor5 : public Minor<5>
   private:
     Minor5(const Kinem5 &k);                        // prevent direct creation
     Minor5(const Kinem4 &k);                        // prevent direct creation
+#ifdef USE_TRIANGLES
+    Minor5(const Kinem3 &k);                        // prevent direct creation
+    Minor5(const Kinem2 &k);                        // prevent direct creation
+#endif
     Minor5(const Minor5 &m) : smax(0) { assert(0); }   // prevent copy-constructing
     Minor5& operator= (const Minor5& m) { assert(0); } // prevent reassignment
 
@@ -599,6 +606,25 @@ class Minor2 : public Minor<2>
     const Minor5::Ptr pm5;
     const int ps, pt, pu, offs;
 };
+
+#ifdef USE_GOLEM_MODE
+class Minor1 : public Minor<1>
+{
+  public:
+    friend class SPtr<Minor1>;
+    typedef SPtr<Minor1> Ptr;
+    static Ptr create(const Kinem1 &k)
+    {
+      return Ptr(new Minor1(k));
+    }
+    virtual ncomplex A(int ep);
+
+  private:
+    Minor1(const Kinem1 &k) : kinem(k) { }
+
+    Kinem1 kinem;
+};
+#endif /* USE_GOLEM_MODE */
 
 
 /* ===============================================
