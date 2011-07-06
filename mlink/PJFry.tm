@@ -26,6 +26,7 @@
 
 :Evaluate:  GetMu2::usage = "GetMu2[] returns the renormalization scale squared"
 :Evaluate:  SetMu2::usage = "SetMu2[mu^2] sets the renormalization scale squared"
+:Evaluate:  ClearCache::usage = "ClearCache[] clears internal caches"
 
 :Evaluate:  A0v0::usage  = "A0v0[m1,ep=0]"
 
@@ -81,6 +82,14 @@
 :Evaluate:  SetAttributes[E0v5, NumericFunction]
 
 // ==================== My wrappers =========================
+
+:Begin:
+:Function: fClearCache
+:Pattern: ClearCache[]
+:Arguments: {}
+:ArgumentTypes: {}
+:ReturnType: Manual
+:End:
 
 :Begin:
 :Function: fGetMu2
@@ -265,6 +274,11 @@
 // ====================================================================
 
 using namespace std;
+
+void fClearCache() {
+    PJFry::ClearCache();
+    MLPutSymbol(stdlink, "Null");
+}
 
 double fGetMu2() {
     return PJFry::GetMu2();
