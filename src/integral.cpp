@@ -325,4 +325,9 @@ ICache::Ival qlI4(const Kinem4& k)
   return ivalue;
 }
 
+Initialize::~Initialize()
+{
+  /* NOOP */
+}
+
 #endif /* USE_QCDLOOP1 */
