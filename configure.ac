@@ -6,7 +6,7 @@ AC_PREREQ([2.65])
 # Major.Minor goes into symbols version
 m4_define([pjfry_major_version], [1])
 m4_define([pjfry_minor_version], [0])
-m4_define([pjfry_micro_version], [0-beta1])
+m4_define([pjfry_micro_version], [0-beta8])
 
 # Libtool interface number ( current : revision : age )
 # - If the library source code has changed at all since the last update,
@@ -118,7 +118,7 @@ auto)
     AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
   else
     AC_F77_FUNC(qlinit)
-    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes],[],[$FLIBS])
+    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lff -lqcdloop" use_qcdloop=yes],[],[-lff $FLIBS])
     if test "x$use_qcdloop" == "xyes" ; then
       AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
     else
@@ -147,8 +147,8 @@ oneloop)
 qcdloop)
   AC_F77_FUNC(qlinit)
   AC_CHECK_LIB([qcdloop], [$qlinit],
-    [LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])],
-    [AC_MSG_ERROR([libqcdloop library is missing])],[$FLIBS])
+    [LIBS="$LIBS -lff -lqcdloop" use_qcdloop=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])],
+    [AC_MSG_ERROR([libqcdloop library is missing])],[-lff $FLIBS])
 ;;
 *)
   AC_MSG_ERROR([Bad value for --with-integrals: $with_integrals])
