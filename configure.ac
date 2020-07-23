@@ -40,7 +40,8 @@ AC_CONFIG_SRCDIR([src/common.h])
 
 AC_CONFIG_AUX_DIR([auxfiles])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror silent-rules foreign])
+# Note: "$(shell ...)" is a GNU make extension so it needs "-Wno-portability".
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability silent-rules foreign])
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -52,6 +53,7 @@ AC_PROG_FC
 AC_F77_LIBRARY_LDFLAGS
 AC_F77_WRAPPERS
 
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 # AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 
@@ -103,52 +105,87 @@ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 AC_ARG_WITH([integrals],
             [AS_HELP_STRING([--with-integrals],
             [library for scalar loop integrals @<:@default=auto@:>@.
-@<:@qcdloop1@:>@ tries to use -lqcdloop1.
-@<:@oneloop@:>@ tries to use -lavh_olo.
-@<:@qcdloop@:>@ use libqcdloop.a and libff.a, CXXFLAGS and LDFLAGS need to be set manually.
+@<:@qcdloop2@:>@ tries to use libqcdloop 2.x.
+@<:@qcdloop1@:>@ tries to use libqcdloop1.
+@<:@oneloop@:>@ tries to use libavh_olo.
+@<:@qcdloop@:>@ tries to use libqcdloop 1.x (and libff), CXXFLAGS and LDFLAGS need to be set manually.
 ])],
             [test "x$with_integrals" == "xyes" && with_integrals=auto],
             [with_integrals=auto])
 
 case $with_integrals in
 auto)
-  AC_CHECK_LIB([qcdloop1], [qlinit_],[LIBS="$LIBS -lqcdloop1" use_qcdloop1=yes])
-  AC_CHECK_HEADERS([qcdloop1.h])
-  if test "x$use_qcdloop1" == "xyes" ; then
-    AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
-  else
-    AC_F77_FUNC(qlinit)
-    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lff -lqcdloop" use_qcdloop=yes],[],[-lff $FLIBS])
-    if test "x$use_qcdloop" == "xyes" ; then
-      AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])
-    else
-      AC_F77_FUNC(avh_olo_mu_set)
-      AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],[LIBS="$LIBS -lavh_olo" use_oneloop=yes],[],[$FLIBS])
-      if test "x$use_oneloop" == "xyes" ; then
-        AC_DEFINE(USE_ONELOOP,"1",[use libavh_olo for scalar integrals])
-      else
-        AC_MSG_ERROR([can't find usable scalar integrals library])
-      fi
+  library_auto_found="no"
+  if test "x$library_found" != "xyes" ; then
+    # QCDLoop 2.x
+    AC_CHECK_PROG([use_qcdloop2], [qcdloop-config], [yes], [no])
+    if test "x$use_qcdloop2" == "xyes" ; then
+      library_auto_found="yes"
+      AC_DEFINE(USE_QCDLOOP2,"1",[use libqcdloop 2.x for scalar integrals])
+      CPPFLAGS="-std=c++11 `qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
+      # LDLIBS="$LDLIBS `qcdloop-config --ldflags`"
+      LIBS="$LIBS `qcdloop-config --ldflags`"
     fi
   fi
+  if test "x$library_auto_found" != "xyes" ; then
+    # QCDLoop1 / FF
+    AC_CHECK_LIB([qcdloop1], [qlinit_],[LIBS="$LIBS -lqcdloop1" use_qcdloop1=yes])
+    AC_CHECK_HEADERS([qcdloop1.h])
+    if test "x$use_qcdloop1" == "xyes" ; then
+      library_auto_found="yes"
+      AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop1 for scalar integrals])
+    fi
+  fi
+  if test "x$library_auto_found" != "xyes" ; then
+    # OneLOop
+    AC_F77_FUNC(avh_olo_mu_set)
+    AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],[LIBS="$LIBS -lavh_olo" use_oneloop=yes],[],[$FLIBS])
+    if test "x$use_oneloop" == "xyes" ; then
+      library_auto_found="yes"
+      AC_DEFINE(USE_ONELOOP,"1",[use libavh_olo for scalar integrals])
+    fi
+  fi
+  if test "x$library_auto_found" != "xyes" ; then
+    # QCDLoop 1.x / FF
+    AC_F77_FUNC(qlinit)
+    AC_CHECK_LIB([qcdloop], [$qlinit],[LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes],[],[-lff $FLIBS])
+    if test "x$use_qcdloop" == "xyes" ; then
+      library_auto_found="yes"
+      AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop 1.x for scalar integrals])
+    fi
+  fi
+  if test "x$library_auto_found" != "xyes" ; then
+    AC_MSG_ERROR([can't automatically find usable scalar integrals library])
+  fi
 ;;
-qcdloop1)
+qcdloop2) # QCDLoop 2.x
+  AC_CHECK_PROG([use_qcdloop2], [qcdloop-config], [yes], [no])
+  if test "x$use_qcdloop2" == "xyes" ; then
+    AC_DEFINE(USE_QCDLOOP2,"1",[use libqcdloop 2.x for scalar integrals])
+    CPPFLAGS="-std=c++11 `qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
+    # LDLIBS="$LDLIBS `qcdloop-config --ldflags`"
+    LIBS="$LIBS `qcdloop-config --ldflags`"
+  else
+    AC_MSG_ERROR([qcdloop-config is missing])
+  fi
+;;
+qcdloop1) # QCDLoop1 / FF
   AC_CHECK_LIB([qcdloop1], [qlinit_],
-    [LIBS="$LIBS -lqcdloop1" use_qcdloop1=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])],
+    [LIBS="$LIBS -lqcdloop1" use_qcdloop1=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop1 for scalar integrals])],
     [AC_MSG_ERROR([libqcdloop1 library is missing])])
   AC_CHECK_HEADERS([qcdloop1.h])
 ;;
-oneloop)
+oneloop) # OneLOop
   AC_F77_FUNC(avh_olo_mu_set)
   AC_CHECK_LIB([avh_olo], [$avh_olo_mu_set],
     [LIBS="$LIBS -lavh_olo" use_oneloop=yes AC_DEFINE(USE_ONELOOP,"1",[use libavh_olo for scalar integrals])],
     [AC_MSG_ERROR([libavh_olo library is missing])],[$FLIBS])
 ;;
-qcdloop)
+qcdloop) # QCDLoop 1.x / FF
   AC_F77_FUNC(qlinit)
   AC_CHECK_LIB([qcdloop], [$qlinit],
-    [LIBS="$LIBS -lff -lqcdloop" use_qcdloop=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop for scalar integrals])],
-    [AC_MSG_ERROR([libqcdloop library is missing])],[-lff $FLIBS])
+    [LIBS="$LIBS -lqcdloop -lff" use_qcdloop=yes AC_DEFINE(USE_QCDLOOP,"1",[use libqcdloop 1.x for scalar integrals])],
+    [AC_MSG_ERROR([libqcdloop 1.x library is missing])],[-lff $FLIBS])
 ;;
 *)
   AC_MSG_ERROR([Bad value for --with-integrals: $with_integrals])
