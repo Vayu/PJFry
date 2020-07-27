@@ -27,7 +27,9 @@ static Initialize pjinit;
 #include <iostream>
 
 Initialize::Initialize() {
+  #ifndef NDEBUG
   std::cout << std::endl << "PJFRY init" << std::endl;
+  #endif
 }
 
 Initialize::~Initialize() {}
@@ -164,7 +166,9 @@ ICache::Ival qlI4(const Kinem4 &k) {
 #ifdef USE_QCDLOOP
 Initialize::Initialize()
 {
+  #ifndef NDEBUG
   printf("PJFRY init\n");
+  #endif
   const double dbl_min=std::numeric_limits<double>::min();
 
   F77_FUNC(qlinit,QLINIT)();
@@ -389,7 +393,9 @@ ICache::Ival qlI4(const Kinem4& k)
 #ifdef USE_ONELOOP
 Initialize::Initialize()
 {
+  #ifndef NDEBUG
   printf("PJFRY init\n");
+  #endif
 
   double mu=sqrt(ICache::getMu2());
   F77_FUNC_(avh_olo_mu_set,AVH_OLO_MU_SET)(&mu);
