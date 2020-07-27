@@ -396,6 +396,9 @@ Initialize::Initialize()
 
   double thrs=Minor5::getmeps();
   F77_FUNC_(avh_olo_onshell,AVH_OLO_ONSHELL)(&thrs);
+  #ifndef NDEBUG
+  printf("Set avh_olo_onshell threshold value to %e\n", thrs);
+  #endif
 }
 
 Initialize::~Initialize()
