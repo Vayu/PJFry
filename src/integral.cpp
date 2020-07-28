@@ -3,18 +3,172 @@
  *
  * this file is part of PJFry library
  * Copyright 2011 Valery Yundin
+ *
+ * QCDLoop 2.x interface by Jacek M. Holeczek 2020.01.31
  */
 
 #include "integral.h"
 #include "minor.h"
 #include "cache.h"
 
-static Initialize pjinit=Initialize();
+static Initialize pjinit;
 
+//
+// QCDLoop 2.x
+//
+#ifdef USE_QCDLOOP2
+// the same identifier is defined in "PJFry/config.h" and "qcdloop/config.h"
+// #if defined(VERSION)
+// #undef VERSION
+// #endif /* defined(VERSION) */
+
+#include "qcdloop/qcdloop.h" // needs "-std=c++11" or newer
+#include <stdexcept>
+#include <iostream>
+
+Initialize::Initialize() {
+  #ifndef NDEBUG
+  std::cout << std::endl << "PJFRY init" << std::endl;
+  #endif
+}
+
+Initialize::~Initialize() {}
+
+ICache::Ival qlI1(const Kinem1 &k) {
+  static ql::TadPole<ql::complex, double, double> td;
+  static std::vector<double> mI1(1);
+  static std::vector<ql::complex> r(3);
+  ICache::Ival ivalue;
+  
+  try {
+    mI1[0] = k.m1();
+    td.integral(r, ICache::getMu2(), mI1);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    exit(-1);
+  }
+  
+  ivalue.val[0] = r[0];
+  ivalue.val[1] = r[1];
+  ivalue.val[2] = r[2];
+  return ivalue;
+}
+
+ICache::Ival qlI2(const Kinem2 &k) {
+  static ql::Bubble<ql::complex, double, double> bb;
+  static std::vector<double> mI2(2);
+  static std::vector<double> pI2(1);
+  static std::vector<ql::complex> r(3);
+  ICache::Ival ivalue;
+  
+  try {
+    mI2[0] = k.m1();
+    mI2[1] = k.m2();
+    pI2[0] = k.p1();
+    bb.integral(r, ICache::getMu2(), mI2, pI2);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    exit(-1);
+  }
+  
+  ivalue.val[0] = r[0];
+  ivalue.val[1] = r[1];
+  ivalue.val[2] = r[2];
+  return ivalue;
+}
+
+ICache::Ival qlI3(const Kinem3 &k) {
+  static ql::Triangle<ql::complex, double, double> tr;
+  static std::vector<double> mI3(3);
+  static std::vector<double> pI3(3);
+  static std::vector<ql::complex> r(3);
+  ICache::Ival ivalue;
+  
+  try {
+    mI3[0] = k.m1();
+    mI3[1] = k.m2();
+    mI3[2] = k.m3();
+    pI3[0] = k.p1();
+    pI3[1] = k.p2();
+    pI3[2] = k.p3();
+    tr.integral(r, ICache::getMu2(), mI3, pI3);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    exit(-1);
+  }
+  
+  ivalue.val[0] = r[0];
+  ivalue.val[1] = r[1];
+  ivalue.val[2] = r[2];
+  return ivalue;
+}
+
+ICache::Ival qlI4(const Kinem4 &k) {
+  static ql::Box<ql::complex, double, double> bo;
+  static std::vector<double> mI4(4);
+  static std::vector<double> pI4(6);
+  static std::vector<ql::complex> r(3);
+  ICache::Ival ivalue;
+  
+  try {
+    if (k.s12() == 0. || k.s23() == 0.) {
+      if (k.p1() != 0. && k.p3() != 0.) {
+        mI4[0] = k.m1();
+        mI4[1] = k.m3();
+        mI4[2] = k.m2();
+        mI4[3] = k.m4();
+        pI4[0] = k.s12();
+        pI4[1] = k.p2();
+        pI4[2] = k.s23();
+        pI4[3] = k.p4();
+        pI4[4] = k.p1();
+        pI4[5] = k.p3();
+      } else if (k.p2() != 0. && k.p4() != 0.) {
+        mI4[0] = k.m2();
+        mI4[1] = k.m4();
+        mI4[2] = k.m3();
+        mI4[3] = k.m1();
+        pI4[0] = k.s23();
+        pI4[1] = k.p3();
+        pI4[2] = k.s12();
+        pI4[3] = k.p1();
+        pI4[4] = k.p2();
+        pI4[5] = k.p4();
+      } else { assert(0); }
+    } else {
+      mI4[0] = k.m1();
+      mI4[1] = k.m2();
+      mI4[2] = k.m3();
+      mI4[3] = k.m4();
+      pI4[0] = k.p1();
+      pI4[1] = k.p2();
+      pI4[2] = k.p3();
+      pI4[3] = k.p4();
+      pI4[4] = k.s12();
+      pI4[5] = k.s23();
+    }
+    bo.integral(r, ICache::getMu2(), mI4, pI4);
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+    exit(-1);
+  }
+  
+  ivalue.val[0] = r[0];
+  ivalue.val[1] = r[1];
+  ivalue.val[2] = r[2];
+  return ivalue;
+}
+#endif /* USE_QCDLOOP2 */
+
+//
+// QCDLoop1 and QCDLoop 1.x / FF
+//
 #ifdef USE_QCDLOOP
 Initialize::Initialize()
 {
+  #ifndef NDEBUG
   printf("PJFRY init\n");
+  #endif
   const double dbl_min=std::numeric_limits<double>::min();
 
   F77_FUNC(qlinit,QLINIT)();
@@ -228,21 +382,34 @@ ICache::Ival qlI4(const Kinem4& k)
     ivalue.val[2]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
 # endif
   }
+
   return ivalue;
 }
-
 #endif /* USE_QCDLOOP */
 
+//
+// OneLOop
+//
 #ifdef USE_ONELOOP
 Initialize::Initialize()
 {
+  #ifndef NDEBUG
   printf("PJFRY init\n");
+  #endif
 
   double mu=sqrt(ICache::getMu2());
   F77_FUNC_(avh_olo_mu_set,AVH_OLO_MU_SET)(&mu);
 
   double thrs=Minor5::getmeps();
   F77_FUNC_(avh_olo_onshell,AVH_OLO_ONSHELL)(&thrs);
+  #ifndef NDEBUG
+  printf("Set avh_olo_onshell threshold value to %e\n", thrs);
+  #endif
+}
+
+Initialize::~Initialize()
+{
+  /* NOOP */
 }
 
 ICache::Ival qlI1(const Kinem1& k)
@@ -324,10 +491,4 @@ ICache::Ival qlI4(const Kinem4& k)
   ivalue.val[2]=rslt[2];
   return ivalue;
 }
-
-Initialize::~Initialize()
-{
-  /* NOOP */
-}
-
-#endif /* USE_QCDLOOP1 */
+#endif /* USE_ONELOOP */
