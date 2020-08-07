@@ -122,7 +122,7 @@ auto)
     if test "x$use_qcdloop2" == "xyes" ; then
       library_auto_found="yes"
       AC_DEFINE(USE_QCDLOOP2,"1",[use libqcdloop 2.x for scalar integrals])
-      CPPFLAGS="-std=c++11 `qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
+      CPPFLAGS="`qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
       # LDLIBS="$LDLIBS `qcdloop-config --ldflags`"
       LIBS="$LIBS `qcdloop-config --ldflags`"
     fi
@@ -162,7 +162,7 @@ qcdloop2) # QCDLoop 2.x
   AC_CHECK_PROG([use_qcdloop2], [qcdloop-config], [yes], [no])
   if test "x$use_qcdloop2" == "xyes" ; then
     AC_DEFINE(USE_QCDLOOP2,"1",[use libqcdloop 2.x for scalar integrals])
-    CPPFLAGS="-std=c++11 `qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
+    CPPFLAGS="`qcdloop-config --cppflags` $CPPFLAGS" # "qcdloop/qcdloop.h" needs "-std=c++11" or newer
     # LDLIBS="$LDLIBS `qcdloop-config --ldflags`"
     LIBS="$LIBS `qcdloop-config --ldflags`"
   else
