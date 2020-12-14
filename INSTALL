@@ -3,29 +3,35 @@ Installing libpjfry version 1.0.0
 =================================
 
 On Unix/Linux and similar systems, execute the following commands:
+
+autoreconf -f -i
 ./configure [--prefix=/path] \
     [--with-mcc-path=/path/mcc] \
-    [--with-integrals=auto,qcdloop,oneloop] \
-    [LDFLAGS=linker flags] \
-    [CXXFLAGS=c++ flags]
+    [--with-integrals=auto,qcdloop2,qcdloop1,oneloop,qcdloop] \
+    [LDFLAGS='linker flags'] \
+    [CXXFLAGS='c++ flags']
 make
 make install
 
 If --prefix is not specified, the library will be installed
-to the system default library path (usually /usr/local/lib).
+into the system default library path (usually /usr/local/lib).
 
-If --with-mcc option is not specified, configure script will try to find Mathematica
-installation in system PATH and a few common locations.
-You can override this behaviour by setting --with-mcc-path=no
+If --with-mcc option is not specified, the configure script will try to
+find Mathematica installation in system PATH and a few common locations.
+You can override this behavior by setting --with-mcc-path=no
 or give full path to the appropriate mcc tool --with-mcc-path=/path/mcc
 
-If --with-integrals option is not specified, configure script will try to find
-any usable scalar integrals library from the supported list:
-QCDLoop (libqcdloop.a and libff.a) or OneLOoop (libavh_olo.a)
+If --with-integrals option is not specified, the configure script will
+try to find some usable scalar integrals library from the supported list:
+QCDLoop 2.x (qcdloop-config, libqcdloop 2.x)
+QCDLoop1 (libqcdloop1)
+OneLOoop (libavh_olo)
+QCDLoop 1.x (libqcdloop 1.x and libff)
 
-You can select which library to use by --with-integral=oneloop or --with-integral=qcdloop
-And tell configure where to look for it by setting LDFLAGS='-L/path/to/scalar/integral/library'
-(additional linking flags like '-lgfortran' should be also added to LDFLAGS)
+You can select which library to use by e.g. --with-integral=oneloop
+and then tell the configure script where to look for it by setting
+LDFLAGS='-L/path/to/scalar/integral/library'
+(Additional required flags, e.g. '-lgfortran', can also be added to LDFLAGS)
 
 
 MathLink interface
@@ -37,8 +43,9 @@ MathLink interface consists of single executable, which will be installed to
 Use the following command to run it inside Mathematica:
  Install["path/bin/PJFry"]
 
-NOTE if dynamic linking was chosen by configure script, the libpjfry.so
-should be in system library search path or in LD_LIBRARY_PATH environment variable
+Note: if dynamic linking was chosen by configure script, the libpjfry.so
+should be in system library search path or in the LD_LIBRARY_PATH
+environment variable.
 
 
 Running FORTRAN examples
@@ -51,7 +58,7 @@ Use 'make check' to compile a few simple examples of library use in FORTRAN
 REMARK for gcc 4.1 users with 32-bit OS
 =======================================
 
-On 32-bit OS with old versions of gcc, enabling optimization produces wrong code.
+On 32-bit OS with old gcc versions, enabling optimization produces wrong code.
 You have this problem if 'examples/demo' produces NaN's in the output.
 Possible solutions:
 1. Use gcc of more recent version (>=4.3)
@@ -73,5 +80,42 @@ Alternatively (and with ifort) you can use ./configure --enable-f2c=yes
 This will make program expect f2c conventions from scalar integral library
 and expose its interface following the same convention.
 
-NOTE that this option does not add -ff2c flag, if you are use it with gfortran
-you would have to add -ff2c manually to FFLAGS and FCFLAGS
+Note that this option does not add -ff2c flag, if you are use it with
+gfortran you would have to add -ff2c manually to FFLAGS and FCFLAGS
+
+
+Setting the underlying "Default Precision KIND" (DPKIND)
+====================
+
+PJFry always uses the standard C / C++ "double" precision in its calculations.
+By default, it also expects that the underlying scalar integrals library
+returns values in the standard C / C++ "double" precision format.
+
+However, PJFry can also use an underlying library built to provide another
+(e.g. better) "Default Precision KIND" (DPKIND).
+One just needs to set the DPKIND identifier in the CXXFLAGS, when running
+the configure script.
+
+For the C / C++ "float", Fortran REAL*4 (REAL / KIND=4 / kind(1.0) /
+selected_real_kind(6)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=4'
+
+One does not need to set it for the default C / C++ "double", Fortran
+REAL*8 (DOUBLE PRECISION / KIND=8 / kind(1d0) / selected_real_kind(15)),
+but one can still add '-DDPKIND=8', if desired.
+(This is the default precision provided by all four underlying libraries.)
+
+For the C / C++ "long double", Fortran REAL*10 (KIND=10 /
+selected_real_kind(18)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=10'
+(One can build the OneLOoop library so that it provides this precision
+when one sets e.g. 'DPKIND = selected_real_kind(18)' in its 'Config' file.
+One can cheat the QCDLoop1 and QCDLoop 1.x libraries to use this precision
+when one builds them adding '-freal-8-real-10' into their '(AM_)FFLAGS'.)
+
+For the C / C++ "__float128", Fortran REAL*16 (KIND=16 / kind(1q0) /
+selected_real_kind(33)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=16'
+(In any case, the standard "GCC Quad-Precision Math Library" libquadmath
+is used, which one may need to install on one's operating system first.
+One can build the OneLOoop library so that it provides this precision
+when one sets e.g. 'DPKIND = kind(1q0)' in its 'Config' file.
+The QCDLoop 2.x library provides this precision automatically.)
+

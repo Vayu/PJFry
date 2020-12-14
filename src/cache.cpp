@@ -1,5 +1,5 @@
 /*
- * cache.h - cache classes
+ * cache.cpp - cache classes
  *
  * this file is part of PJFry library
  * Copyright 2011 Valery Yundin
@@ -7,6 +7,10 @@
 
 #include "cache.h"
 #include "integral.h"
+
+#ifdef USE_ONELOOP
+#include <cmath> // std::sqrt
+#endif
 
 /* ------------------------------------------------------------
  * ------------------------------------------------------------
@@ -28,7 +32,7 @@ double ICache::setMu2(const double newmu2)
     MinorBase::Rescale(newmu2/mu2);
     mu2=newmu2;
 #ifdef USE_ONELOOP
-    double mu=sqrt(mu2);
+    DPKIND_FLOAT mu = std::sqrt(mu2);
     F77_FUNC_(avh_olo_mu_set,AVH_OLO_MU_SET)(&mu);
 #endif
     ICache::Clear();

@@ -1,5 +1,5 @@
 /*
- * integral.h - scalar integrals wrappers
+ * integral.cpp - scalar integrals wrappers
  *
  * this file is part of PJFry library
  * Copyright 2011 Valery Yundin
@@ -10,6 +10,9 @@
 #include "integral.h"
 #include "minor.h"
 #include "cache.h"
+
+#include <cmath> // std::sqrt
+#include <iostream>
 
 static Initialize pjinit;
 
@@ -24,21 +27,21 @@ static Initialize pjinit;
 
 #include "qcdloop/qcdloop.h" // needs "-std=c++11" or newer
 #include <stdexcept>
-#include <iostream>
 
 Initialize::Initialize() {
-  #ifndef NDEBUG
+#ifndef NDEBUG
   std::cout << std::endl << "PJFRY init" << std::endl;
-  #endif
+#endif
 }
 
-Initialize::~Initialize() {}
+Initialize::~Initialize() { /* NOOP */ }
 
 ICache::Ival qlI1(const Kinem1 &k) {
-  static ql::TadPole<ql::complex, double, double> td;
-  static std::vector<double> mI1(1);
-  static std::vector<ql::complex> r(3);
   ICache::Ival ivalue;
+  
+  static ql::TadPole<DPKIND_COMPLEX, DPKIND_FLOAT, DPKIND_FLOAT> td;
+  static std::vector<DPKIND_FLOAT> mI1(1);
+  static std::vector<DPKIND_COMPLEX> r(3);
   
   try {
     mI1[0] = k.m1();
@@ -55,11 +58,12 @@ ICache::Ival qlI1(const Kinem1 &k) {
 }
 
 ICache::Ival qlI2(const Kinem2 &k) {
-  static ql::Bubble<ql::complex, double, double> bb;
-  static std::vector<double> mI2(2);
-  static std::vector<double> pI2(1);
-  static std::vector<ql::complex> r(3);
   ICache::Ival ivalue;
+  
+  static ql::Bubble<DPKIND_COMPLEX, DPKIND_FLOAT, DPKIND_FLOAT> bb;
+  static std::vector<DPKIND_FLOAT> mI2(2);
+  static std::vector<DPKIND_FLOAT> pI2(1);
+  static std::vector<DPKIND_COMPLEX> r(3);
   
   try {
     mI2[0] = k.m1();
@@ -78,11 +82,12 @@ ICache::Ival qlI2(const Kinem2 &k) {
 }
 
 ICache::Ival qlI3(const Kinem3 &k) {
-  static ql::Triangle<ql::complex, double, double> tr;
-  static std::vector<double> mI3(3);
-  static std::vector<double> pI3(3);
-  static std::vector<ql::complex> r(3);
   ICache::Ival ivalue;
+  
+  static ql::Triangle<DPKIND_COMPLEX, DPKIND_FLOAT, DPKIND_FLOAT> tr;
+  static std::vector<DPKIND_FLOAT> mI3(3);
+  static std::vector<DPKIND_FLOAT> pI3(3);
+  static std::vector<DPKIND_COMPLEX> r(3);
   
   try {
     mI3[0] = k.m1();
@@ -104,11 +109,12 @@ ICache::Ival qlI3(const Kinem3 &k) {
 }
 
 ICache::Ival qlI4(const Kinem4 &k) {
-  static ql::Box<ql::complex, double, double> bo;
-  static std::vector<double> mI4(4);
-  static std::vector<double> pI4(6);
-  static std::vector<ql::complex> r(3);
   ICache::Ival ivalue;
+  
+  static ql::Box<DPKIND_COMPLEX, DPKIND_FLOAT, DPKIND_FLOAT> bo;
+  static std::vector<DPKIND_FLOAT> mI4(4);
+  static std::vector<DPKIND_FLOAT> pI4(6);
+  static std::vector<DPKIND_COMPLEX> r(3);
   
   try {
     if (k.s12() == 0. || k.s23() == 0.) {
@@ -161,228 +167,230 @@ ICache::Ival qlI4(const Kinem4 &k) {
 #endif /* USE_QCDLOOP2 */
 
 //
-// QCDLoop1 and QCDLoop 1.x / FF
+// QCDLoop 1.x / FF or QCDLoop1 / FF
 //
 #ifdef USE_QCDLOOP
-Initialize::Initialize()
-{
-  #ifndef NDEBUG
-  printf("PJFRY init\n");
-  #endif
-  const double dbl_min=std::numeric_limits<double>::min();
-
+Initialize::Initialize() {
+#ifndef NDEBUG
+  std::cout << "PJFRY init" << std::endl;
+#endif
+  
   F77_FUNC(qlinit,QLINIT)();
-
+  
+  // QCDLoop 1.x / FF (and thus also QCDLoop1) include some
+  // CERNLIB routines so, no need to go beyond "long double"
+#if DPKIND == 10 || DPKIND == 16
+  // const long double dbl_min = std::numeric_limits<double>::min();
+  const long double dbl_min = std::numeric_limits<long double>::min();
+#else /* DPKIND == 10 || DPKIND == 16 */
+  const DPKIND_FLOAT dbl_min = std::numeric_limits<DPKIND_FLOAT>::min();
+#endif /* DPKIND == 10 || DPKIND == 16 */
+  
   if (qlprec.xalogm < dbl_min) {
-    qlprec.xalogm=dbl_min;
-    qlprec.xalog2=sqrt(dbl_min);
-    #ifndef NDEBUG
-    printf("Set xalogm to normalized value %e\n", qlprec.xalogm);
-    printf("Set xalog2 to normalized value %e\n", qlprec.xalog2);
-    #endif
+    qlprec.xalogm = dbl_min;
+    qlprec.xalog2 = std::sqrt(dbl_min);
+#ifndef NDEBUG
+    std::cout << "Set xalogm to normalized value " << dbl_min << std::endl;
+    std::cout << "Set xalog2 to normalized value " << std::sqrt(dbl_min) << std::endl;
+#endif
   }
   if (qlprec.xclogm < dbl_min) {
-    qlprec.xclogm=dbl_min;
-    qlprec.xclog2=sqrt(dbl_min);
-    #ifndef NDEBUG
-    printf("Set xclogm to normalized value %e\n", qlprec.xclogm);
-    printf("Set xclog2 to normalized value %e\n", qlprec.xclog2);
-    #endif
+    qlprec.xclogm = dbl_min;
+    qlprec.xclog2 = std::sqrt(dbl_min);
+#ifndef NDEBUG
+    std::cout << "Set xclogm to normalized value " << dbl_min << std::endl;
+    std::cout << "Set xclog2 to normalized value " << std::sqrt(dbl_min) << std::endl;
+#endif
   }
   if (qlflag.lwarn) {
-    qlflag.lwarn=0;
-    #ifndef NDEBUG
-    printf("Disable FF warnings %d\n",qlflag.lwarn);
-    #endif
+    qlflag.lwarn = 0;
+#ifndef NDEBUG
+    std::cout << "Disable FF warnings " << qlflag.lwarn << std::endl;
+#endif
   }
 }
 
-Initialize::~Initialize()
-{
+Initialize::~Initialize() {
   F77_FUNC(ffexi,FFEXI)();
 }
 
-ICache::Ival qlI1(const Kinem1& k)
-{
-  int ep;
+ICache::Ival qlI1(const Kinem1& k) {
   ICache::Ival ivalue;
-
-  double m1=k.m1();
-  double mu2=ICache::getMu2();
-
+  
+  int ep;
+  DPKIND_FLOAT m1  = k.m1();
+  DPKIND_FLOAT mu2 = ICache::getMu2();
+  
 #ifdef USE_F2C
-  std::complex<double> rslt;
-  ep=0;
+  DPKIND_COMPLEX rslt;
+  ep = 0;
   F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
-  ivalue.val[0]=rslt;
-  ep=-1;
+  ivalue.val[0] = rslt;
+  ep = -1;
   F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
-  ivalue.val[1]=rslt;
-  ep=-2;
+  ivalue.val[1] = rslt;
+  ep = -2;
   F77_FUNC(qli1,QLI1)(&rslt, &m1, &mu2, &ep);
-  ivalue.val[2]=rslt;
+  ivalue.val[2] = rslt;
 #else
-  ep=0;
-  ivalue.val[0]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
-  ep=-1;
-  ivalue.val[1]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
-  ep=-2;
-  ivalue.val[2]=F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+  ep = 0;
+  ivalue.val[0] = F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+  ep = -1;
+  ivalue.val[1] = F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
+  ep = -2;
+  ivalue.val[2] = F77_FUNC(qli1,QLI1)(&m1, &mu2, &ep);
 #endif
-
+  
   return ivalue;
 }
 
-ICache::Ival qlI2(const Kinem2& k)
-{
-  int ep;
+ICache::Ival qlI2(const Kinem2& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double m1=k.m1();
-  double m2=k.m2();
-  double mu2=ICache::getMu2();
-
+  
+  int ep;
+  DPKIND_FLOAT p1  = k.p1();
+  DPKIND_FLOAT m1  = k.m1();
+  DPKIND_FLOAT m2  = k.m2();
+  DPKIND_FLOAT mu2 = ICache::getMu2();
+  
 #ifdef USE_F2C
-  std::complex<double> rslt;
-  ep=0;
+  DPKIND_COMPLEX rslt;
+  ep = 0;
   F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
-  ivalue.val[0]=rslt;
-  ep=-1;
+  ivalue.val[0] = rslt;
+  ep = -1;
   F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
-  ivalue.val[1]=rslt;
-  ep=-2;
+  ivalue.val[1] = rslt;
+  ep = -2;
   F77_FUNC(qli2,QLI2)(&rslt, &p1, &m1, &m2, &mu2, &ep);
-  ivalue.val[2]=rslt;
+  ivalue.val[2] = rslt;
 #else
-  ep=0;
-  ivalue.val[0]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
-  ep=-1;
-  ivalue.val[1]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
-  ep=-2;
-  ivalue.val[2]=F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+  ep = 0;
+  ivalue.val[0] = F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+  ep = -1;
+  ivalue.val[1] = F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
+  ep = -2;
+  ivalue.val[2] = F77_FUNC(qli2,QLI2)(&p1, &m1, &m2, &mu2, &ep);
 #endif
-
+  
   return ivalue;
 }
 
-ICache::Ival qlI3(const Kinem3& k)
-{
-  int ep;
+ICache::Ival qlI3(const Kinem3& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double p2=k.p2();
-  double p3=k.p3();
-  double m1=k.m1();
-  double m2=k.m2();
-  double m3=k.m3();
-  double mu2=ICache::getMu2();
-
+  
+  int ep;
+  DPKIND_FLOAT p1  = k.p1();
+  DPKIND_FLOAT p2  = k.p2();
+  DPKIND_FLOAT p3  = k.p3();
+  DPKIND_FLOAT m1  = k.m1();
+  DPKIND_FLOAT m2  = k.m2();
+  DPKIND_FLOAT m3  = k.m3();
+  DPKIND_FLOAT mu2 = ICache::getMu2();
+  
 #ifdef USE_F2C
-  std::complex<double> rslt;
-  ep=0;
+  DPKIND_COMPLEX rslt;
+  ep = 0;
   F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
-  ivalue.val[0]=rslt;
-  ep=-1;
+  ivalue.val[0] = rslt;
+  ep = -1;
   F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
-  ivalue.val[1]=rslt;
-  ep=-2;
+  ivalue.val[1] = rslt;
+  ep = -2;
   F77_FUNC(qli3,QLI3)(&rslt, &p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
-  ivalue.val[2]=rslt;
+  ivalue.val[2] = rslt;
 #else
-  ep=0;
-  ivalue.val[0]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
-  ep=-1;
-  ivalue.val[1]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
-  ep=-2;
-  ivalue.val[2]=F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ep = 0;
+  ivalue.val[0] = F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ep = -1;
+  ivalue.val[1] = F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
+  ep = -2;
+  ivalue.val[2] = F77_FUNC(qli3,QLI3)(&p1, &p2, &p3, &m1, &m2, &m3, &mu2, &ep);
 #endif
-
+  
   return ivalue;
 }
 
-ICache::Ival qlI4(const Kinem4& k)
-{
-  int ep;
+ICache::Ival qlI4(const Kinem4& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double p2=k.p2();
-  double p3=k.p3();
-  double p4=k.p4();
-  double s12=k.s12();
-  double s23=k.s23();
-  double m1=k.m1();
-  double m2=k.m2();
-  double m3=k.m3();
-  double m4=k.m4();
-  double mu2=ICache::getMu2();
-
-  if (s12==0. || s23==0.) {
-    if (p1!=0. && p3!=0.) {
-#   ifdef USE_F2C
-      std::complex<double> rslt;
-      ep=0;
+  
+  int ep;
+  DPKIND_FLOAT p1  = k.p1();
+  DPKIND_FLOAT p2  = k.p2();
+  DPKIND_FLOAT p3  = k.p3();
+  DPKIND_FLOAT p4  = k.p4();
+  DPKIND_FLOAT s12 = k.s12();
+  DPKIND_FLOAT s23 = k.s23();
+  DPKIND_FLOAT m1  = k.m1();
+  DPKIND_FLOAT m2  = k.m2();
+  DPKIND_FLOAT m3  = k.m3();
+  DPKIND_FLOAT m4  = k.m4();
+  DPKIND_FLOAT mu2 = ICache::getMu2();
+  
+  if (s12 == 0. || s23 == 0.) {
+    if (p1 != 0. && p3 != 0.) {
+#ifdef USE_F2C
+      DPKIND_COMPLEX rslt;
+      ep = 0;
       F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-      ivalue.val[0]=rslt;
-      ep=-1;
+      ivalue.val[0] = rslt;
+      ep = -1;
       F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-      ivalue.val[1]=rslt;
-      ep=-2;
+      ivalue.val[1] = rslt;
+      ep = -2;
       F77_FUNC(qli4,QLI4)(&rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-      ivalue.val[2]=rslt;
-#   else
-      ep=0;
-      ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-      ep=-1;
-      ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-      ep=-2;
-      ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
-#   endif
-    } else if (p2!=0. && p4!=0.) {
-#   ifdef USE_F2C
-      std::complex<double> rslt;
-      ep=0;
+      ivalue.val[2] = rslt;
+#else
+      ep = 0;
+      ivalue.val[0] = F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ep = -1;
+      ivalue.val[1] = F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+      ep = -2;
+      ivalue.val[2] = F77_FUNC(qli4,QLI4)(&s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4, &mu2, &ep);
+#endif
+    } else if (p2 != 0. && p4 != 0.) {
+#ifdef USE_F2C
+      DPKIND_COMPLEX rslt;
+      ep = 0;
       F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-      ivalue.val[0]=rslt;
-      ep=-1;
+      ivalue.val[0] = rslt;
+      ep = -1;
       F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-      ivalue.val[1]=rslt;
-      ep=-2;
+      ivalue.val[1] = rslt;
+      ep = -2;
       F77_FUNC(qli4,QLI4)(&rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-      ivalue.val[2]=rslt;
-#   else
-      ep=0;
-      ivalue.val[0]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-      ep=-1;
-      ivalue.val[1]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-      ep=-2;
-      ivalue.val[2]=F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
-#   endif
+      ivalue.val[2] = rslt;
+#else
+      ep = 0;
+      ivalue.val[0] = F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ep = -1;
+      ivalue.val[1] = F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+      ep = -2;
+      ivalue.val[2] = F77_FUNC(qli4,QLI4)(&s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1, &mu2, &ep);
+#endif
     } else { assert(0); }
   } else {
-# ifdef USE_F2C
-    std::complex<double> rslt;
-    ep=0;
+#ifdef USE_F2C
+    DPKIND_COMPLEX rslt;
+    ep = 0;
     F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-    ivalue.val[0]=rslt;
-    ep=-1;
+    ivalue.val[0] = rslt;
+    ep = -1;
     F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-    ivalue.val[1]=rslt;
-    ep=-2;
+    ivalue.val[1] = rslt;
+    ep = -2;
     F77_FUNC(qli4,QLI4)(&rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-    ivalue.val[2]=rslt;
-# else
-    ep=0;
-    ivalue.val[0]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-    ep=-1;
-    ivalue.val[1]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-    ep=-2;
-    ivalue.val[2]=F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
-# endif
+    ivalue.val[2] = rslt;
+#else
+    ep = 0;
+    ivalue.val[0] = F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ep = -1;
+    ivalue.val[1] = F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+    ep = -2;
+    ivalue.val[2] = F77_FUNC(qli4,QLI4)(&p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4, &mu2, &ep);
+#endif
   }
-
+  
   return ivalue;
 }
 #endif /* USE_QCDLOOP */
@@ -391,104 +399,96 @@ ICache::Ival qlI4(const Kinem4& k)
 // OneLOop
 //
 #ifdef USE_ONELOOP
-Initialize::Initialize()
-{
-  #ifndef NDEBUG
-  printf("PJFRY init\n");
-  #endif
-
-  double mu=sqrt(ICache::getMu2());
+Initialize::Initialize() {
+#ifndef NDEBUG
+  std::cout << "PJFRY init" << std::endl;
+#endif
+  
+  DPKIND_FLOAT mu = std::sqrt(ICache::getMu2());
   F77_FUNC_(avh_olo_mu_set,AVH_OLO_MU_SET)(&mu);
-
-  double thrs=Minor5::getmeps();
+  
+  DPKIND_FLOAT thrs = Minor5::getmeps();
   F77_FUNC_(avh_olo_onshell,AVH_OLO_ONSHELL)(&thrs);
-  #ifndef NDEBUG
-  printf("Set avh_olo_onshell threshold value to %e\n", thrs);
-  #endif
+#ifndef NDEBUG
+  std::cout << "Set avh_olo_onshell threshold value to " << Minor5::getmeps() << std::endl;
+#endif
 }
 
-Initialize::~Initialize()
-{
-  /* NOOP */
-}
+Initialize::~Initialize() { /* NOOP */ }
 
-ICache::Ival qlI1(const Kinem1& k)
-{
+ICache::Ival qlI1(const Kinem1& k) {
   ICache::Ival ivalue;
-
-  double m1=k.m1();
-  std::complex<double> rslt[3];
+  
+  DPKIND_FLOAT m1 = k.m1();
+  DPKIND_COMPLEX rslt[3];
   F77_FUNC_(avh_olo_a0m,AVH_OLO_A0M)(rslt, &m1);
-
-  ivalue.val[0]=rslt[0];
-  ivalue.val[1]=rslt[1];
-  ivalue.val[2]=rslt[2];
+  
+  ivalue.val[0] = rslt[0];
+  ivalue.val[1] = rslt[1];
+  ivalue.val[2] = rslt[2];
   return ivalue;
 }
 
-ICache::Ival qlI2(const Kinem2& k)
-{
+ICache::Ival qlI2(const Kinem2& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double m1=k.m1();
-  double m2=k.m2();
-  std::complex<double> rslt[3];
+  
+  DPKIND_FLOAT p1 = k.p1();
+  DPKIND_FLOAT m1 = k.m1();
+  DPKIND_FLOAT m2 = k.m2();
+  DPKIND_COMPLEX rslt[3];
   F77_FUNC_(avh_olo_b0m,AVH_OLO_B0M)(rslt, &p1, &m1, &m2);
-
-  ivalue.val[0]=rslt[0];
-  ivalue.val[1]=rslt[1];
-  ivalue.val[2]=rslt[2];
+  
+  ivalue.val[0] = rslt[0];
+  ivalue.val[1] = rslt[1];
+  ivalue.val[2] = rslt[2];
   return ivalue;
 }
 
-ICache::Ival qlI3(const Kinem3& k)
-{
+ICache::Ival qlI3(const Kinem3& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double p2=k.p2();
-  double p3=k.p3();
-  double m1=k.m1();
-  double m2=k.m2();
-  double m3=k.m3();
-  std::complex<double> rslt[3];
+  
+  DPKIND_FLOAT p1 = k.p1();
+  DPKIND_FLOAT p2 = k.p2();
+  DPKIND_FLOAT p3 = k.p3();
+  DPKIND_FLOAT m1 = k.m1();
+  DPKIND_FLOAT m2 = k.m2();
+  DPKIND_FLOAT m3 = k.m3();
+  DPKIND_COMPLEX rslt[3];
   F77_FUNC_(avh_olo_c0m,AVH_OLO_C0M)(rslt, &p1, &p2, &p3, &m1, &m2, &m3);
-
-  ivalue.val[0]=rslt[0];
-  ivalue.val[1]=rslt[1];
-  ivalue.val[2]=rslt[2];
+  
+  ivalue.val[0] = rslt[0];
+  ivalue.val[1] = rslt[1];
+  ivalue.val[2] = rslt[2];
   return ivalue;
 }
 
-ICache::Ival qlI4(const Kinem4& k)
-{
+ICache::Ival qlI4(const Kinem4& k) {
   ICache::Ival ivalue;
-
-  double p1=k.p1();
-  double p2=k.p2();
-  double p3=k.p3();
-  double p4=k.p4();
-  double s12=k.s12();
-  double s23=k.s23();
-  double m1=k.m1();
-  double m2=k.m2();
-  double m3=k.m3();
-  double m4=k.m4();
-  std::complex<double> rslt[3];
-  if (s12==0. || s23==0.) {
-    if (p1!=0. && p3!=0.) {
+  
+  DPKIND_FLOAT p1  = k.p1();
+  DPKIND_FLOAT p2  = k.p2();
+  DPKIND_FLOAT p3  = k.p3();
+  DPKIND_FLOAT p4  = k.p4();
+  DPKIND_FLOAT s12 = k.s12();
+  DPKIND_FLOAT s23 = k.s23();
+  DPKIND_FLOAT m1  = k.m1();
+  DPKIND_FLOAT m2  = k.m2();
+  DPKIND_FLOAT m3  = k.m3();
+  DPKIND_FLOAT m4  = k.m4();
+  DPKIND_COMPLEX rslt[3];
+  if (s12 == 0. || s23 == 0.) {
+    if (p1 != 0. && p3 != 0.) {
       F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &s12, &p2, &s23, &p4, &p1, &p3, &m1, &m3, &m2, &m4);
-    } else if (p2!=0. && p4!=0.) {
+    } else if (p2 != 0. && p4 != 0.) {
       F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &s23, &p3, &s12, &p1, &p2, &p4, &m2, &m4, &m3, &m1);
     } else { assert(0); }
   } else {
     F77_FUNC_(avh_olo_d0m,AVH_OLO_D0M)(rslt, &p1, &p2, &p3, &p4, &s12, &s23, &m1, &m2, &m3, &m4);
   }
-
-  ivalue.val[0]=rslt[0];
-  ivalue.val[1]=rslt[1];
-  ivalue.val[2]=rslt[2];
+  
+  ivalue.val[0] = rslt[0];
+  ivalue.val[1] = rslt[1];
+  ivalue.val[2] = rslt[2];
   return ivalue;
 }
 #endif /* USE_ONELOOP */
