@@ -1,27 +1,28 @@
 
-PJFry 1.0.0 - one loop tensor integral library
+PJFry 1.0.0 - one loop tensor integral form-factors library
 (see LICENSE for the status of this software)
 
 The algorithms are based on the results of http://arxiv.org/abs/1009.4436
-Please cite arXiv:1009.4436v3 [hep-ph] if you use PJFry in scientific publications.
+Please cite arXiv:1009.4436 [hep-ph] if you use PJFry in scientific publications.
 
 For more information and the latest source code,
-please visit project page at https://github.com/Vayu/PJFry/
+please visit the project page at https://github.com/Vayu/PJFry/
 
 Branches:
  'master'  - the latest stable version
- 'develop' - the latest development state, contains newest fetures, possibly untested
+ 'develop' - the latest development state, contains newest features, possibly untested
 
 To build on Unix/Linux and similar systems:
-   ./configure ; make ; make install
-see INSTALL file for the detailed explanation of ./configure options
+   autoreconf -f -i ; ./configure ; make ; make install
+See the INSTALL file for detailed explanations of the building procedure.
 
-The project subdirectories are:
+The project sub-directories are:
 ./src       - library source code
 ./mlink     - MathLink interface
-./examples  - FORTRAN examples of library use (build with 'make check')
+./examples  - FORTRAN (build with 'make check') and C++ / ROOT usage examples
 
 To report bugs, please create an issue at:
   https://github.com/Vayu/PJFry/issues
 
 Valery Yundin
+

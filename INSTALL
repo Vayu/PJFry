@@ -3,29 +3,42 @@ Installing libpjfry version 1.0.0
 =================================
 
 On Unix/Linux and similar systems, execute the following commands:
+
+autoreconf -f -i
 ./configure [--prefix=/path] \
     [--with-mcc-path=/path/mcc] \
-    [--with-integrals=auto,qcdloop,oneloop] \
-    [LDFLAGS=linker flags] \
-    [CXXFLAGS=c++ flags]
+    [--with-integrals=auto,qcdloop2,qcdloop1,oneloop,qcdloop] \
+    [LDFLAGS='linker flags'] \
+    [CXXFLAGS='c++ flags']
 make
 make install
 
 If --prefix is not specified, the library will be installed
-to the system default library path (usually /usr/local/lib).
+into the system default library path (usually /usr/local/lib).
 
-If --with-mcc option is not specified, configure script will try to find Mathematica
-installation in system PATH and a few common locations.
-You can override this behaviour by setting --with-mcc-path=no
+If --with-mcc option is not specified, the configure script will try to
+find Mathematica installation in system PATH and a few common locations.
+You can override this behavior by setting --with-mcc-path=no
 or give full path to the appropriate mcc tool --with-mcc-path=/path/mcc
 
-If --with-integrals option is not specified, configure script will try to find
-any usable scalar integrals library from the supported list:
-QCDLoop (libqcdloop.a and libff.a) or OneLOoop (libavh_olo.a)
+If --with-integrals option is not specified, the configure script will
+try to find some usable scalar integrals library from the supported list:
+QCDLoop 2.x (qcdloop-config, libqcdloop 2.x)
+QCDLoop1 (libqcdloop1)
+OneLOoop (libavh_olo)
+QCDLoop 1.x (libqcdloop 1.x and libff)
 
-You can select which library to use by --with-integral=oneloop or --with-integral=qcdloop
-And tell configure where to look for it by setting LDFLAGS='-L/path/to/scalar/integral/library'
-(additional linking flags like '-lgfortran' should be also added to LDFLAGS)
+Choosing the underlying library is a configure / compile time option but
+one can have different PJFry variants built and installed in (completely)
+separate directories.
+
+You can select which library to use by e.g. --with-integral=oneloop
+and then tell the configure script where to look for it by setting
+LDFLAGS='-L/path/to/scalar/integral/library'
+(Additional required flags, e.g. '-lgfortran', can also be added to LDFLAGS)
+
+Simple complete examples of the building procedures (for Unix/Linux running
+the bash shell and gcc/gfortran >= 4.x) can be found in the end of this file.
 
 
 MathLink interface
@@ -37,8 +50,9 @@ MathLink interface consists of single executable, which will be installed to
 Use the following command to run it inside Mathematica:
  Install["path/bin/PJFry"]
 
-NOTE if dynamic linking was chosen by configure script, the libpjfry.so
-should be in system library search path or in LD_LIBRARY_PATH environment variable
+Note: if dynamic linking was chosen by configure script, the libpjfry.so
+should be in system library search path or in the LD_LIBRARY_PATH
+environment variable.
 
 
 Running FORTRAN examples
@@ -51,7 +65,7 @@ Use 'make check' to compile a few simple examples of library use in FORTRAN
 REMARK for gcc 4.1 users with 32-bit OS
 =======================================
 
-On 32-bit OS with old versions of gcc, enabling optimization produces wrong code.
+On 32-bit OS with old gcc versions, enabling optimization produces wrong code.
 You have this problem if 'examples/demo' produces NaN's in the output.
 Possible solutions:
 1. Use gcc of more recent version (>=4.3)
@@ -73,5 +87,254 @@ Alternatively (and with ifort) you can use ./configure --enable-f2c=yes
 This will make program expect f2c conventions from scalar integral library
 and expose its interface following the same convention.
 
-NOTE that this option does not add -ff2c flag, if you are use it with gfortran
-you would have to add -ff2c manually to FFLAGS and FCFLAGS
+Note that this option does not add -ff2c flag, if you are use it with
+gfortran you would have to add -ff2c manually to FFLAGS and FCFLAGS
+
+
+Setting the underlying "Default Precision KIND" (DPKIND)
+====================
+
+PJFry always uses the standard C / C++ "double" precision in its calculations.
+By default, it also expects that the underlying scalar integrals library
+returns values in the standard C / C++ "double" precision format.
+
+However, PJFry can also use an underlying library built to provide another
+(e.g. better) "Default Precision KIND" (DPKIND).
+One just needs to set the DPKIND identifier in the CXXFLAGS, when running
+the configure script.
+
+For the C / C++ "float", Fortran REAL*4 (REAL / KIND=4 / kind(1.0) /
+selected_real_kind(6)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=4'
+
+One does not need to set it for the default C / C++ "double", Fortran
+REAL*8 (DOUBLE PRECISION / KIND=8 / kind(1d0) / selected_real_kind(15)),
+but one can still add '-DDPKIND=8', if desired.
+(This is the default precision provided by all four underlying libraries.)
+
+For the C / C++ "long double", Fortran REAL*10 (KIND=10 /
+selected_real_kind(18)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=10'
+(One can build the OneLOoop library so that it provides this precision
+when one sets e.g. 'DPKIND = selected_real_kind(18)' in its 'Config' file.
+One can cheat the QCDLoop1 and QCDLoop 1.x libraries to use this precision
+when one builds them adding '-freal-8-real-10' into their '(AM_)FFLAGS'.)
+
+For the C / C++ "__float128", Fortran REAL*16 (KIND=16 / kind(1q0) /
+selected_real_kind(33)) use e.g.: CXXFLAGS='-g -O2 -DDPKIND=16'
+(In any case, the standard "GCC Quad-Precision Math Library" libquadmath
+is used, which one may need to install on one's operating system first.
+One can build the OneLOoop library so that it provides this precision
+when one sets e.g. 'DPKIND = kind(1q0)' in its 'Config' file.
+The QCDLoop 2.x library provides this precision automatically.)
+
+
+PJFry + QCDLoop 2.x ( https://qcdloop.web.cern.ch/qcdloop/ )
+====================
+
+QCDLoop 2.x is an object-oriented library of one-loop scalar Feynman integrals, evaluated close to four dimensions: https://qcdloop.web.cern.ch/qcdloop/
+
+Its authors have designed the source code in C++, extended the formalism to complex masses, provided a simple mechanism to switch from double to quadruple precision, boosted speed and finally implemented LRU caching algorithms.
+A Fortran wrapper in the library (backwards compatible with the older QCDLoop 1.x / FF) is also present.
+
+The current source code can be found in the GitHub repository: https://github.com/scarrazza/qcdloop
+
+# One first needs to build and install the QCDLoop 2.x package.
+
+# QCDLoop 2.x (dynamic library only)
+PJFry="${HOME}/PJFry_QCDLoop2" # where the QCDLoop 2.x libraries will be installed
+cd
+rm -rf ${PJFry} # clean the destination directory tree
+mkdir -p ${PJFry}
+cd ${PJFry}
+rm -rf qcdloop # clean the source code directory tree
+git clone https://github.com/scarrazza/qcdloop.git
+cd qcdloop
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+sed -i -e '{s/-fstack-protector-strong/-fstack-protector-all/}' CMakeLists.txt
+# sed -i -e '{s/-fstack-protector-strong/-fstack-protector/}' CMakeLists.txt
+sed -i -e '{s/-march=nocona/-march=native/}' CMakeLists.txt
+sed -i -e '{s/-mtune=haswell/-mtune=native/}' CMakeLists.txt
+mkdir build
+cd build
+# cmake -DCMAKE_INSTALL_PREFIX="${PJFry}" -DENABLE_FORTRAN_WRAPPER=ON -DENABLE_EXAMPLES=ON ../ > cmake.out.txt 2>&1
+cmake -DCMAKE_INSTALL_PREFIX="${PJFry}" -DENABLE_FORTRAN_WRAPPER=OFF -DENABLE_EXAMPLES=ON ../ > cmake.out.txt 2>&1
+make -k > make.out.txt 2>&1
+./cache_test > cache_test.out.txt 2>&1
+./cmass_test > cmass_test.out.txt 2>&1
+./trigger_test > trigger_test.out.txt 2>&1
+# gfortran -o fortran_test ../examples/fortran_test.f -Wl,-rpath,./ -Wl,-rpath,"${PWD}" libqcdloop.so -lquadmath
+# ./fortran_test > fortran_test.out.txt 2>&1
+make -k install > make_install.out.txt 2>&1
+cd
+
+# One can now add the PJFry package.
+
+# PJFry + QCDLoop 2.x (static and dynamic libraries)
+PJFry="${HOME}/PJFry_QCDLoop2" # where the QCDLoop 2.x libraries are installed
+cd
+cd ${PJFry}
+rm -rf PJFry # clean the source code directory tree
+git clone git://github.com/Vayu/PJFry.git # download the newest source code
+cd PJFry
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+autoreconf -f -i > autoreconf.out.txt 2>&1
+export LD_LIBRARY_PATH="${PJFry}/lib:${LD_LIBRARY_PATH}"
+export PATH="${PJFry}/bin:${PATH}"
+# ./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=qcdloop2 CXXFLAGS="-g -O2 -DDPKIND=16" > configure.out.txt 2>&1
+./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=qcdloop2 > configure.out.txt 2>&1
+make -k > make.out.txt 2>&1
+make -k check > make_check.out.txt 2>&1
+cd ./examples; ./demo > demo.out.txt 2>&1; cd ../ # run the small built-in demo
+make -k install > make_install.out.txt 2>&1
+cd
+
+
+PJFry + QCDLoop1 / FF ( https://bitbucket.org/njet/qcdloop1/src/master/ )
+====================
+
+QCDLoop1 / FF is a library of one-loop scalar Feynman integrals, evaluated close to four dimensions, with modifications for easier integration with the NJet library: https://bitbucket.org/njet/qcdloop1/src/master/
+
+It is based on the QCDloop 1.x / FF package: https://qcdloop.fnal.gov/
+
+The current source code can be found in the Bitbucket repository: https://bitbucket.org/njet/qcdloop1/src/master/
+
+# One first needs to build and install the QCDLoop1 / FF package.
+
+# QCDLoop1 / FF (static and dynamic libraries)
+PJFry="${HOME}/PJFry_QCDLoop1" # where the QCDLoop1 / FF libraries will be installed
+cd
+rm -rf ${PJFry} # clean the destination directory tree
+mkdir -p ${PJFry}
+cd ${PJFry}
+rm -rf qcdloop1 # clean the source code directory tree
+git clone https://bitbucket.org/njet/qcdloop1.git
+cd qcdloop1
+# sed -i -e "{s/-std=legacy/& -freal-8-real-10/}" Makefile.am # DPKIND=10
+autoreconf -f -i > autoreconf.out.txt 2>&1
+./configure --prefix="${PJFry}" > configure.out.txt 2>&1
+make -k > make.out.txt 2>&1
+make -k install > make_install.out.txt 2>&1
+make -k test > make_test.out.txt 2>&1
+./test > test.out.txt 2>&1 # run the small built-in test
+cd
+
+# One can now add the PJFry package.
+
+# PJFry + QCDLoop1 / FF (static and dynamic libraries)
+PJFry="${HOME}/PJFry_QCDLoop1" # where the QCDLoop1 / FF libraries are installed
+cd
+cd ${PJFry}
+rm -rf PJFry # clean the source code directory tree
+git clone git://github.com/Vayu/PJFry.git # download the newest source code
+cd PJFry
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+autoreconf -f -i > autoreconf.out.txt 2>&1
+export LD_LIBRARY_PATH="${PJFry}/lib:${LD_LIBRARY_PATH}"
+# ./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=qcdloop1 CXXFLAGS="-g -O2 -DDPKIND=10" LDFLAGS="-L${PJFry}/lib" > configure.out.txt 2>&1
+./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=qcdloop1 LDFLAGS="-L${PJFry}/lib" > configure.out.txt 2>&1
+make -k > make.out.txt 2>&1
+make -k check > make_check.out.txt 2>&1
+cd ./examples; ./demo > demo.out.txt 2>&1; cd ../ # run the small built-in demo
+make -k install > make_install.out.txt 2>&1
+cd
+
+
+PJFry + OneLOop ( https://helac-phegas.web.cern.ch/helac-phegas/OneLOop.html )
+====================
+
+OneLOop is a package to evaluate the one-loop scalar 1-point, 2-point, 3-point and 4-point functions, for all kinematical configurations relevant for collider-physics, and for any non-positive imaginary parts of the internal squared masses: https://helac-phegas.web.cern.ch/helac-phegas/OneLOop.html
+
+It deals with all UV and IR divergences within dimensional regularization. Furthermore, it provides routines to evaluate these functions using straightforward numerical integration.
+
+The current source code can be found in the Bitbucket repository: https://bitbucket.org/hameren/oneloop/src/master/
+
+# One first needs to build the OneLOop package (in-place).
+
+# OneLOop (static and dynamic libraries, in-place)
+PJFry="${HOME}/PJFry_OneLOop" # where the OneLOop libraries will be built
+cd
+rm -rf ${PJFry} # clean the source code / destination directory tree
+mkdir -p ${PJFry}
+cd ${PJFry}
+rm -rf oneloop # clean the source code directory tree
+git clone https://bitbucket.org/hameren/oneloop.git
+cd oneloop
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+# sed -i -e "{s/kind(1d0)/selected_real_kind(18)/}" Config # DPKIND=10
+# note: PJFry requires "TLEVEL = yes" in the "Config" file
+sed -i -e "{s/TLEVEL = no/TLEVEL = yes/}" Config # old-style top-level routines
+sed -i -e "{s/CPPINTF = no/CPPINTF = yes/}" Config # C++ interface (just for fun)
+sed -i -e "{s/'cru'/'cUru'/}" create.py # apply a small fix
+rm -f avh_olo.f90 *.o *.a *.so *.mod `find ./ -name "*.pyc"`
+./create.py # build the static library
+rm -f avh_olo.f90 *.o *.mod `find ./ -name "*.pyc"`
+./create.py dynamic # build the dynamic library
+rm -f *.o `find ./ -name "*.pyc"`
+cd
+
+# One can now add the PJFry package.
+
+# PJFry + OneLOop (static and dynamic libraries)
+PJFry="${HOME}/PJFry_OneLOop" # where the OneLOop libraries are installed
+cd
+cd ${PJFry}
+rm -rf PJFry # clean the source code directory tree
+git clone git://github.com/Vayu/PJFry.git # download the newest source code
+cd PJFry
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+autoreconf -f -i > autoreconf.out.txt 2>&1
+export LD_LIBRARY_PATH="${PJFry}/oneloop:${LD_LIBRARY_PATH}"
+# ./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=oneloop CXXFLAGS="-g -O2 -DDPKIND=10" LDFLAGS="-L${PJFry}/oneloop" > configure.out.txt 2>&1
+./configure --prefix="${PJFry}" --with-mcc-path=no --with-integrals=oneloop LDFLAGS="-L${PJFry}/oneloop" > configure.out.txt 2>&1
+make -k > make.out.txt 2>&1
+make -k check > make_check.out.txt 2>&1
+cd ./examples; ./demo > demo.out.txt 2>&1; cd ../ # run the small built-in demo
+make -k install > make_install.out.txt 2>&1
+cd
+
+
+PJFry + QCDLoop 1.x / FF ( https://qcdloop.fnal.gov/ )
+====================
+
+QCDLoop 1.x / FF is a library of one-loop scalar Feynman integrals, evaluated close to four dimensions: https://qcdloop.fnal.gov/
+
+It is based on the FF package: https://gjvo.home.xs4all.nl/FF.html
+
+The current "packaged source code" version (dated 2020.07.24) is: https://qcdloop.fnal.gov/QCDLoop-1.97.tar.gz
+
+# One first needs to build and install the QCDLoop 1.97 / FF package (in-place).
+
+# QCDLoop 1.97 / FF (static libraries only, in-place)
+PJFry="${HOME}/PJFry_QCDLoop-1.97" # where the QCDLoop 1.97 / FF libraries will be built
+cd
+rm -rf ${PJFry} # clean the source code / destination directory tree
+mkdir -p ${PJFry}
+cd ${PJFry}
+wget https://qcdloop.fnal.gov/QCDLoop-1.97.tar.gz
+tar -zxf QCDLoop-1.97.tar.gz
+cd QCDLoop-1.97
+# note: edit the "./ff/ffinit_mine.f" in two places ("path = '...'").
+# sed -i -e "{s/-std=legacy/& -freal-8-real-10/}" `find ./ -name "[mM]akefile"` # DPKIND=10
+sed -i -e "{s/\bcru\b/cUru/}" `find ./ -name "[mM]akefile"` # apply a small fix
+make -k > make.out.txt 2>&1
+./test > test.out.txt 2>&1 # run the small built-in test
+cd
+
+# One can now add the PJFry package.
+
+# PJFry + QCDLoop 1.97 / FF (static libraries only)
+PJFry="${HOME}/PJFry_QCDLoop-1.97" # where the QCDLoop 1.97 / FF libraries are installed
+cd
+cd ${PJFry}
+rm -rf PJFry # clean the source code directory tree
+git clone git://github.com/Vayu/PJFry.git # download the newest source code
+cd PJFry
+# sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
+autoreconf -f -i > autoreconf.out.txt 2>&1
+# ./configure --prefix="${PJFry}" --with-mcc-path=no --enable-shared=no --with-integrals=qcdloop CXXFLAGS="-g -O2 -DDPKIND=10" LDFLAGS="-Wl,--no-as-needed -lstdc++ -L${PJFry}/QCDLoop-1.97/ql -L${PJFry}/QCDLoop-1.97/ff" > configure.out.txt 2>&1
+./configure --prefix="${PJFry}" --with-mcc-path=no --enable-shared=no --with-integrals=qcdloop LDFLAGS="-Wl,--no-as-needed -lstdc++ -L${PJFry}/QCDLoop-1.97/ql -L${PJFry}/QCDLoop-1.97/ff" > configure.out.txt 2>&1
+make -k > make.out.txt 2>&1
+make -k check > make_check.out.txt 2>&1
+cd ./examples; ./demo > demo.out.txt 2>&1; cd ../ # run the small built-in demo
+make -k install > make_install.out.txt 2>&1
+cd
+
