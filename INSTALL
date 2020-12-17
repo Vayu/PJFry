@@ -274,7 +274,7 @@ cd oneloop
 # note: PJFry requires "TLEVEL = yes" in the "Config" file
 sed -i -e "{s/TLEVEL = no/TLEVEL = yes/}" Config # old-style top-level routines
 sed -i -e "{s/CPPINTF = no/CPPINTF = yes/}" Config # C++ interface (just for fun)
-sed -i -e "{s/'cru'/'cUru'/}" create.py # apply a small fix
+sed -i -e "{s/'cru'/'cUru'/}" create.py # a small fix for new ar versions
 rm -f avh_olo.f90 *.o *.a *.so *.mod `find ./ -name "*.pyc"`
 ./create.py # build the static library
 rm -f avh_olo.f90 *.o *.mod `find ./ -name "*.pyc"`
@@ -326,7 +326,7 @@ tar -zxf QCDLoop-1.97.tar.gz
 cd QCDLoop-1.97
 # note: edit the "./ff/ffinit_mine.f" in two places ("path = '...'").
 # sed -i -e "{s/-std=legacy/& -freal-8-real-10/}" `find ./ -name "[mM]akefile"` # DPKIND=10
-sed -i -e "{s/\bcru\b/cUru/}" `find ./ -name "[mM]akefile"` # apply a small fix
+sed -i -e "{s/\bcru\b/cUru/}" `find ./ -name "[mM]akefile"` # a small fix for new ar versions
 make -k > make.out.txt 2>&1
 ./test > test.out.txt 2>&1 # run the small built-in test
 cd
