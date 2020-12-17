@@ -130,12 +130,16 @@ The QCDLoop 2.x library provides this precision automatically.)
 PJFry + QCDLoop 2.x ( https://qcdloop.web.cern.ch/qcdloop/ )
 ====================
 
-QCDLoop 2.x is an object-oriented library of one-loop scalar Feynman integrals, evaluated close to four dimensions: https://qcdloop.web.cern.ch/qcdloop/
+QCDLoop 2.x is an object-oriented library of one-loop scalar Feynman integrals,
+evaluated close to four dimensions: https://qcdloop.web.cern.ch/qcdloop/
 
-Its authors have designed the source code in C++, extended the formalism to complex masses, provided a simple mechanism to switch from double to quadruple precision, boosted speed and finally implemented LRU caching algorithms.
-A Fortran wrapper in the library (backwards compatible with the older QCDLoop 1.x / FF) is also present.
+Its authors have designed the source code in C++, extended the formalism to
+complex masses, provided a simple mechanism to switch from double to quadruple
+precision, boosted speed and finally implemented LRU caching algorithms.
+A Fortran wrapper in the library (backwards compatible with the older
+QCDLoop 1.x / FF) is also present.
 
-The current source code can be found in the GitHub repository: https://github.com/scarrazza/qcdloop
+The current source code can be found on GitHub: https://github.com/scarrazza/qcdloop
 
 # One first needs to build and install the QCDLoop 2.x package.
 
@@ -173,7 +177,7 @@ PJFry="${HOME}/PJFry_QCDLoop2" # where the QCDLoop 2.x libraries are installed
 cd
 cd ${PJFry}
 rm -rf PJFry # clean the source code directory tree
-git clone git://github.com/Vayu/PJFry.git # download the newest source code
+git clone https://github.com/Vayu/PJFry.git # download the newest source code
 cd PJFry
 # sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
 autoreconf -f -i > autoreconf.out.txt 2>&1
@@ -191,11 +195,13 @@ cd
 PJFry + QCDLoop1 / FF ( https://bitbucket.org/njet/qcdloop1/src/master/ )
 ====================
 
-QCDLoop1 / FF is a library of one-loop scalar Feynman integrals, evaluated close to four dimensions, with modifications for easier integration with the NJet library: https://bitbucket.org/njet/qcdloop1/src/master/
+QCDLoop1 / FF is a library of one-loop scalar Feynman integrals, evaluated
+close to four dimensions, with modifications for easier integration with
+the NJet library: https://bitbucket.org/njet/qcdloop1/src/master/
 
 It is based on the QCDloop 1.x / FF package: https://qcdloop.fnal.gov/
 
-The current source code can be found in the Bitbucket repository: https://bitbucket.org/njet/qcdloop1/src/master/
+The current source code can be found on Bitbucket: https://bitbucket.org/njet/qcdloop1/src/master/
 
 # One first needs to build and install the QCDLoop1 / FF package.
 
@@ -224,7 +230,7 @@ PJFry="${HOME}/PJFry_QCDLoop1" # where the QCDLoop1 / FF libraries are installed
 cd
 cd ${PJFry}
 rm -rf PJFry # clean the source code directory tree
-git clone git://github.com/Vayu/PJFry.git # download the newest source code
+git clone https://github.com/Vayu/PJFry.git # download the newest source code
 cd PJFry
 # sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
 autoreconf -f -i > autoreconf.out.txt 2>&1
@@ -241,11 +247,16 @@ cd
 PJFry + OneLOop ( https://helac-phegas.web.cern.ch/helac-phegas/OneLOop.html )
 ====================
 
-OneLOop is a package to evaluate the one-loop scalar 1-point, 2-point, 3-point and 4-point functions, for all kinematical configurations relevant for collider-physics, and for any non-positive imaginary parts of the internal squared masses: https://helac-phegas.web.cern.ch/helac-phegas/OneLOop.html
+OneLOop is a package to evaluate the one-loop scalar 1-point, 2-point, 3-point
+and 4-point functions, for all kinematical configurations relevant for
+collider-physics, and for any non-positive imaginary parts of the internal
+squared masses: https://helac-phegas.web.cern.ch/helac-phegas/OneLOop.html
 
-It deals with all UV and IR divergences within dimensional regularization. Furthermore, it provides routines to evaluate these functions using straightforward numerical integration.
+It deals with all UV and IR divergences within dimensional regularization.
+Furthermore, it provides routines to evaluate these functions using
+straightforward numerical integration.
 
-The current source code can be found in the Bitbucket repository: https://bitbucket.org/hameren/oneloop/src/master/
+The current source code can be found on Bitbucket: https://bitbucket.org/hameren/oneloop/src/master/
 
 # One first needs to build the OneLOop package (in-place).
 
@@ -278,7 +289,7 @@ PJFry="${HOME}/PJFry_OneLOop" # where the OneLOop libraries are installed
 cd
 cd ${PJFry}
 rm -rf PJFry # clean the source code directory tree
-git clone git://github.com/Vayu/PJFry.git # download the newest source code
+git clone https://github.com/Vayu/PJFry.git # download the newest source code
 cd PJFry
 # sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
 autoreconf -f -i > autoreconf.out.txt 2>&1
@@ -295,7 +306,8 @@ cd
 PJFry + QCDLoop 1.x / FF ( https://qcdloop.fnal.gov/ )
 ====================
 
-QCDLoop 1.x / FF is a library of one-loop scalar Feynman integrals, evaluated close to four dimensions: https://qcdloop.fnal.gov/
+QCDLoop 1.x / FF is a library of one-loop scalar Feynman integrals,
+evaluated close to four dimensions: https://qcdloop.fnal.gov/
 
 It is based on the FF package: https://gjvo.home.xs4all.nl/FF.html
 
@@ -326,7 +338,7 @@ PJFry="${HOME}/PJFry_QCDLoop-1.97" # where the QCDLoop 1.97 / FF libraries are i
 cd
 cd ${PJFry}
 rm -rf PJFry # clean the source code directory tree
-git clone git://github.com/Vayu/PJFry.git # download the newest source code
+git clone https://github.com/Vayu/PJFry.git # download the newest source code
 cd PJFry
 # sed -i -e "{s/\bpython\b/&3/}" `grep -l -r "\bpython\b" ./` # use python3
 autoreconf -f -i > autoreconf.out.txt 2>&1
