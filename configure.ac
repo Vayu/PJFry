@@ -6,7 +6,7 @@ AC_PREREQ([2.65])
 # Major.Minor goes into symbols version
 m4_define([pjfry_major_version], [1])
 m4_define([pjfry_minor_version], [0])
-m4_define([pjfry_micro_version], [0-beta8])
+m4_define([pjfry_micro_version], [0-beta.10])
 
 # Libtool interface number ( current : revision : age )
 # - If the library source code has changed at all since the last update,
